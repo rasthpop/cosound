@@ -1,8 +1,8 @@
-# Semantic Music Discovery
+# Cosound: Semantic Music Discovery
 
 Natural-language music discovery: a request such as *"something chill with a flute"* is interpreted, matched against a local catalog with hybrid retrieval (Discogs/FMA metadata + CLAP text-to-audio similarity), ranked, explained from evidence, and placed on a stable UMAP map of the catalog.
 
-- Functional specification: [`base.md`](base.md)
+- Functional specification: [`base.md`](base.md) (the OG implementation plan)
 - Implementation plan and progress: [`skills/phases/README.md`](skills/phases/README.md)
 - Architecture rules: [`skills/music-discovery-architecture/SKILL.md`](skills/music-discovery-architecture/SKILL.md)
 
