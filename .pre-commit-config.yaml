@@ -1,0 +1,40 @@
+# All hooks run tools pinned in uv.lock (no network fetch of hook repos).
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+      - id: check-added-large-files
+        name: check for added large files
+        entry: uv run check-added-large-files --maxkb=500
+        language: system
+        stages: [pre-commit]
+      - id: check-merge-conflict
+        name: check for merge conflict markers
+        entry: uv run check-merge-conflict
+        language: system
+        types: [text]
+      - id: detect-private-key
+        name: detect private keys
+        entry: uv run detect-private-key
+        language: system
+        types: [text]
+      - id: detect-secrets
+        name: detect secrets
+        entry: uv run detect-secrets-hook --baseline .secrets.baseline
+        language: system
+        exclude: ^(uv\.lock|frontend/package-lock\.json)$
+      - id: architecture-boundaries
+        name: architecture boundaries
+        entry: uv run python skills/music-discovery-architecture/scripts/check_boundaries.py
+        language: system
+        pass_filenames: false
+        files: ^(src|frontend/src)/
