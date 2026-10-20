@@ -1,0 +1,17 @@
+# Coarse layer contract. The authoritative rules (composition roots, third-party
+# restrictions, frontend) live in skills/music-discovery-architecture/scripts/check_boundaries.py.
+# Layers in parentheses are optional so the contract holds while packages are still being added.
+[importlinter]
+root_package = music_discovery
+
+[importlinter:contract:backend-layers]
+name = Backend layers (dependencies point inward)
+type = layers
+containers =
+    music_discovery
+layers =
+    (api)
+    (application) | (evaluation)
+    (agents)
+    (retrieval) | (descriptions) | (spatial) | (ingestion) | (audio) | (infrastructure)
+    (domain)

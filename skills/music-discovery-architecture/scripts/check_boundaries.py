@@ -7,7 +7,8 @@ skills/music-discovery-architecture/SKILL.md. Exits 1 on violations.
 Missing directories are skipped, so it can run before code exists.
 
 Usage:
-    python skills/music-discovery-architecture/scripts/check_boundaries.py [--root PATH] [--only python|ts]
+    python skills/music-discovery-architecture/scripts/check_boundaries.py \
+        [--root PATH] [--only python|ts]
 """
 
 from __future__ import annotations
@@ -116,7 +117,9 @@ def _py_module_parts(pkg_root: Path, file: Path) -> list[str]:
     return parts
 
 
-def _resolve_relative(current: list[str], is_pkg: bool, level: int, module: str | None) -> list[str]:
+def _resolve_relative(
+    current: list[str], is_pkg: bool, level: int, module: str | None
+) -> list[str]:
     base = current if is_pkg else current[:-1]
     if level > 1:
         base = base[: len(base) - (level - 1)]
@@ -136,7 +139,13 @@ def check_python(root: Path) -> list[Violation]:
             continue  # package-root modules (__init__, __main__, version)
         layer = parts[0]
         if layer not in PY_ALLOWED:
-            out.append(Violation(display, 1, f"unknown layer '{layer}' (add it to PY_ALLOWED and the architecture skill)"))
+            out.append(
+                Violation(
+                    display,
+                    1,
+                    f"unknown layer '{layer}' (add it to PY_ALLOWED and the architecture skill)",
+                )
+            )
             continue
         is_root = rel_pkg in PY_COMPOSITION_ROOTS
         try:
@@ -165,11 +174,24 @@ def check_python(root: Path) -> list[Violation]:
                     if target_layer == layer:
                         continue
                     if target_layer not in PY_ALLOWED.get(layer, set()):
-                        out.append(Violation(display, node.lineno, f"layer '{layer}' must not import '{PKG}.{target_layer}'"))
+                        out.append(
+                            Violation(
+                                display,
+                                node.lineno,
+                                f"layer '{layer}' must not import '{PKG}.{target_layer}'",
+                            )
+                        )
                 else:
                     allowed = PY_THIRD_PARTY.get(t[0])
                     if allowed is not None and layer not in allowed:
-                        out.append(Violation(display, node.lineno, f"'{t[0]}' may only be imported in {sorted(allowed)}, not '{layer}'"))
+                        out.append(
+                            Violation(
+                                display,
+                                node.lineno,
+                                f"'{t[0]}' may only be imported in {sorted(allowed)}, "
+                                f"not '{layer}'",
+                            )
+                        )
     return out
 
 
@@ -178,7 +200,9 @@ def check_python(root: Path) -> list[Violation]:
 _BLOCK_COMMENT = re.compile(r"/\*[\s\S]*?\*/")
 _LINE_COMMENT = re.compile(r"^\s*//.*$", re.MULTILINE)
 _IMPORT_PATTERNS = [
-    re.compile(r"""(?:^|[\s;])(?:import|export)\s+(?:type\s+)?[\w*{}\s,$]*?\s*from\s*['"]([^'"]+)['"]"""),
+    re.compile(
+        r"""(?:^|[\s;])(?:import|export)\s+(?:type\s+)?[\w*{}\s,$]*?\s*from\s*['"]([^'"]+)['"]"""
+    ),
     re.compile(r"""(?:^|[\s;])import\s*['"]([^'"]+)['"]"""),
     re.compile(r"""\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)"""),
     re.compile(r"""\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)"""),
@@ -243,7 +267,7 @@ def check_ts(root: Path) -> list[Violation]:
         rel_str = _normalize_target(rel)
         text = _strip_comments(file.read_text(encoding="utf-8"))
 
-        def line_of(pos: int) -> int:
+        def line_of(pos: int, text: str = text) -> int:
             return text.count("\n", 0, pos) + 1
 
         for pat in _IMPORT_PATTERNS:
@@ -253,12 +277,25 @@ def check_ts(root: Path) -> list[Violation]:
                 ln = line_of(m.start(1))
                 if target is None:
                     for pkg, allowed in TS_THIRD_PARTY.items():
-                        if spec == pkg.rstrip("/") or spec.startswith(pkg):
-                            if not _has_prefix(rel_str, allowed):
-                                out.append(Violation(display, ln, f"'{spec}' may only be imported under {list(allowed)}"))
+                        matches = spec == pkg.rstrip("/") or spec.startswith(pkg)
+                        if matches and not _has_prefix(rel_str, allowed):
+                            out.append(
+                                Violation(
+                                    display,
+                                    ln,
+                                    f"'{spec}' may only be imported under {list(allowed)}",
+                                )
+                            )
                     continue
                 if target.startswith("../"):
-                    out.append(Violation(display, ln, f"import '{spec}' escapes frontend/src (backend code must never be imported)"))
+                    out.append(
+                        Violation(
+                            display,
+                            ln,
+                            f"import '{spec}' escapes frontend/src "
+                            "(backend code must never be imported)",
+                        )
+                    )
                     continue
                 target_layer = target.split("/")[0] if target else ""
                 if target_layer == layer:
@@ -267,12 +304,24 @@ def check_ts(root: Path) -> list[Violation]:
                 if allowed is None:
                     continue  # unlisted layers (dev/, test/) are unrestricted
                 if not _has_prefix(target, allowed):
-                    out.append(Violation(display, ln, f"'{layer}/' must not import '{target}' (allowed: {list(allowed)})"))
+                    out.append(
+                        Violation(
+                            display,
+                            ln,
+                            f"'{layer}/' must not import '{target}' (allowed: {list(allowed)})",
+                        )
+                    )
         for pattern, allowed in TS_FORBIDDEN_CALLS.items():
             if _has_prefix(rel_str, allowed):
                 continue
             for m in re.finditer(pattern, text):
-                out.append(Violation(display, line_of(m.start()), f"network call '{m.group(0).strip()}' outside {list(allowed)}"))
+                out.append(
+                    Violation(
+                        display,
+                        line_of(m.start()),
+                        f"network call '{m.group(0).strip()}' outside {list(allowed)}",
+                    )
+                )
     return out
 
 

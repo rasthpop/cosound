@@ -17,7 +17,7 @@
 - **Done when:**
   - `uv sync` succeeds; `uv run python -c "import music_discovery"` works.
   - `git check-ignore data/raw/x.mp3 .env` reports both ignored.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P00.T02 — Settings module
 - **Skills:** music-discovery-architecture
@@ -29,7 +29,7 @@
   - A `redacted()` dump for logging/meta files (secrets masked).
 - **Done when:**
   - Tests: defaults load, env override works, secrets never appear in `redacted()` or `repr`.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P00.T03 — Quality gates & boundary enforcement
 - **Skills:** music-discovery-architecture
@@ -44,7 +44,7 @@
 - **Done when:**
   - `make check` passes on the empty scaffold.
   - Adding a deliberate violation (e.g. `import fastapi` in `domain/`) makes `make boundaries` fail; remove it afterwards.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P00.T04 — Frontend skeleton (data layer folders only)
 - **Skills:** ui-architecture, ui-isolated-development
@@ -59,7 +59,7 @@
   - Add Node job to CI: `npm ci && npm run lint && npm run typecheck && npm run test`.
 - **Done when:**
   - `npm run build`, `npm run test`, `npm run lint` pass; `check_boundaries.py --only ts` passes.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P00.T05 — Architecture decision records
 - **Skills:** music-discovery-architecture
@@ -70,7 +70,8 @@
   - Each decision: context, decision, consequences, reversible-by.
 - **Done when:**
   - ADR-0001 merged; any user-overridden choices reflected.
-- **Status:** [ ]
+- **Notes:** ADR-0001 written with status "Proposed"; switch it to "Accepted" after review.
+- **Status:** [x]
 
 ### P00.T06 — Test infrastructure & fakes package
 - **Skills:** music-discovery-architecture, domain-modeling
@@ -82,9 +83,9 @@
   - `slow`/`live` markers skipped by default; `--run-slow` option.
 - **Done when:**
   - `make test` runs and reports 0 failures; `pytest --run-slow` selects slow tests.
-- **Status:** [ ]
+- **Status:** [x]
 
 ## Exit criteria
-- [ ] `make check` and frontend `npm run lint && npm run test` green in CI.
-- [ ] Boundary checker wired and demonstrably failing on violations.
-- [ ] No secrets, audio or large artifacts tracked (`git ls-files` audit).
+- [x] `make check` and frontend `npm run lint && npm run test` green (verified locally; the CI workflow runs the same commands and first runs on push).
+- [x] Boundary checker wired and demonstrably failing on violations.
+- [x] No secrets, audio or large artifacts tracked (`git ls-files` audit).

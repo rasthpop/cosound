@@ -1,0 +1,59 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.import_linter_cache/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Data: raw/derived data stays local; evaluation inputs are tracked
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/embeddings/*
+!data/embeddings/.gitkeep
+data/indexes/*
+!data/indexes/.gitkeep
+data/llm_cache/
+
+# Generated artifacts
+artifacts/**
+!artifacts/*/
+!artifacts/*/.gitkeep
+
+# Audio, model checkpoints, arrays
+*.mp3
+*.wav
+*.flac
+*.ogg
+*.pt
+*.ckpt
+*.npy
+*.npz
+
+# Node
+node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store

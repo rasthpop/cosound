@@ -11,7 +11,8 @@ and prints per-phase progress plus the tasks that are ready to start
 (todo, with every dependency done).
 
 Usage:
-    python skills/implementation-roadmap/scripts/phase_status.py [--phases-dir DIR] [--phase P03] [--ready] [--check]
+    python skills/implementation-roadmap/scripts/phase_status.py \
+        [--phases-dir DIR] [--phase P03] [--ready] [--check]
 """
 
 from __future__ import annotations
