@@ -1,9 +1,55 @@
 """In-memory fakes implementing domain protocols, shared by unit tests.
 
-Each protocol introduced in `music_discovery.domain.protocols` gets its fake here in the same task.
+Each protocol in `music_discovery.domain.protocols` has a fake here. `make type` checks them
+against the protocols with mypy (see tests/unit/fakes/test_fakes_conform.py).
 """
 
+from tests.fakes.adapters import (
+    FakeAudioProbe,
+    FakeLexicalIndex,
+    FakeStructuredLLM,
+    InMemorySpatialRepository,
+)
 from tests.fakes.clock import FrozenClock
 from tests.fakes.ids import SequentialIdGenerator
+from tests.fakes.repositories import (
+    InMemoryArtistRepository,
+    InMemoryFeedbackRepository,
+    InMemoryLabelRepository,
+    InMemoryMatchRepository,
+    InMemoryRelationshipRepository,
+    InMemoryReleaseRepository,
+    InMemorySessionRepository,
+    InMemoryTrackAudioRepository,
+    InMemoryTrackRepository,
+    InMemoryUnitOfWork,
+)
+from tests.fakes.vectors import (
+    BruteForceVectorIndex,
+    FakeEncoder,
+    InMemoryEmbeddingStore,
+    hashed_unit_vector,
+)
 
-__all__ = ["FrozenClock", "SequentialIdGenerator"]
+__all__ = [
+    "BruteForceVectorIndex",
+    "FakeAudioProbe",
+    "FakeEncoder",
+    "FakeLexicalIndex",
+    "FakeStructuredLLM",
+    "FrozenClock",
+    "InMemoryArtistRepository",
+    "InMemoryEmbeddingStore",
+    "InMemoryFeedbackRepository",
+    "InMemoryLabelRepository",
+    "InMemoryMatchRepository",
+    "InMemoryRelationshipRepository",
+    "InMemoryReleaseRepository",
+    "InMemorySessionRepository",
+    "InMemorySpatialRepository",
+    "InMemoryTrackAudioRepository",
+    "InMemoryTrackRepository",
+    "InMemoryUnitOfWork",
+    "SequentialIdGenerator",
+    "hashed_unit_vector",
+]

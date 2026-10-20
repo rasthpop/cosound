@@ -13,7 +13,7 @@
   - Enums: `Evidence`, `ConstraintStatus`, `EvidenceStatus`, `FeedbackType` (7 values, base §8), `NextAction`, `SearchOutcomeKind`, `Capability` status.
 - **Done when:**
   - Same source key ⇒ same ID across runs; different sources never collide (property test).
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P01.T02 — Catalog entities
 - **Skills:** domain-modeling
@@ -24,7 +24,8 @@
   - Derived property `evidence_status` (audio_and_metadata / metadata_only).
 - **Done when:**
   - JSON round-trip tests; `None` preserved; frozen models reject mutation; extra fields rejected.
-- **Status:** [ ]
+- **Notes:** Added a shared `CatalogEntity` base (id, external_ids, provenance) for Track/Release/Artist/Label.
+- **Status:** [x]
 
 ### P01.T03 — SearchSpecification & constraints
 - **Skills:** domain-modeling, agent-orchestration
@@ -36,7 +37,7 @@
 - **Done when:**
   - The base §5.3 example JSON validates unchanged (modulo added defaults).
   - Rejection tests for each validator.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P01.T04 — Feedback, evidence, ranking & session schemas
 - **Skills:** domain-modeling, grounded-explanations
@@ -46,7 +47,8 @@
   - `FeedbackEvent` (base §8 fields + optional `free_text`), `TrackEvidence` and its parts, `ScoreBreakdown` (all signals `float | None`), `RankedCandidate`, `RetrievalTrace` (shape only), `SearchOutcome`, `Explanation`, `SearchSession` + `SearchTurnRecord`.
 - **Done when:**
   - Missing semantic score serializes as `null` and never as `0`; tests prove it.
-- **Status:** [ ]
+- **Notes:** `current_spec`/`spec_history` are derived from `turns`; `with_turn`/`with_feedback` return a new version. `model_copy(update=...)` skips validation, so refinements in P06 should rebuild specs with `model_validate`.
+- **Status:** [x]
 
 ### P01.T05 — Error hierarchy
 - **Skills:** domain-modeling
@@ -56,7 +58,7 @@
   - Hierarchy from the skill; each class has a stable `code` and optional `details`.
 - **Done when:**
   - All codes unique (test); every base §16 failure case maps to a class.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P01.T06 — Protocols & in-memory fakes
 - **Skills:** domain-modeling, music-discovery-architecture
@@ -67,7 +69,8 @@
   - In-memory fakes for each (`FakeEncoder` produces deterministic hashed unit vectors).
 - **Done when:**
   - `isinstance(fake, Protocol)` checks via `runtime_checkable` (or mypy structural checks) pass for every fake.
-- **Status:** [ ]
+- **Notes:** Also added `UnitOfWork` (needed by P02.T04's per-release transactions), `LabelRepository` and `TrackAudioRepository`. `make type` runs mypy over the fakes and the conformance test.
+- **Status:** [x]
 
 ### P01.T07 — SQLite persistence for catalog repositories
 - **Skills:** domain-modeling, music-discovery-architecture
@@ -80,9 +83,10 @@
 - **Done when:**
   - Same contract test suite runs against the fake and the SQL implementation (parametrized) and passes.
   - Re-upserting the same entity is idempotent.
-- **Status:** [ ]
+- **Notes:** No foreign keys (tracks may be written before artists/labels; matches fake behavior). `check_boundaries.py` gained a domain allowlist rule (stdlib, pydantic, numpy).
+- **Status:** [x]
 
 ## Exit criteria
-- [ ] `mypy --strict` passes on `domain/`.
-- [ ] Repository contract tests pass for fake + SQL implementations.
-- [ ] No domain module imports anything outside stdlib/pydantic/numpy (boundary check).
+- [x] `mypy --strict` passes on `domain/`.
+- [x] Repository contract tests pass for fake + SQL implementations.
+- [x] No domain module imports anything outside stdlib/pydantic/numpy (boundary check).

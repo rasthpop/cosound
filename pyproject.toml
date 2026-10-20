@@ -5,8 +5,10 @@ description = "Natural-language music discovery over Discogs metadata and CLAP a
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "numpy>=2.4.6",
     "pydantic>=2.7",
     "pydantic-settings>=2.7",
+    "sqlalchemy>=2.0",
 ]
 
 [dependency-groups]
@@ -36,6 +38,12 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "N", "PT", "C4"]
+# Pydantic copies field defaults per instance, so list/dict defaults on models are safe.
+ignore = ["RUF012"]
+
+[tool.ruff.lint.per-file-ignores]
+# Exception names follow the vocabulary used in the skills and phase plans.
+"src/music_discovery/domain/errors.py" = ["N818"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["music_discovery"]

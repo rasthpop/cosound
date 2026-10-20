@@ -32,6 +32,8 @@ Every placement decision follows from that sentence.
 
 Rules that the table implies:
 
+- **The domain stays pure.** `domain/` may import only the standard library, pydantic and numpy (enforced by the checker's allowlist).
+
 - **Dependency direction is inward.** Nothing imports `api`. Only composition roots (`api/dependencies.py`, `api/app.py`, `scripts/*.py`, tests) construct concrete infrastructure.
 - **Services receive collaborators through constructor injection** typed by `domain.protocols`. No module-level singletons that load models or open DBs at import time.
 - **Agents never touch data.** An agent that needs tracks calls a retrieval service; an agent that needs an LLM receives a `StructuredLLM`.
