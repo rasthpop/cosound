@@ -1,0 +1,94 @@
+# P08 — Application Services & FastAPI
+
+**Goal:** thin, validated HTTP transport over application services, with a stable public contract (OpenAPI + fixtures) that the frontend data layer and the UI track build against.
+**base.md:** §13, §16, §17 (API tests), §3.
+**Depends on:** P06.T10, P07.T05, P07.T06
+
+> P08.T02 (DTOs + examples) and P08.T07 (OpenAPI/fixtures export) can be started early, right after P06.T10's shapes stabilize, to unblock P09.T01–T02 and the UI track.
+
+### P08.T01 — Application services & capability status
+- **Skills:** api-contracts, agent-orchestration, music-discovery-architecture
+- **Depends on:** P06.T10, P07.T05, P07.T06
+- **Files:** src/music_discovery/application/{search_service,feedback_service,track_service,capabilities}.py, tests/unit/application/*.py
+- **Do:**
+  - `SearchService.search/refine`, `FeedbackService.submit` (validation + optional refresh), `TrackService.get/neighbors`, `CapabilityService` (semantic / llm / map availability probes, cached; llm reflects the OpenRouter circuit-breaker state).
+  - Services return domain results; no HTTP concepts.
+- **Done when:**
+  - Unit tests with fakes for each service, including degraded capabilities and invalid feedback references.
+- **Status:** [ ]
+
+### P08.T02 — Public DTOs, mapping & examples
+- **Skills:** api-contracts, domain-modeling
+- **Depends on:** P06.T10
+- **Files:** src/music_discovery/api/schemas.py, src/music_discovery/api/mapping.py, tests/api/test_schemas.py
+- **Do:**
+  - DTOs per the api-contracts skill (base §13 shapes + outcome, capabilities, warnings, constraint_status, uncertainty_flags, spatial, change_summary); mapping functions domain → DTO; `json_schema_extra` examples covering every outcome/degraded variant.
+- **Done when:**
+  - Mapping tests: nulls preserved, enums correct, no domain/ORM object leaks; every example validates.
+- **Status:** [ ]
+
+### P08.T03 — App factory, composition root & error envelope
+- **Skills:** api-contracts, music-discovery-architecture
+- **Depends on:** P08.T01, P08.T02
+- **Files:** src/music_discovery/api/app.py, src/music_discovery/api/dependencies.py, src/music_discovery/api/errors.py, src/music_discovery/api/routes/health.py, tests/api/test_errors.py
+- **Do:**
+  - `create_app(settings)`; DI wiring settings → infrastructure → services (lazy CLAP load, graceful failure); exception handlers mapping domain error codes → status + envelope; replace default 422 body; CORS from settings; request id + structured access logs; `GET /api/health`.
+  - `make serve` → `uvicorn music_discovery.api.app:create_app --factory`.
+- **Done when:**
+  - Tests: each error code → expected status/envelope; app starts with CLAP checkpoint missing (semantic unavailable) and with projection missing (map unavailable).
+- **Status:** [ ]
+
+### P08.T04 — Search, track & neighbor routes
+- **Skills:** api-contracts
+- **Depends on:** P08.T03
+- **Files:** src/music_discovery/api/routes/search.py, src/music_discovery/api/routes/tracks.py, tests/api/test_search.py, tests/api/test_tracks.py
+- **Do:**
+  - `POST /api/search`, `GET /api/tracks/{id}`, `GET /api/tracks/{id}/neighbors`; limit bounds; outcome variants.
+- **Done when:**
+  - API tests: schema, invalid input, empty results, metadata-only results, semantic unavailable warning, needs-clarification, no-confident-match, invalid track id 404.
+- **Status:** [ ]
+
+### P08.T05 — Feedback & session routes
+- **Skills:** api-contracts, agent-orchestration
+- **Depends on:** P08.T03
+- **Files:** src/music_discovery/api/routes/feedback.py, src/music_discovery/api/routes/sessions.py, tests/api/test_feedback.py
+- **Do:**
+  - `POST /api/feedback` (typed events + optional free text; optional `refresh=true` returns refreshed plate), `GET /api/sessions/{id}`.
+- **Done when:**
+  - API tests: unknown session/query/track, track not in results (409), SELECT_TRACK from map, refresh changes results, history visible in session.
+- **Status:** [ ]
+
+### P08.T06 — Map routes
+- **Skills:** api-contracts, umap-spatial-projection
+- **Depends on:** P08.T03
+- **Files:** src/music_discovery/api/routes/map.py, tests/api/test_map.py
+- **Do:**
+  - `GET /api/map/points` (limit/cursor/genre/style/artist_id/has_audio), `GET /api/map/meta`.
+- **Done when:**
+  - API tests: pagination walk returns every point once, filters, limit cap, projection unavailable ⇒ 503 envelope while `/api/search` still 200.
+- **Status:** [ ]
+
+### P08.T07 — OpenAPI & fixture export
+- **Skills:** api-contracts, ui-isolated-development
+- **Depends on:** P08.T02
+- **Files:** scripts/export_openapi.py, scripts/export_fixtures.py, frontend/openapi.json, frontend/src/mocks/fixtures/*.json, tests/api/test_fixtures_valid.py, docs/api-changelog.md
+- **Do:**
+  - Deterministic OpenAPI JSON (sorted keys, stable operation ids); fixtures for every scenario listed in `ui-isolated-development`; test validating each fixture against its DTO; changelog started at `API_VERSION=1`.
+- **Done when:**
+  - Re-running both scripts produces no git diff; fixture test green.
+- **Status:** [ ]
+
+### P08.T08 — API robustness suite
+- **Skills:** api-contracts
+- **Depends on:** P08.T04, P08.T05, P08.T06
+- **Files:** tests/api/test_degraded_modes.py, tests/integration/test_api_end_to_end.py
+- **Do:**
+  - Agent failure (LLM invalid output) ⇒ 200 with fallback; CLAP load failure ⇒ metadata-only with warning; stale/duplicate feedback; large limit rejected; end-to-end against the real small index.
+- **Done when:**
+  - All base §17 "API tests" bullets have at least one test; end-to-end test green under `integration`.
+- **Status:** [ ]
+
+## Exit criteria (Milestone 6, backend)
+- [ ] Search, track details, neighbors, feedback, sessions, map points/meta exposed with validated schemas.
+- [ ] Error envelope everywhere; degraded modes visible in responses.
+- [ ] `frontend/openapi.json` + fixtures generated, deterministic, validated.
