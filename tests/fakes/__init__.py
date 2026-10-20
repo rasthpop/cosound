@@ -15,6 +15,7 @@ from tests.fakes.ids import SequentialIdGenerator
 from tests.fakes.repositories import (
     InMemoryArtistRepository,
     InMemoryFeedbackRepository,
+    InMemoryImportRunRepository,
     InMemoryLabelRepository,
     InMemoryMatchRepository,
     InMemoryRelationshipRepository,
@@ -41,6 +42,7 @@ __all__ = [
     "InMemoryArtistRepository",
     "InMemoryEmbeddingStore",
     "InMemoryFeedbackRepository",
+    "InMemoryImportRunRepository",
     "InMemoryLabelRepository",
     "InMemoryMatchRepository",
     "InMemoryRelationshipRepository",

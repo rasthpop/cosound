@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import socket
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -31,6 +32,20 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             item.add_marker(skip_slow)
         if "live" in item.keywords and not config.getoption("--run-live"):
             item.add_marker(skip_live)
+
+
+@pytest.fixture(autouse=True)
+def block_network(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fail any real network connection unless the test is marked `live`."""
+    if "live" in request.keywords:
+        return
+
+    def refuse(*args: object, **kwargs: object) -> None:
+        raise RuntimeError("network access is blocked in tests; mark the test `live` to allow it")
+
+    monkeypatch.setattr(socket.socket, "connect", refuse)
+    monkeypatch.setattr(socket.socket, "connect_ex", refuse)
+    monkeypatch.setattr(socket, "create_connection", refuse)
 
 
 @pytest.fixture

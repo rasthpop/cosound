@@ -1,0 +1,8 @@
+,album,album,album,artist,artist,set,set,track,track,track,track,track,track,track
+,date_released,id,title,id,name,split,subset,duration,genre_top,genres,genres_all,license,tags,title
+track_id,,,,,,,,,,,,,,
+2,2009-01-05 00:00:00,1,Synthetic Album,1,Synthetic Artist,training,small,168,Folk,[17],[17],Attribution-NonCommercial 3.0 International,"['flute', 'calm']",Low Tide
+5,2009-01-05 00:00:00,1,Synthetic Album,1,Synthetic Artist,training,small,206,Folk,"[17, 103]","[17, 103]",,[],Second Song
+140,,60,Tape Two,54,Other Band,test,small,300,Instrumental,[1235],[1235],CC0 1.0 Universal,[],Piano Study
+999,,61,Lost Album,55,Ghost,training,small,30,,[],[],Attribution,[],
+123456,1890-01-01 00:00:00,900,Big Album,800,Large Only,training,large,95,Rock,[12],[12],Attribution,[],Large Track

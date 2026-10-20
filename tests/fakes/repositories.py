@@ -6,13 +6,14 @@ from collections.abc import Collection, Iterator, Sequence
 from contextlib import contextmanager
 from typing import Generic, Protocol, TypeVar
 
-from music_discovery.domain.enums import MatchStatus, RelationshipType
+from music_discovery.domain.enums import DataSource, MatchStatus, RelationshipType
 from music_discovery.domain.errors import StaleSessionVersion
 from music_discovery.domain.ids import ExternalId
 from music_discovery.domain.models import (
     Artist,
     CatalogEntity,
     CrossSourceMatch,
+    ImportRun,
     Label,
     Release,
     SearchSession,
@@ -114,6 +115,11 @@ class InMemoryRelationshipRepository(_Store[tuple[str, str, str], TrackRelations
         ]
         return sorted(found, key=lambda r: (str(r.relationship_type), r.target_track_id))
 
+    def replace_all(self, relationships: Sequence[TrackRelationship]) -> None:
+        self._items = {}
+        for relationship in relationships:
+            self.upsert(relationship)
+
 
 class InMemoryMatchRepository(_Store[tuple[str, str], CrossSourceMatch]):
     def upsert(self, match: CrossSourceMatch) -> None:
@@ -124,6 +130,18 @@ class InMemoryMatchRepository(_Store[tuple[str, str], CrossSourceMatch]):
 
     def list_by_status(self, status: MatchStatus) -> list[CrossSourceMatch]:
         return [m for _, m in sorted(self._items.items()) if m.status is status]
+
+
+class InMemoryImportRunRepository(_Store[str, ImportRun]):
+    def save(self, run: ImportRun) -> None:
+        self._items[run.id] = run
+
+    def get(self, run_id: str) -> ImportRun | None:
+        return self._items.get(run_id)
+
+    def latest(self, source: DataSource) -> ImportRun | None:
+        runs = [r for r in self._items.values() if r.source is source]
+        return max(runs, key=lambda r: (r.started_at, r.id), default=None)
 
 
 class InMemorySessionRepository(_Store[str, SearchSession]):

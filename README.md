@@ -26,6 +26,20 @@ python skills/implementation-roadmap/scripts/phase_status.py   # plan progress
 
 Frontend: `cd frontend && npm run lint && npm run typecheck && npm run test`.
 
+## Building the local catalog
+
+```bash
+uv run python scripts/download_fma.py            # FMA metadata (checksum-verified)
+uv run python scripts/import_fma.py              # tracks in data/evaluation/fma_20_manifest.csv
+uv run python scripts/import_discogs.py          # bounded Discogs import (needs DISCOGS_TOKEN for style seeds)
+uv run python scripts/build_relationships.py     # same artist/label/master/release, shared styles
+uv run python scripts/match_sources.py           # conservative FMA <-> Discogs matching
+uv run python scripts/catalog_stats.py           # summary; --lookup "flute" to search
+```
+
+Terms, licenses and the bounded-import procedure: [`docs/data-sources.md`](docs/data-sources.md).
+The 20-track evaluation corpus and how to finish it: [`data/evaluation/README.md`](data/evaluation/README.md).
+
 ## Data
 
 `data/raw`, `data/processed`, `data/embeddings`, `data/indexes` and `artifacts/` stay local and are git-ignored. Only the evaluation inputs in `data/evaluation/` are tracked. Audio files, model checkpoints and secrets are never committed.

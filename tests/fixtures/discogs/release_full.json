@@ -1,0 +1,37 @@
+{
+  "_comment": "Synthetic payload with the shape of GET /releases/{id}. Not Discogs content.",
+  "id": 900001,
+  "title": "Night Woodwinds",
+  "year": 1998,
+  "uri": "https://www.discogs.com/release/900001-Synthetic-Night-Woodwinds",
+  "master_id": 800001,
+  "artists": [
+    {"id": 700001, "name": "Lena Ostrova (2)", "anv": "Lena O.", "join": "&", "role": ""},
+    {"id": 700002, "name": "The Reed Collective", "anv": "", "join": "", "role": ""}
+  ],
+  "labels": [
+    {"id": 600001, "name": "Quiet Field Records", "catno": "QF 012"},
+    {"id": 600001, "name": "Quiet Field Records", "catno": "QF 012-CD"}
+  ],
+  "genres": ["Electronic", "Jazz"],
+  "styles": ["Ambient", "Downtempo", "Ambient"],
+  "tracklist": [
+    {"position": "", "type_": "heading", "title": "Side One", "duration": ""},
+    {"position": "A1", "type_": "track", "title": "Low Tide Flute", "duration": "4:35"},
+    {
+      "position": "A2", "type_": "track", "title": "Reed Signal", "duration": "",
+      "artists": [{"id": 700003, "name": "Marco Vell", "anv": "", "join": "feat.", "role": ""},
+                  {"id": 700001, "name": "Lena Ostrova (2)", "anv": "", "join": "", "role": ""}],
+      "extraartists": [{"id": 700004, "name": "Ines Daro", "anv": "", "join": "", "role": "Flute"}]
+    },
+    {"position": "", "type_": "heading", "title": "Side Two", "duration": ""},
+    {
+      "position": "B", "type_": "index", "title": "Night Suite", "duration": "12:01",
+      "sub_tracks": [
+        {"position": "B1a", "type_": "track", "title": "Dusk", "duration": "5:00"},
+        {"position": "B1b", "type_": "track", "title": "Dawn", "duration": "1:02:03"}
+      ]
+    },
+    {"position": "B2", "type_": "track", "title": "Coda", "duration": "bad"}
+  ]
+}

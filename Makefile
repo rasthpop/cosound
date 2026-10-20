@@ -1,4 +1,4 @@
-PY_SOURCES := src tests skills/music-discovery-architecture/scripts skills/implementation-roadmap/scripts
+PY_SOURCES := src tests scripts skills/music-discovery-architecture/scripts skills/implementation-roadmap/scripts
 
 .PHONY: help lint format type test test-all boundaries imports check check-frontend
 
@@ -20,6 +20,7 @@ type:
 	uv run mypy
 	uv run mypy tests/fakes tests/unit/fakes/test_fakes_conform.py \
 		tests/integration/infrastructure/test_repositories.py
+	uv run mypy scripts
 
 test:
 	uv run pytest

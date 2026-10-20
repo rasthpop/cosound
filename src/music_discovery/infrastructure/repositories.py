@@ -9,12 +9,13 @@ from pydantic import BaseModel
 from sqlalchemy import Connection, Table, delete, func, insert, select
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
-from music_discovery.domain.enums import MatchStatus, RelationshipType
+from music_discovery.domain.enums import DataSource, MatchStatus, RelationshipType
 from music_discovery.domain.ids import ExternalId
 from music_discovery.domain.models import (
     Artist,
     CatalogEntity,
     CrossSourceMatch,
+    ImportRun,
     Label,
     Release,
     Track,
@@ -228,6 +229,12 @@ class SqlRelationshipRepository:
                 TrackRelationship.model_validate(dict(r)) for r in conn.execute(query).mappings()
             ]
 
+    def replace_all(self, relationships: Sequence[TrackRelationship]) -> None:
+        with self._db.connect() as conn:
+            conn.execute(delete(db.relationships))
+            if relationships:
+                conn.execute(insert(db.relationships), [_row(r) for r in relationships])
+
 
 class SqlMatchRepository:
     def __init__(self, database: Database) -> None:
@@ -259,3 +266,30 @@ class SqlMatchRepository:
         for row in rows:
             row.pop("target_key")
         return [CrossSourceMatch.model_validate(r) for r in rows]
+
+
+class SqlImportRunRepository:
+    def __init__(self, database: Database) -> None:
+        self._db = database
+
+    def save(self, run: ImportRun) -> None:
+        with self._db.connect() as conn:
+            _upsert(conn, db.import_runs, _row(run))
+
+    def get(self, run_id: str) -> ImportRun | None:
+        query = select(db.import_runs).where(db.import_runs.c.id == run_id)
+        with self._db.connect() as conn:
+            row = conn.execute(query).mappings().first()
+        return None if row is None else ImportRun.model_validate(dict(row))
+
+    def latest(self, source: DataSource) -> ImportRun | None:
+        table = db.import_runs
+        query = (
+            select(table)
+            .where(table.c.source == str(source))
+            .order_by(table.c.started_at.desc(), table.c.id.desc())
+            .limit(1)
+        )
+        with self._db.connect() as conn:
+            row = conn.execute(query).mappings().first()
+        return None if row is None else ImportRun.model_validate(dict(row))

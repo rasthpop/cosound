@@ -16,6 +16,8 @@ from music_discovery.domain.models import (
     Artist,
     ArtistReference,
     CrossSourceMatch,
+    ImportFailure,
+    ImportRun,
     Label,
     LabelReference,
     Provenance,
@@ -28,6 +30,7 @@ from music_discovery.domain.models import (
 from music_discovery.infrastructure.database import SCHEMA_VERSION, Database, SchemaVersionError
 from music_discovery.infrastructure.repositories import (
     SqlArtistRepository,
+    SqlImportRunRepository,
     SqlLabelRepository,
     SqlMatchRepository,
     SqlRelationshipRepository,
@@ -55,6 +58,7 @@ class Repos:
     audio: p.TrackAudioRepository
     relationships: p.RelationshipRepository
     matches: p.MatchRepository
+    runs: p.ImportRunRepository
     uow: p.UnitOfWork
 
 
@@ -67,6 +71,7 @@ def memory_repos() -> Repos:
         fakes.InMemoryTrackAudioRepository(),
         fakes.InMemoryRelationshipRepository(),
         fakes.InMemoryMatchRepository(),
+        fakes.InMemoryImportRunRepository(),
     )
     return Repos(*stores, uow=fakes.InMemoryUnitOfWork(*stores))
 
@@ -80,6 +85,7 @@ def sql_repos(database: Database) -> Repos:
         audio=SqlTrackAudioRepository(database),
         relationships=SqlRelationshipRepository(database),
         matches=SqlMatchRepository(database),
+        runs=SqlImportRunRepository(database),
         uow=database,
     )
 
@@ -306,6 +312,22 @@ def test_relationships_filter_and_order(repos: Repos) -> None:
     assert repos.relationships.for_track("trk_2") == []
 
 
+def test_relationships_replace_all(repos: Repos) -> None:
+    def rel(source: str, target: str) -> TrackRelationship:
+        return TrackRelationship(
+            source_track_id=source,
+            target_track_id=target,
+            relationship_type=RelationshipType.SAME_RELEASE,
+            evidence_source=DataSource.DISCOGS,
+        )
+
+    repos.relationships.upsert(rel("trk_1", "trk_old"))
+    repos.relationships.replace_all([rel("trk_1", "trk_2"), rel("trk_2", "trk_1")])
+    assert [r.target_track_id for r in repos.relationships.for_track("trk_1")] == ["trk_2"]
+    repos.relationships.replace_all([])
+    assert repos.relationships.for_track("trk_1") == []
+
+
 def test_matches_by_track_and_status(repos: Repos) -> None:
     target = ext(DataSource.DISCOGS, ExternalIdKind.RELEASE, "9")
     other = ext(DataSource.DISCOGS, ExternalIdKind.RELEASE, "10")
@@ -327,6 +349,26 @@ def test_matches_by_track_and_status(repos: Repos) -> None:
     assert repos.matches.for_track("trk_1") == [accepted]
     assert repos.matches.list_by_status(MatchStatus.UNRESOLVED) == []
     assert repos.matches.list_by_status(MatchStatus.ACCEPTED)[0].decided_at == NOW
+
+
+def test_import_runs_latest_per_source(repos: Repos) -> None:
+    older = ImportRun(id="imp_1", source=DataSource.DISCOGS, started_at=NOW, counts={"tracks": 1})
+    newer = ImportRun(
+        id="imp_2",
+        source=DataSource.DISCOGS,
+        selection_hash="abc",
+        started_at=NOW.replace(hour=13),
+        finished_at=NOW.replace(hour=14),
+        counts={"tracks": 2},
+        errors=[ImportFailure(key="release:1", code="not_cached", message="missing")],
+    )
+    repos.runs.save(newer)
+    repos.runs.save(older)
+    assert repos.runs.get("imp_2") == newer
+    assert repos.runs.latest(DataSource.DISCOGS) == newer
+    assert repos.runs.latest(DataSource.FMA) is None
+    repos.runs.save(newer.model_copy(update={"counts": {"tracks": 3}}))
+    assert repos.runs.get("imp_2").counts == {"tracks": 3}  # type: ignore[union-attr]
 
 
 # --- Units of work -------------------------------------------------------------------
@@ -405,6 +447,7 @@ def test_sql_repositories_satisfy_protocols(database: Database) -> None:
         (p.TrackAudioRepository, repos.audio),
         (p.RelationshipRepository, repos.relationships),
         (p.MatchRepository, repos.matches),
+        (p.ImportRunRepository, repos.runs),
         (p.UnitOfWork, repos.uow),
     ]
     for protocol, instance in checks:

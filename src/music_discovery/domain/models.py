@@ -204,6 +204,26 @@ class CrossSourceMatch(FrozenModel):
         return self
 
 
+class ImportFailure(FrozenModel):
+    """One record that failed during an import run."""
+
+    key: NonEmptyStr
+    code: NonEmptyStr
+    message: str
+
+
+class ImportRun(FrozenModel):
+    """Audit record of one bounded import (base.md §10.2): what was selected and what happened."""
+
+    id: NonEmptyStr
+    source: DataSource
+    selection_hash: str | None = None
+    started_at: AwareDatetime
+    finished_at: AwareDatetime | None = None
+    counts: dict[str, int] = {}
+    errors: list[ImportFailure] = []
+
+
 class SearchTurnRecord(FrozenModel):
     """One query or refinement within a session, with the spec it ran and what it showed."""
 
