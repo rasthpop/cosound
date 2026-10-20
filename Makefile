@@ -18,6 +18,8 @@ format:
 
 type:
 	uv run mypy
+	uv run mypy tests/fakes tests/unit/fakes/test_fakes_conform.py \
+		tests/integration/infrastructure/test_repositories.py
 
 test:
 	uv run pytest

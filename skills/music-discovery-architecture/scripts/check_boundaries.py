@@ -42,6 +42,11 @@ PY_ALLOWED: dict[str, set[str]] = {
 # package-relative files that are composition roots (may import any layer)
 PY_COMPOSITION_ROOTS = {"api/dependencies.py", "api/app.py"}
 
+# layers restricted to an explicit allowlist of non-stdlib modules
+PY_LAYER_ALLOWLIST: dict[str, set[str]] = {
+    "domain": {"pydantic", "pydantic_core", "numpy", "typing_extensions"},
+}
+
 # third-party top-level module -> layers allowed to import it
 PY_THIRD_PARTY: dict[str, set[str]] = {
     "fastapi": {"api"},
@@ -182,6 +187,21 @@ def check_python(root: Path) -> list[Violation]:
                             )
                         )
                 else:
+                    allowlist = PY_LAYER_ALLOWLIST.get(layer)
+                    if (
+                        allowlist is not None
+                        and t[0] not in sys.stdlib_module_names
+                        and t[0] not in allowlist
+                    ):
+                        out.append(
+                            Violation(
+                                display,
+                                node.lineno,
+                                f"'{layer}' may only import the standard library and "
+                                f"{sorted(allowlist)}, not '{t[0]}'",
+                            )
+                        )
+                        continue
                     allowed = PY_THIRD_PARTY.get(t[0])
                     if allowed is not None and layer not in allowed:
                         out.append(
