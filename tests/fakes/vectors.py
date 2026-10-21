@@ -34,6 +34,9 @@ class FakeEncoder:
     def embedding_dim(self) -> int:
         return self._dim
 
+    def preprocessing(self) -> dict[str, object]:
+        return {"fake": True, "dim": self._dim}
+
     def encode_texts(self, texts: Sequence[str]) -> Matrix:
         self.text_calls.append(list(texts))
         return self._stack([f"text:{t}" for t in texts])

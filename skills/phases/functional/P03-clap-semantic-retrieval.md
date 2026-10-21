@@ -12,7 +12,7 @@
   - Compare candidate checkpoints (music-specific LAION CLAP vs general vs HF `larger_clap_music`) on license, availability, pinning, CPU speed, footprint. Choose one; record `model_id`, download URL, SHA256, package versions, amodel/fusion flags, sample rate.
 - **Done when:**
   - ADR accepted by the user; `CLAP_CHECKPOINT`/`CLAP_MODEL_VERSION` documented; download script or instructions verify the hash.
-- **Status:** [ ]
+- **Status:** [~]
 
 ### P03.T02 — Embedding utilities & versioned store
 - **Skills:** clap-embeddings, domain-modeling
@@ -22,7 +22,7 @@
   - `l2_normalize`, `cosine` with zero/NaN → `InvalidEmbedding`; store layout (`audio_embeddings.npy`, `track_ids.json`, `meta.json`, `failures.csv`) under `data/embeddings/{embedding_version}/`; version hashing; load-time model check → `EmbeddingVersionMismatch`.
 - **Done when:**
   - Tests: normalization, invalid vectors raise, round-trip store, mismatched model refused, row/id alignment preserved.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P03.T03 — CLAP encoder
 - **Skills:** clap-embeddings
@@ -33,7 +33,7 @@
 - **Done when:**
   - Slow test encodes 2 tiny clips and 3 texts with correct shapes, unit norms after normalization, and deterministic output across two runs.
   - Unit test: missing checkpoint ⇒ `ModelLoadError` without crashing the importer.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P03.T04 — Offline embedding generation script
 - **Skills:** clap-embeddings, fma-audio-corpus
@@ -45,7 +45,7 @@
 - **Done when:**
   - With `FakeEncoder` (injected via flag/test): artifacts written, failures reported for a missing and a corrupt file, re-run is a no-op.
   - Real run on the 20-track manifest produces embeddings for every valid file (record counts in Notes).
-- **Status:** [ ]
+- **Status:** [~]
 
 ### P03.T05 — Vector index
 - **Skills:** clap-embeddings
@@ -56,7 +56,7 @@
   - `build_indexes.py` validates and writes any index metadata.
 - **Done when:**
   - Tests: top-k order vs brute force, `restrict_to`, missing id ⇒ `None`/absent, model mismatch on query raises `EmbeddingVersionMismatch`.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P03.T06 — Deterministic semantic prompt builder
 - **Skills:** clap-embeddings, agent-orchestration
@@ -66,7 +66,7 @@
   - Templates over spec attributes; ≤ 4 deduplicated prompts; never introduces attributes absent from the spec.
 - **Done when:**
   - Tests for "Something chill with a flute" and two other queries; no prompt contains an attribute absent from the spec.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P03.T07 — SemanticRetriever
 - **Skills:** clap-embeddings, hybrid-retrieval
@@ -76,7 +76,7 @@
   - Original query + expansions → text embeddings → index search → documented prompt-combination rule → `SemanticResult(items, model_id, status)`; reference-track query vectors; unavailable encoder/index ⇒ `status="unavailable"` with a reason.
 - **Done when:**
   - Tests with fakes: tracks without embeddings absent (not zero); unavailable path returns empty + status; expansions can't outweigh the original query beyond the configured rule.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P03.T08 — Semantic search smoke CLI (M2 acceptance)
 - **Skills:** clap-embeddings
