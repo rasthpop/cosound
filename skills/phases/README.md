@@ -11,7 +11,7 @@ Decomposition of `base.md` (functional plan) into executable phases and tasks, p
 |---|---|---|---|---|
 | [P00](functional/P00-foundation.md) | Project foundation & tooling | §4, §15, §17 | — | functional |
 | [P01](functional/P01-domain-model.md) | Domain model, protocols, persistence | §5, §16 | M1 | functional |
-| [P02](functional/P02-catalog-ingestion.md) | Catalog ingestion: Discogs + FMA + matching | §2, §10, §12.1 | **M1** | functional |
+| [P02](functional/P02-catalog-ingestion.md) | Catalog ingestion: FMA `fma_small` (MVP); Discogs + matching post-MVP | §2, §10, §12.1 | **M1** | functional |
 | [P03](functional/P03-clap-semantic-retrieval.md) | CLAP embeddings & semantic retrieval | §7.2–7.3, §9 | **M2** | functional |
 | [P04](functional/P04-hybrid-retrieval.md) | Hybrid retrieval, constraints, ranking, diversity | §7, §9.4 | **M3** | functional |
 | [P05](functional/P05-evaluation-harness.md) | Evaluation harness & dev-split calibration | §12 | M3 (compare) | functional |
@@ -28,6 +28,10 @@ Decomposition of `base.md` (functional plan) into executable phases and tasks, p
 | [U05](ui/U05-ux-quality-and-isolation.md) | UX quality, accessibility, isolation proof | UI plan, §1 req.10 | — | UI |
 
 U-phases are **provisional**: their tasks describe the structure any UI plan will need. The `ui-plan-intake` skill rewrites them when the plan arrives.
+
+## MVP scope (ADR-0005)
+
+The MVP is **FMA-only**: the full `fma_small` subset (8,000 tracks with licensed audio) is the catalog, and the loop is *user request → Agent A → hybrid retrieval over FMA metadata + CLAP audio → Agent B → Agent C explanations and feedback*. Discogs tasks are kept with status `[-]` (deferred) and come back after the MVP. This deviates from base.md §1 requirement 2 and §10; see [`docs/adr/0005-fma-only-mvp.md`](../../docs/adr/0005-fma-only-mvp.md).
 
 ## Dependency graph
 
@@ -59,7 +63,7 @@ The seam is the hook return types and `frontend/src/api/types.ts` (generated fro
 
 | Milestone | Acceptance criterion | Verified by |
 |---|---|---|
-| M1 | local catalog queryable without live Discogs | P02 exit |
+| M1 | local catalog queryable offline (FMA-only for the MVP) | P02 exit |
 | M2 | text query retrieves ranked candidates from local audio corpus | P03 exit |
 | M3 | metadata-only, CLAP-only, hybrid run on the same catalog and can be compared | P04 exit + P05 exit |
 | M4 | NL request → ranked plate; feedback changes next plate predictably | P06 exit |
@@ -71,9 +75,9 @@ The seam is the hook return types and `frontend/src/api/types.ts` (generated fro
 
 | DoD item | Task(s) |
 |---|---|
-| Bounded, documented Discogs import | P02.T04 |
+| Bounded, documented Discogs import | P02.T04 (built; live run deferred to post-MVP, P02.T11) |
 | Reproducible FMA load | P02.T06, P02.T10 |
-| Cross-source matching with provenance/uncertainty | P02.T08 |
+| Cross-source matching with provenance/uncertainty | P02.T08 (built; post-MVP, no Discogs data in the MVP) |
 | Versioned CLAP embeddings | P03.T02, P03.T04 |
 | Metadata & semantic retrieval independent | P03.T07, P04.T01 |
 | Safe hybrid ranking | P04.T05 |

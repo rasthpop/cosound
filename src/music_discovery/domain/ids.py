@@ -26,6 +26,7 @@ class IdPrefix(StrEnum):
     SESSION = "ses"
     QUERY = "qry"
     EVENT = "evt"
+    IMPORT_RUN = "imp"
 
 
 _ID_PATTERN = re.compile(r"^(?P<prefix>[a-z]{3})_(?P<body>[0-9a-z]+)$")

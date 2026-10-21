@@ -34,6 +34,7 @@ labels: p.LabelRepository = fakes.InMemoryLabelRepository()
 audio: p.TrackAudioRepository = fakes.InMemoryTrackAudioRepository()
 relationships: p.RelationshipRepository = fakes.InMemoryRelationshipRepository()
 matches: p.MatchRepository = fakes.InMemoryMatchRepository()
+import_runs: p.ImportRunRepository = fakes.InMemoryImportRunRepository()
 sessions: p.SessionRepository = fakes.InMemorySessionRepository()
 feedback: p.FeedbackRepository = fakes.InMemoryFeedbackRepository()
 uow: p.UnitOfWork = fakes.InMemoryUnitOfWork()
@@ -56,6 +57,7 @@ CONFORMING: list[tuple[Any, object]] = [
     (p.TrackAudioRepository, audio),
     (p.RelationshipRepository, relationships),
     (p.MatchRepository, matches),
+    (p.ImportRunRepository, import_runs),
     (p.SessionRepository, sessions),
     (p.FeedbackRepository, feedback),
     (p.UnitOfWork, uow),

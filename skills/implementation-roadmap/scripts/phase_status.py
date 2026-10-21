@@ -5,7 +5,7 @@ Parses task blocks of the form
 
     ### P02.T03 — Title
     - **Depends on:** P01.T02, P02.T01      (or "—")
-    - **Status:** [ ]                         ([ ] todo, [~] in progress, [x] done, [!] blocked)
+    - **Status:** [ ]   ([ ] todo, [~] in progress, [x] done, [!] blocked, [-] deferred)
 
 and prints per-phase progress plus the tasks that are ready to start
 (todo, with every dependency done).
@@ -29,7 +29,16 @@ STATUS_RE = re.compile(r"^\s*-\s*\*\*Status:\*\*\s*\[(.)\]")
 ID_RE = re.compile(r"\b(?:P|U)\d{2}\.T\d{2}\b")
 PHASE_DEP_RE = re.compile(r"\b((?:P|U)\d{2})\b(?!\.T)")
 
-STATUS_NAMES = {" ": "todo", "~": "in-progress", "x": "done", "X": "done", "!": "blocked"}
+STATUS_NAMES = {
+    " ": "todo",
+    "~": "in-progress",
+    "x": "done",
+    "X": "done",
+    "!": "blocked",
+    "-": "deferred",
+}
+SETTLED = {"done", "deferred"}
+"""Statuses that no longer block dependent tasks."""
 
 
 @dataclass
@@ -71,10 +80,10 @@ def is_ready(t: Task, tasks: dict[str, Task]) -> bool:
     if t.status != "todo":
         return False
     for d in t.deps:
-        if d not in tasks or tasks[d].status != "done":
+        if d not in tasks or tasks[d].status not in SETTLED:
             return False
     for p in t.phase_deps:  # a bare phase id means "every task of that phase"
-        if any(o.phase == p and o.status != "done" for o in tasks.values()):
+        if any(o.phase == p and o.status not in SETTLED for o in tasks.values()):
             return False
     return True
 
@@ -110,7 +119,7 @@ def main() -> int:
     selected = [t for t in tasks.values() if not args.phase or t.phase == args.phase]
 
     if not args.ready:
-        print(f"{'phase':<6} {'done':>4}/{'all':<4} {'wip':>3} {'blk':>3}  file")
+        print(f"{'phase':<6} {'done':>4}/{'all':<4} {'wip':>3} {'blk':>3} {'dfr':>3}  file")
         for p in phases:
             if args.phase and p != args.phase:
                 continue
@@ -118,7 +127,8 @@ def main() -> int:
             done = sum(t.status == "done" for t in pts)
             wip = sum(t.status == "in-progress" for t in pts)
             blk = sum(t.status == "blocked" for t in pts)
-            print(f"{p:<6} {done:>4}/{len(pts):<4} {wip:>3} {blk:>3}  {pts[0].file.name}")
+            dfr = sum(t.status == "deferred" for t in pts)
+            print(f"{p:<6} {done:>4}/{len(pts):<4} {wip:>3} {blk:>3} {dfr:>3}  {pts[0].file.name}")
         wip_tasks = [t for t in selected if t.status == "in-progress"]
         if wip_tasks:
             print("\nIn progress:")

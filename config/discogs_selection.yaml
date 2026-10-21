@@ -1,0 +1,14 @@
+# Bounded Discogs import (base.md §10.2, docs/data-sources.md#import).
+# Bump selection_version whenever the seeds or caps change.
+# style/genre seeds use /database/search and need DISCOGS_TOKEN.
+selection_version: 1
+max_releases: 200
+seeds:
+  - {kind: style, value: "Ambient", max_items: 40}
+  - {kind: style, value: "Downtempo", max_items: 30}
+  - {kind: style, value: "Cool Jazz", max_items: 25}
+  - {kind: style, value: "Folk", max_items: 25}
+  - {kind: style, value: "Minimal", max_items: 25}
+  - {kind: style, value: "Hardcore", max_items: 20}
+  - {kind: style, value: "Contemporary Jazz", max_items: 20}
+  - {kind: genre, value: "Classical", max_items: 15}

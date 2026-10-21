@@ -5,9 +5,13 @@ description = "Natural-language music discovery over Discogs metadata and CLAP a
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "httpx>=0.28.1",
     "numpy>=2.4.6",
+    "pandas>=3.0.6",
     "pydantic>=2.7",
     "pydantic-settings>=2.7",
+    "pyyaml>=6.0.3",
+    "soundfile>=0.14.0",
     "sqlalchemy>=2.0",
 ]
 
@@ -22,6 +26,8 @@ dev = [
     "pre-commit>=3.8",
     "pre-commit-hooks>=4.6",
     "detect-secrets>=1.5",
+    "pandas-stubs>=3.0.5.260914",
+    "types-pyyaml>=6.0.12.20260906",
 ]
 
 [build-system]
@@ -55,6 +61,11 @@ mypy_path = "src"
 packages = ["music_discovery"]
 plugins = ["pydantic.mypy"]
 warn_unreachable = true
+
+[[tool.mypy.overrides]]
+# soundfile ships without type information.
+module = ["soundfile"]
+ignore_missing_imports = true
 
 [tool.pydantic-mypy]
 init_forbid_extra = true

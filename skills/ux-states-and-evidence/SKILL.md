@@ -37,7 +37,7 @@ Show what the system understood (`interpreted_query`): preferences as removable/
 - `description` and `match_reasons` are shown as provided; empty description ⇒ show nothing (no placeholder prose).
 - `evidence_status` / `uncertainty_flags` are always visible in some form: e.g. "No audio analysis — matched on catalog data", "Vocals not verified".
 - `null` fields render as absent, not "Unknown artist" invented text — unless the UI plan defines a neutral placeholder token like "—".
-- Links (`discogs_url`, `preview_url`) render only when non-null; external links open safely (`rel="noopener noreferrer"`). Discogs attribution per the terms recorded in `docs/data-sources.md`.
+- Links (`source_url`, `preview_url`) render only when non-null; external links open safely (`rel="noopener noreferrer"`). MVP attribution: FMA metadata is CC BY 4.0 (credit the FMA dataset) and each track shows its own license next to playback. Discogs attribution (post-MVP) follows the terms recorded in `docs/data-sources.md`.
 - Score breakdown (if the UI plan exposes it) shows missing signals as "not available", never as 0.
 
 ## 4. Feedback UX

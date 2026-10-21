@@ -15,11 +15,12 @@ import numpy as np
 import numpy.typing as npt
 from pydantic import BaseModel
 
-from music_discovery.domain.enums import MatchStatus, RelationshipType
+from music_discovery.domain.enums import DataSource, MatchStatus, RelationshipType
 from music_discovery.domain.ids import ExternalId, IdPrefix
 from music_discovery.domain.models import (
     Artist,
     CrossSourceMatch,
+    ImportRun,
     Label,
     Release,
     SearchSession,
@@ -113,6 +114,10 @@ class RelationshipRepository(Protocol):
         """Relationships where the track is the source, ordered by (type, target)."""
         ...
 
+    def replace_all(self, relationships: Sequence[TrackRelationship]) -> None:
+        """Swap the whole derived graph in one step (recomputation is idempotent)."""
+        ...
+
 
 @runtime_checkable
 class MatchRepository(Protocol):
@@ -121,6 +126,13 @@ class MatchRepository(Protocol):
     def upsert(self, match: CrossSourceMatch) -> None: ...
     def for_track(self, track_id: str) -> list[CrossSourceMatch]: ...
     def list_by_status(self, status: MatchStatus) -> list[CrossSourceMatch]: ...
+
+
+@runtime_checkable
+class ImportRunRepository(Protocol):
+    def save(self, run: ImportRun) -> None: ...
+    def get(self, run_id: str) -> ImportRun | None: ...
+    def latest(self, source: DataSource) -> ImportRun | None: ...
 
 
 # --- Sessions & feedback -------------------------------------------------------------

@@ -59,7 +59,7 @@
 - **Depends on:** P10.T05
 - **Files:** README.md, docs/reproduce.md, docs/architecture.md, Makefile (reproduce target)
 - **Do:**
-  - Clean-machine walkthrough: env setup, FMA download, Discogs bounded import (or cache), embeddings, index, map, API, frontend (mock + real), evaluation. `make reproduce` chains offline steps. Architecture doc explains how each component contributes to a result (base §18 M7).
+  - Clean-machine walkthrough: env setup, FMA download (`fma_small`), FMA import, embeddings, index, map, API, frontend (mock + real), evaluation. `make reproduce` chains offline steps. Architecture doc explains how each component contributes to a result (base §18 M7).
 - **Done when:**
   - Someone (or a fresh clone in a temp dir) follows `docs/reproduce.md` end-to-end and gets the same `metrics.json`.
 - **Status:** [ ]

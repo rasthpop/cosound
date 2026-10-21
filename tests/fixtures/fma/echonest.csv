@@ -1,0 +1,6 @@
+,echonest,echonest,echonest,echonest
+,audio_features,audio_features,audio_features,metadata
+,acousticness,instrumentalness,tempo,artist_name
+track_id,,,,
+2,0.9,0.85,92.0,Synthetic Artist
+140,0.95,,70.0,Other Band

@@ -1,0 +1,14 @@
+{
+  "_comment": "Synthetic minimal release: unknown year (0), no master, no uri, unnumbered tracks.",
+  "id": 900002,
+  "title": "Untitled Tape",
+  "year": 0,
+  "master_id": 0,
+  "artists": [{"id": 0, "name": "Various", "anv": "", "join": "", "role": ""}],
+  "labels": [{"name": "Not On Label", "catno": "none"}],
+  "tracklist": [
+    {"position": "", "type_": "track", "title": "First"},
+    {"position": "", "type_": "track", "title": "Second"},
+    {"position": "", "type_": "index", "title": "Lonely Index"}
+  ]
+}

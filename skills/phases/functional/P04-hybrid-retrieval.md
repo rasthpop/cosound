@@ -11,6 +11,7 @@
 - **Do:**
   - `LexicalIndex` implementation (SQLite FTS5 or in-memory BM25) over titles, artists/aliases, genres, styles, labels, tracklist text, FMA tags; year/era matching; synonym expansion via lexicon hook (stub until P06.T01).
   - Output raw score + `matched_fields` (field, term, source, kind).
+  - **MVP (ADR-0005):** the catalog is FMA-only, so the indexed fields are title, artist name, album title, genre names (`genres`, with the `genres_all` parents) and FMA `tags`. Discogs styles, labels and tracklists are empty until post-MVP.
 - **Done when:**
   - Tests: genre tag match, artist alias match, era range match, lexical "flute" in title flagged as `lexical` not instrument evidence; works with semantic components absent.
 - **Status:** [ ]
@@ -76,7 +77,8 @@
 - **Status:** [ ]
 
 ### P04.T08 — RelationshipRetriever (optional signal)
-- **Skills:** hybrid-retrieval, discogs-ingestion
+- **MVP:** FMA relationships only (same artist, same album); label/master/style edges arrive with Discogs post-MVP.
+- **Skills:** hybrid-retrieval, fma-audio-corpus
 - **Depends on:** P04.T07, P02.T07
 - **Files:** src/music_discovery/retrieval/relationship_retriever.py, tests/unit/retrieval/test_relationship_retriever.py
 - **Do:**

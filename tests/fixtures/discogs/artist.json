@@ -1,0 +1,9 @@
+{
+  "_comment": "Synthetic payload with the shape of GET /artists/{id}.",
+  "id": 700001,
+  "name": "Lena Ostrova (2)",
+  "realname": "Lena Ostrovskaya",
+  "uri": "https://www.discogs.com/artist/700001-Lena-Ostrova-2",
+  "namevariations": ["Lena O.", "L. Ostrova"],
+  "aliases": [{"id": 700099, "name": "Night Reed"}]
+}
