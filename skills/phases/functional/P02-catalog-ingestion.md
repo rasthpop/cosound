@@ -152,11 +152,12 @@
 - **Done when:**
   - `import_runs` has an FMA run for 8,000 tracks with audio-validation counts recorded here, and `catalog_stats.py` reports them.
   - `git status` shows no audio files.
-- **Status:** [~]
+- **Notes:** 2026-10-21: `fma_small.zip` (7,679,594,875 bytes) SHA-1 verified and unpacked: 8,000 clips, 7.5 GB, nothing tracked by git. `import_fma.py --subset small` took 5 min 37 s: 8,000 tracks, **7,993 with validated audio**, 7 rejected and kept as metadata-only: 6 `audio_decode_error` (FMA ids 98565, 98567, 98569, 99134, 108925, 133297) and 1 `audio_silent` (72059). `build_relationships.py`: 170,672 edges (127,426 same_artist, 43,246 same_release). `make_fma_manifest.py --check-audio`: all 20 manifest files decode.
+- **Status:** [x]
 
 ## Exit criteria (Milestone 1)
 - [x] A local catalog can be queried offline, with no Discogs dependency (P02.T09 test green).
 - [x] Track IDs stable across re-imports; cross-source matches carry provenance and confidence (matcher post-MVP).
 - [x] Every track has explicit audio availability.
-- [ ] The full `fma_small` catalog is imported with validated audio (P02.T12).
+- [x] The full `fma_small` catalog is imported with validated audio (P02.T12).
 - [ ] `fma_20_manifest.csv` committed and frozen. *(Committed as a draft; frozen after the owner's listening pass, P02.T10.)*
