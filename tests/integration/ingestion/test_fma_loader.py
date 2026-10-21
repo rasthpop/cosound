@@ -26,6 +26,7 @@ from music_discovery.ingestion.fma_loader import (
     fma_track_id,
     load_echonest,
     load_genres,
+    load_track_urls,
     load_tracks,
 )
 from tests.fakes import FrozenClock, SequentialIdGenerator
@@ -88,6 +89,13 @@ def test_load_tracks_subsets_are_nested() -> None:
 def test_load_tracks_out_of_range_year_is_none() -> None:
     large = {r.fma_track_id: r for r in load_tracks(FIXTURES, subset="large")}
     assert large[123456].year == 1890
+
+
+def test_track_urls_skip_missing_and_invalid() -> None:
+    assert load_track_urls(FIXTURES) == {
+        2: "https://freemusicarchive.org/music/Synthetic_Artist/Synthetic_Album/Low_Tide"
+    }
+    assert load_track_urls(FIXTURES / "nowhere") == {}
 
 
 def test_genres_and_echonest() -> None:
@@ -159,6 +167,7 @@ def run_import(database: Database, data_dir: Path) -> FmaImportReport:
         load_tracks(FIXTURES),
         audio_dir=data_dir / "raw" / "fma" / "fma_small",
         genres=load_genres(FIXTURES),
+        source_urls=load_track_urls(FIXTURES),
     )
 
 
@@ -185,15 +194,22 @@ def test_import_links_metadata_and_validated_audio(database: Database, data_dir:
     assert with_audio.audio_source is DataSource.FMA
     assert with_audio.audio_path == "raw/fma/fma_small/000/000002.mp3"
     assert with_audio.genres == ["Folk"]
+    assert with_audio.tags == ["flute", "calm"]
     assert with_audio.artists[0].name == "Synthetic Artist"
     assert with_audio.release_id is not None
     assert with_audio.audio_available is False, "decodable, but not analyzed until embeddings exist"
     assert tracks.find_by_external_id(fma_ext(ExternalIdKind.TRACK, 2)) == with_audio
 
+    assert with_audio.source_url == (
+        "https://freemusicarchive.org/music/Synthetic_Artist/Synthetic_Album/Low_Tide"
+    )
+    assert with_audio.discogs_url is None
+
     broken = tracks.get(fma_track_id(5))
     assert broken is not None
     assert broken.audio_path is None, "broken file must not be presented as audio"
     assert broken.genres == ["Folk", "Psych-Folk"]
+    assert broken.source_url is None, "empty URL stays missing"
 
     audio = SqlTrackAudioRepository(database).list_all()
     assert [a.track_id for a in audio] == [fma_track_id(2)]

@@ -29,7 +29,13 @@ from music_discovery.infrastructure.repositories import (
     SqlTrackRepository,
 )
 from music_discovery.infrastructure.settings import get_settings
-from music_discovery.ingestion.fma_loader import FmaImporter, FmaWriters, load_genres, load_tracks
+from music_discovery.ingestion.fma_loader import (
+    FmaImporter,
+    FmaWriters,
+    load_genres,
+    load_track_urls,
+    load_tracks,
+)
 
 
 class RandomIds:
@@ -82,7 +88,12 @@ def main() -> int:
         clock=SystemClock(),
         ids=RandomIds(),
     )
-    report = importer.run(records, audio_dir=args.audio_dir, genres=load_genres(args.metadata_dir))
+    report = importer.run(
+        records,
+        audio_dir=args.audio_dir,
+        genres=load_genres(args.metadata_dir),
+        source_urls=load_track_urls(args.metadata_dir),
+    )
     summary = asdict(report) | {"failures": [f.model_dump() for f in report.failures[:50]]}
     print(json.dumps(summary, indent=2))
     return 0

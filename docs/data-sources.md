@@ -1,5 +1,7 @@
 # Data sources: terms, licensing and implications
 
+> **MVP scope:** FMA only ([ADR-0005](adr/0005-fma-only-mvp.md)). The Discogs section stays for the deferred post-MVP import.
+
 Read on 2026-10-20 (P02.T01). Re-check before any large import or before publishing data.
 
 ## Discogs
@@ -61,7 +63,7 @@ Source: https://github.com/mdeff/fma
 - Metadata may be used with attribution (CC BY 4.0): credit the FMA dataset (Defferrard et al.) in the README and evaluation report.
 - Audio stays local under `data/raw/fma/` and is never committed. Each track's license is stored with its `TrackAudio` record and in the evaluation manifest.
 - The evaluation manifest only selects tracks whose license permits research use (P02.T10).
-- For this project only `fma_metadata.zip` is downloaded by script; the 20 evaluation audio files are placed manually at the paths listed in the manifest (see `data/evaluation/README.md`).
+- MVP (ADR-0005): both `fma_metadata.zip` and `fma_small.zip` are downloaded by `scripts/download_fma.py` into the git-ignored `data/raw/fma/`. The full `fma_small` subset is the MVP catalog; the 20 evaluation tracks are a fixed subset of it (`data/evaluation/README.md`).
 
 ## Status
 

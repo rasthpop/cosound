@@ -21,6 +21,10 @@ htmlcov/
 *.sqlite3
 
 # Data: raw/derived data stays local; evaluation inputs are tracked
+# FMA archives and audio (fma_small is ~7.2 GiB) are never committed.
+data/raw/fma/
+*.zip
+*.zip.part
 data/raw/*
 !data/raw/.gitkeep
 data/processed/*

@@ -1,8 +1,10 @@
-# P02 — Catalog Ingestion: Discogs, FMA, Relationships, Matching
+# P02 — Catalog Ingestion: FMA (MVP), Discogs (post-MVP), Relationships, Matching
 
-**Goal:** a local, normalized, provenance-preserving catalog built from a bounded Discogs import and the FMA metadata/audio, queryable with no live Discogs request (Milestone 1).
+**Goal:** a local, normalized, provenance-preserving catalog built from FMA metadata and audio, queryable offline (Milestone 1).
 **base.md:** §2 (metadata vs audio), §10, §12.1, §16.
 **Depends on:** P01
+
+> **MVP scope (ADR-0005, 2026-10-21):** the MVP uses **FMA only**: the full `fma_small` subset (8,000 tracks with audio) is the catalog. Discogs is deferred; its client, normalizer, importer and the cross-source matcher (T02–T04, T08) are built and tested but are not on the MVP path. This deviates from base.md §1 req. 2 / §10; see `docs/adr/0005-fma-only-mvp.md`.
 
 ### P02.T01 — Data-source terms & licensing review
 - **Skills:** discogs-ingestion, fma-audio-corpus
@@ -26,6 +28,7 @@
   - MockTransport tests cover: success, 404, 401, 429 with/without Retry-After, 5xx→success, timeout, malformed JSON, pagination stopping at `max_items`, header-driven slowdown.
   - No test performs network I/O (socket blocked in conftest).
 - **Notes:** One unauthenticated `GET /releases/249504` was made by hand while reading the docs, to confirm the rate-limit headers; nothing from it was stored. Tests never touch the network: `tests/conftest.py` blocks sockets unless a test is marked `live`.
+- **MVP:** post-MVP (ADR-0005). Built and tested; not used by the FMA-only MVP.
 - **Status:** [x]
 
 ### P02.T03 — Discogs normalizer & fixtures
@@ -36,6 +39,7 @@
   - Raw release/master/artist/label → domain entities; tracklist handling (headings, index sub-tracks, durations), artist disambiguators/ANVs/joins, master links, genres/styles with `source="discogs"`, `discogs_url` from API `uri`.
 - **Done when:**
   - Fixture-driven tests for each normalization rule; one release produces the expected number of `Track`s with structured artists.
+- **MVP:** post-MVP (ADR-0005). Built and tested; not used by the FMA-only MVP.
 - **Status:** [x]
 
 ### P02.T04 — Bounded, reproducible Discogs importer
@@ -50,6 +54,7 @@
   - A simulated mid-run failure leaves previously imported releases intact and the failed one absent.
   - `--from-cache-only` works with the network disabled.
 - **Notes:** Added an `ImportRun` model, `ImportRunRepository` (fake + SQL) and an `imp_` id prefix. Seed listings are cached alongside releases, so `--from-cache-only` works for every seed type. Artist aliases and label external ids are merged across releases instead of overwritten.
+- **MVP:** post-MVP (ADR-0005). Built and tested; not used by the FMA-only MVP.
 - **Status:** [x]
 
 ### P02.T05 — FMA acquisition
@@ -72,6 +77,7 @@
 - **Done when:**
   - Fixture tests: header parsing, list columns, path resolution, decode success/failure via a generated sine wav and an empty file, license captured, `audio_available` derived from validation.
 - **Notes:** Decodable audio is represented by a `TrackAudio` record and `Track.audio_path`; `Track.audio_available` stays tied to embeddings (analysis), so a decodable but unanalyzed track is still `metadata_only`. Echonest features are loaded (weak, estimated) but not stored yet. Probe uses `soundfile` (libsndfile with MP3 support) in `audio/`.
+- **MVP:** Imports `Track.source_url` (FMA track page from `raw_tracks.csv`), added with ADR-0005.
 - **Status:** [x]
 
 ### P02.T07 — Relationship graph
@@ -83,6 +89,7 @@
 - **Done when:**
   - Tests on a fixture catalog give the expected edges; no edge without evidence source.
 - **Notes:** Added `RelationshipRepository.replace_all` for idempotent recomputation. Shared-style edges are IDF-weighted, capped at top-k per track; groups above `max_group_size` are skipped.
+- **MVP:** FMA-only relationships for the MVP: same artist and same album (FMA albums are stored as releases). Label, master and shared-style edges activate once Discogs data exists.
 - **Status:** [x]
 
 ### P02.T08 — Conservative FMA ↔ Discogs matcher
@@ -94,6 +101,7 @@
 - **Done when:**
   - Tests: exact match accepted; title-only and artist-only rejected; two equal candidates ⇒ unresolved; duration contradiction ⇒ rejected; FMA IDs never compared to Discogs IDs.
 - **Notes:** Three outcomes are stored: `accepted`, `unresolved` (ambiguous or uncorroborated) and `rejected` (title+artist agree but duration contradicts).
+- **MVP:** post-MVP (ADR-0005). Kept for when Discogs data is imported.
 - **Status:** [x]
 
 ### P02.T09 — Offline catalog query check (M1 acceptance)
@@ -120,6 +128,7 @@
 - **Status:** [!]
 
 ### P02.T11 — Live bounded Discogs import
+- **MVP:** deferred (ADR-0005); first step when Discogs is brought back after the MVP.
 - **Skills:** discogs-ingestion
 - **Depends on:** P02.T04, P02.T01
 - **Files:** .env (local only), config/discogs_selection.yaml
@@ -130,10 +139,24 @@
   - Run `uv run python scripts/import_discogs.py`, then `scripts/build_relationships.py` and `scripts/match_sources.py`; record the counts here.
 - **Done when:**
   - A bounded import run is recorded in `import_runs` with no unexpected errors, and `scripts/catalog_stats.py` shows Discogs tracks.
-- **Status:** [ ]
+- **Status:** [-]
+
+### P02.T12 — Full fma_small catalog with validated audio (MVP catalog)
+- **Skills:** fma-audio-corpus, domain-modeling
+- **Depends on:** P02.T05, P02.T06, P02.T07
+- **Files:** scripts/download_fma.py, scripts/import_fma.py, docs/data-sources.md, .gitignore
+- **Do:**
+  - Download `fma_small.zip` (7.2 GiB), verify its SHA-1 and unpack to `data/raw/fma/fma_small/` (git-ignored).
+  - Import all 8,000 `fma_small` tracks, validating every audio file (exists, decodes, ≥ 5 s, not silent); record the counts and any failing track ids.
+  - Rebuild FMA relationships; check the 20 manifest tracks with `make_fma_manifest.py --check-audio`.
+- **Done when:**
+  - `import_runs` has an FMA run for 8,000 tracks with audio-validation counts recorded here, and `catalog_stats.py` reports them.
+  - `git status` shows no audio files.
+- **Status:** [~]
 
 ## Exit criteria (Milestone 1)
-- [x] A local catalog can be queried without a live Discogs request (P02.T09 test green).
-- [x] Track IDs stable across re-imports; cross-source matches carry provenance and confidence.
+- [x] A local catalog can be queried offline, with no Discogs dependency (P02.T09 test green).
+- [x] Track IDs stable across re-imports; cross-source matches carry provenance and confidence (matcher post-MVP).
 - [x] Every track has explicit audio availability.
+- [ ] The full `fma_small` catalog is imported with validated audio (P02.T12).
 - [ ] `fma_20_manifest.csv` committed and frozen. *(Committed as a draft; frozen after the owner's listening pass, P02.T10.)*

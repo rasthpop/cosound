@@ -5,6 +5,8 @@ description: Building and testing the Discogs catalog side — DiscogsClient (au
 
 # Discogs Ingestion
 
+> **Post-MVP (ADR-0005).** The MVP catalog is FMA-only. Everything in this skill is built and tested (P02.T02–T04, T08) but not on the MVP path; the live bounded import is P02.T11 (deferred). Load this skill only when working on the deferred Discogs tasks.
+
 Spec: `base.md` §2 (metadata vs audio), §10, §16. Discogs is a **catalog source**, never an audio source and never a per-request dependency.
 
 ## 1. Before writing code (task P02.T01)

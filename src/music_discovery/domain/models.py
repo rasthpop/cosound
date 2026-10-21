@@ -106,9 +106,14 @@ class Track(CatalogEntity):
     year: Year | None = None
     genres: list[NonEmptyStr] = []
     styles: list[NonEmptyStr] = []
+    tags: list[NonEmptyStr] = []
+    """Free-form source tags (FMA user tags). Lexical evidence only, never audio facts."""
     labels: list[LabelReference] = []
     duration_seconds: Seconds | None = None
     discogs_url: WebUrl | None = None
+    """Deferred with Discogs (ADR-0005); kept so post-MVP imports need no schema change."""
+    source_url: WebUrl | None = None
+    """Public page of the record in its source catalog (FMA track page for the MVP)."""
     audio_source: DataSource | None = None
     audio_path: str | None = None
     preview_url: WebUrl | None = None

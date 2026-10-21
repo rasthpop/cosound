@@ -36,10 +36,10 @@ skills/phases/
 ## Task block format (keep it parseable)
 
 ```markdown
-### P02.T03 — Discogs API client
-- **Skills:** discogs-ingestion, domain-modeling
-- **Depends on:** P01.T04, P00
-- **Files:** src/music_discovery/ingestion/discogs_client.py, tests/integration/test_discogs_client.py
+### P02.T06 — FMA loader, audio probe & import
+- **Skills:** fma-audio-corpus, domain-modeling
+- **Depends on:** P02.T05, P01.T07
+- **Files:** src/music_discovery/ingestion/fma_loader.py, tests/integration/ingestion/test_fma_loader.py
 - **Do:**
   - …
 - **Done when:**
@@ -47,7 +47,7 @@ skills/phases/
 - **Status:** [ ]
 ```
 
-`Depends on:` accepts task IDs (`P01.T04`) and whole phases (`P00` = every task of that phase), or `—` for none. Statuses: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked.
+`Depends on:` accepts task IDs (`P01.T04`) and whole phases (`P00` = every task of that phase), or `—` for none. Statuses: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked · `[-]` deferred (out of the current scope, e.g. post-MVP; does not block dependants).
 
 ## Changing the plan
 

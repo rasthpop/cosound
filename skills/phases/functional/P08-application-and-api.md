@@ -22,7 +22,7 @@
 - **Depends on:** P06.T10
 - **Files:** src/music_discovery/api/schemas.py, src/music_discovery/api/mapping.py, tests/api/test_schemas.py
 - **Do:**
-  - DTOs per the api-contracts skill (base §13 shapes + outcome, capabilities, warnings, constraint_status, uncertainty_flags, spatial, change_summary); mapping functions domain → DTO; `json_schema_extra` examples covering every outcome/degraded variant.
+  - DTOs per the api-contracts skill (base §13 shapes + outcome, capabilities, warnings, constraint_status, uncertainty_flags, spatial, change_summary). ADR-0005: expose `source_url` (FMA track page) instead of `discogs_url`; mapping functions domain → DTO; `json_schema_extra` examples covering every outcome/degraded variant.
 - **Done when:**
   - Mapping tests: nulls preserved, enums correct, no domain/ORM object leaks; every example validates.
 - **Status:** [ ]
@@ -86,6 +86,17 @@
   - Agent failure (LLM invalid output) ⇒ 200 with fallback; CLAP load failure ⇒ metadata-only with warning; stale/duplicate feedback; large limit rejected; end-to-end against the real small index.
 - **Done when:**
   - All base §17 "API tests" bullets have at least one test; end-to-end test green under `integration`.
+- **Status:** [ ]
+
+### P08.T09 — Licensed audio preview endpoint
+- **Skills:** api-contracts, fma-audio-corpus
+- **Depends on:** P08.T04
+- **Files:** src/music_discovery/api/routes/audio.py, src/music_discovery/application/track_service.py, tests/api/test_audio.py
+- **Do:**
+  - `GET /api/tracks/{track_id}/audio` streams the track's local FMA clip (HTTP range requests, correct content type) only when a validated `TrackAudio` record exists; `preview_url` in DTOs points to it, and stays `null` otherwise.
+  - Paths are resolved only from `TrackAudio.file_path` under `DATA_DIR` (no user-supplied paths; refuse anything that escapes it). The response carries the track's license.
+- **Done when:**
+  - API tests: valid track streams, range request returns 206, track without audio returns 404 envelope, path traversal impossible, license header present.
 - **Status:** [ ]
 
 ## Exit criteria (Milestone 6, backend)

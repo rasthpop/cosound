@@ -55,7 +55,7 @@ Coordinates may also be copied into `Track.spatial_x/y` for convenience, but the
 
 ## 6. Services
 
-- `application/map_service.py`: `list_points(filters, limit, cursor)` — filters `genre`, `style`, `artist_id`, `has_audio`; keyset pagination on `(track_id)`; returns `x, y, title, artist, genre, style, discogs_url, projection_version`. Never returns embeddings.
+- `application/map_service.py`: `list_points(filters, limit, cursor)` — filters `genre`, `style`, `artist_id`, `has_audio`; keyset pagination on `(track_id)`; returns `x, y, title, artist, genre, style, source_url, projection_version`. Never returns embeddings.
 - `spatial/neighbor_service.py`: `neighbors(track_id, k)` via `VectorIndex` (original space), `metric="clap_cosine"` in the response. Track without embedding ⇒ empty list with `reason="no_audio_embedding"` (or a clearly-labeled relationship-based fallback, metric `"catalog_relationship"`).
 
 ## 7. Tests

@@ -9,7 +9,7 @@ from __future__ import annotations
 import ast
 import logging
 import math
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -188,6 +188,21 @@ def load_tracks(metadata_dir: Path, *, subset: str | None = "small") -> list[Fma
     return records
 
 
+def load_track_urls(metadata_dir: Path) -> dict[int, str]:
+    """FMA track page URLs from `raw_tracks.csv` (absent file or value -> no entry)."""
+    path = metadata_dir / "raw_tracks.csv"
+    if not path.is_file():
+        return {}
+    frame = pd.read_csv(path, usecols=["track_id", "track_url"])
+    ids: list[Any] = frame["track_id"].tolist()
+    urls: list[Any] = frame["track_url"].tolist()
+    return {
+        int(tid): str(url)
+        for tid, url in zip(ids, urls, strict=True)
+        if isinstance(url, str) and url.startswith(("http://", "https://"))
+    }
+
+
 def load_genres(metadata_dir: Path) -> dict[int, str]:
     genres = pd.read_csv(metadata_dir / "genres.csv")
     ids: list[Any] = genres["genre_id"].tolist()
@@ -259,7 +274,12 @@ class FmaImporter:
         self._ids = ids
 
     def run(
-        self, records: Sequence[FmaTrackRecord], *, audio_dir: Path, genres: dict[int, str]
+        self,
+        records: Sequence[FmaTrackRecord],
+        *,
+        audio_dir: Path,
+        genres: dict[int, str],
+        source_urls: Mapping[int, str] | None = None,
     ) -> FmaImportReport:
         started = self._clock.now()
         report = FmaImportReport(run_id=self._ids.new(IdPrefix.IMPORT_RUN))
@@ -287,7 +307,8 @@ class FmaImporter:
             elif failure is not None:
                 counts["audio_invalid"] += 1
                 report.failures.append(failure)
-            track, artist, release = self._entities(record, audio, genres, started)
+            url = (source_urls or {}).get(record.fma_track_id)
+            track, artist, release = self._entities(record, audio, genres, started, url)
             with self._w.uow.transaction():
                 if artist is not None:
                     self._w.artists.upsert(artist)
@@ -342,6 +363,7 @@ class FmaImporter:
         audio: TrackAudio | None,
         genres: dict[int, str],
         imported_at: datetime,
+        source_url: str | None,
     ) -> tuple[Track, Artist | None, Release | None]:
         provenance = Provenance(
             source=DataSource.FMA, imported_at=imported_at, method="fma_metadata"
@@ -377,7 +399,9 @@ class FmaImporter:
             release_id=release.id if release else None,
             year=record.year,
             genres=list(dict.fromkeys(names)),
+            tags=list(dict.fromkeys(t.strip() for t in record.tags if t.strip())),
             duration_seconds=record.duration_seconds,
+            source_url=source_url,
             audio_source=DataSource.FMA if audio else None,
             audio_path=audio.file_path if audio else None,
             external_ids=[fma_ext(ExternalIdKind.TRACK, record.fma_track_id)],

@@ -36,7 +36,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.pool import StaticPool
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+"""2: tracks.source_url, tracks.tags (ADR-0005). No migrations: delete a local v1 database."""
 
 metadata = MetaData()
 
@@ -57,9 +58,11 @@ tracks = Table(
     Column("year", Integer),
     Column("genres", JSON, nullable=False),
     Column("styles", JSON, nullable=False),
+    Column("tags", JSON, nullable=False),
     Column("labels", JSON, nullable=False),
     Column("duration_seconds", Float),
     Column("discogs_url", Text),
+    Column("source_url", Text),
     Column("audio_source", String),
     Column("audio_path", Text),
     Column("preview_url", Text),

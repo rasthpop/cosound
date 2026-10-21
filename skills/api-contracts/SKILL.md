@@ -25,6 +25,7 @@ route (api/routes/*.py)  →  application service  →  agents / retrieval / spa
 | `POST /api/search` | query → plate |
 | `GET /api/tracks/{track_id}` | details, links, audio availability, relationships, coordinates |
 | `GET /api/tracks/{track_id}/neighbors?k=` | original-space neighbors |
+| `GET /api/tracks/{track_id}/audio` | stream the local licensed FMA clip (range requests); 404 when no validated audio (ADR-0005) |
 | `POST /api/feedback` | feedback → updated state (+ optionally refreshed plate) |
 | `GET /api/sessions/{session_id}` | session state & history ("what changed") |
 | `GET /api/map/points?limit&cursor&genre&style&artist_id&has_audio` | paginated coordinates |
@@ -51,7 +52,8 @@ route (api/routes/*.py)  →  application service  →  agents / retrieval / spa
 `FeedbackResponse`: `{accepted, reason?, updated_search_state, change_summary: [str], next_action: "REFINE_SEARCH|SHOW_DETAILS|NONE", refreshed?: SearchResponse}`.
 
 Rules:
-- Missing stays `null` (base §13.1). No fabricated `preview_url`/`discogs_url`.
+- Missing stays `null` (base §13.1). No fabricated `preview_url`/`source_url`/`discogs_url`.
+- **MVP (ADR-0005):** tracks expose `source_url` (the FMA track page) instead of `discogs_url`; `preview_url` points to `/api/tracks/{id}/audio` only when a validated `TrackAudio` exists. `discogs_url` returns with Discogs post-MVP.
 - `score` fields are relevance scores in [0,1] **for ordering**, documented as not probabilities.
 - Enum values are UPPER_SNAKE for event types (as in base), lower_snake elsewhere; never change an enum value without a version bump.
 
