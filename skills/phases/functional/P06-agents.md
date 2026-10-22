@@ -25,7 +25,8 @@
   - `QueryAgent.interpret(query, state)`: parser → spec; semantic prompts via prompt builder; session context (previous spec) carried for follow-up queries; clarification only when not actionable or contradictory; never invents catalog entries; never calls retrieval/CLAP/Discogs.
 - **Done when:**
   - All 20 evaluation queries yield valid specs; clarification cases tested; outputs validated by Pydantic in every path.
-- **Status:** [ ]
+- **Notes:** `QueryAgent(lexicon).interpret(query, session)`. Follow-up = the query opens with a `follow_up` cue (new list in `cues.yaml`, loader field `Cues.follow_up`) or answers a pending clarification; anything else is a new search. A refinement appends the follow-up text to `original_query` as a new sentence (owner decision: CLAP and lexical matching see both; a rejected follow-up leaves it unchanged; `SearchSession.original_query` stays the first turn's text) and keeps the feedback-set track ids and diversity, and every hard constraint; new wording overrides earlier soft preferences, a newly stated range replaces the earlier one, and soft vocal wording never weakens an earlier hard choice. A follow-up contradicting an earlier hard constraint returns the previous spec with a clarification question. LLM path is left to P06.T03.
+- **Status:** [x]
 
 ### P06.T03 — OpenRouter LLM adapter & LLM query interpreter
 - **Skills:** agent-orchestration, openrouter-llm

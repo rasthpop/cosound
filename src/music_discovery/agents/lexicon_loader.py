@@ -73,6 +73,7 @@ class Cues:
     with_boost: float
     negative_weight: float
     clause_breaks: frozenset[str]
+    follow_up: frozenset[Phrase]
     range_upper: frozenset[Phrase]
     range_lower: frozenset[Phrase]
     range_between: frozenset[Phrase]
@@ -175,6 +176,7 @@ def _load_cues(data: Mapping[str, Any]) -> Cues:
         with_boost=float(data["with_boost"]),
         negative_weight=float(data["negative_weight"]),
         clause_breaks=frozenset(data["clause_breaks"]),
+        follow_up=_phrases(data["follow_up"]),
         range_upper=_phrases(data["range"]["upper"]),
         range_lower=_phrases(data["range"]["lower"]),
         range_between=_phrases(data["range"]["between"]),

@@ -41,6 +41,10 @@ with_boost: 1.25
 # Negative preferences (soft) start at this weight before intensifiers.
 negative_weight: 0.6
 
+# A query in a session that opens with one of these refines the previous search instead of
+# starting a new one ("more upbeat", "but without vocals"). Used by Agent A only.
+follow_up: [more, less, even, but, also, and, plus, now, instead, rather, same, make it, similar, slightly, a bit, a little]
+
 # Words that end a negation or hard-cue scope (punctuation always does).
 clause_breaks: [but, though, although, however, yet, while, whereas]
 
