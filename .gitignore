@@ -34,6 +34,7 @@ data/embeddings/*
 data/indexes/*
 !data/indexes/.gitkeep
 data/llm_cache/
+data/models/
 
 # Generated artifacts
 artifacts/**
@@ -49,6 +50,8 @@ artifacts/**
 *.ckpt
 *.npy
 *.npz
+*.bin
+*.safetensors
 
 # Node
 node_modules/

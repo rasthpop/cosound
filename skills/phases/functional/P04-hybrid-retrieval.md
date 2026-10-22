@@ -64,6 +64,7 @@
   - MMR with λ from spec diversity × config scale; similarity = audio cosine, fallback catalog Jaccard, same master/release = duplicate; deterministic ties.
 - **Done when:**
   - Tests: λ=1 equals relevance order; first item always top relevance; duplicate versions spread; deterministic output.
+- **Notes (from P03):** the catalog has 13 pairs of identical audio (cosine ≥ 0.9999, FMA double uploads), listed under `duplicate_audio_groups` in `data/indexes/<version>.json`. Treat them as duplicates (similarity 1) so a plate never shows the same recording twice.
 - **Status:** [ ]
 
 ### P04.T07 — HybridRetriever composition, modes & trace

@@ -31,9 +31,9 @@ is audible, and a genre tag does not prove a mood. That is why listening is requ
 
 ### What the owner needs to do
 
-1. **Place the audio.** Copy each listed file to `DATA_DIR/<audio_path>`, e.g.
-   `data/raw/fma/fma_small/076/076075.mp3`. FMA files are named by zero-padded track id; the
-   first three digits are the folder.
+1. **Audio is already in place** once `fma_small` is downloaded (`scripts/download_fma.py --subset small`,
+   ADR-0005): every listed file lives at `DATA_DIR/<audio_path>`, e.g.
+   `data/raw/fma/fma_small/076/076075.mp3`. All 20 decoded on 2026-10-21.
 2. **Check decoding:** `uv run python scripts/make_fma_manifest.py --check-audio`.
 3. **Listen to every track.** For each row set `listening_status` to `confirmed`, or replace
    the row with a better track for that theme (keep the theme, update `selection_reason`

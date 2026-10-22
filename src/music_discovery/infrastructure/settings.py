@@ -52,8 +52,11 @@ class Settings(BaseSettings):
     discogs_user_agent: str = "SemanticMusicDiscovery/0.1"
     discogs_token: SecretStr | None = None
 
-    clap_checkpoint: Path | None = None
-    clap_model_version: str | None = None
+    # ADR-0002: one pinned CLAP checkpoint, fetched by scripts/fetch_clap_model.py
+    clap_checkpoint: Path | None = Path("./data/models/larger_clap_music_and_speech")
+    clap_model_version: str | None = (
+        "laion/larger_clap_music_and_speech@195c3a3e68faebb3e2088b9a79e79b43ddbda76b"
+    )
 
     data_dir: Path = Path("./data")
     artifacts_dir: Path = Path("./artifacts")
