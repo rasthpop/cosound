@@ -9,9 +9,10 @@
 - **Depends on:** P05.T02, P06.T11
 - **Files:** data/evaluation/CHECKSUMS.sha256, data/evaluation/README.md
 - **Do:**
+  - Test judgments follow the documented minimum (`judging_minimum.json`): q02 q04 q05 judged, the other 7 left out and named in the report.
   - Final review of manifest, queries, judgments, feedback cases, split; record checksums; any late change documented with reason (and never after seeing test results).
 - **Done when:**
-  - Checksums committed; `evaluate.py` verifies them before running and refuses on mismatch.
+  - Every test query in the minimum has 20/20 judgments; checksums committed; `evaluate.py` verifies them before running and refuses on mismatch.
 - **Status:** [ ]
 
 ### P10.T02 — Test-split baseline run

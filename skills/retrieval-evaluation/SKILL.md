@@ -13,7 +13,7 @@ Spec: `base.md` §12 (all), §6/§8 evaluation subsections, §17 evaluation test
 |---|---|
 | `fma_20_manifest.csv` | fixed corpus (see `fma-audio-corpus`) |
 | `queries.jsonl` | `{query_id, text, split, intent_notes, expected_attributes: {mood:[…], instrument:[…], …}, expected_hard_constraints:[…], has_relevant_in_corpus: bool|null}` |
-| `judgments.csv` | `query_id, track_id, overall_relevance(0–3), mood_relevance(0–3|), instrument_present(yes|no|uncertain|), constraint_satisfied(yes|no|unknown|), judge, basis, judged_at` |
+| `judgments.csv` | `query_id, fma_track_id, overall_relevance(0–3), mood_relevance(0–3|), instrument_present(yes|no|uncertain|), constraint_satisfied(yes|no|unknown|), judge, basis, judged_at`. Keyed by FMA id so rows match audio files; optional fields only where the query asks for them |
 | `feedback_cases.jsonl` | Agent C cases: initial query, feedback events, expected spec deltas, expected ranking direction |
 | `split.json` | `{dev: [q…10], test: [q…10], seed, created_at}` |
 | `README.md` | selection procedure, judging guidelines, limitations |
@@ -21,7 +21,7 @@ Spec: `base.md` §12 (all), §6/§8 evaluation subsections, §17 evaluation test
 Rules:
 - Queries: the 10 from base §12.2 + 10 more with controlled phrasing variants (synonym swap, negation, hard constraint, vague, contradictory-ish). Write them **before** looking at system output.
 - Judgments: listen to the audio. `basis` records what was heard. Instrument presence never from CLAP output. Judge all 20×20 pairs (400) — manageable, and avoids pooling bias; at minimum all pairs any system ranks in its top-10.
-- Split is by **query**; all judgments of a query live in its split. Fixed once.
+- Split is by **query family** (a query and its rephrasings, `family` in `queries.jsonl`); all judgments of a query live in its split. Fixed once (`scripts/make_split.py`).
 - Tuning (normalization strategy, weights, λ, τ) touches **dev only**; test is run once per reported configuration.
 
 ## 2. Code layout

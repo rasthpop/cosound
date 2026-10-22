@@ -1,0 +1,33 @@
+{
+  "decided_at": "2026-10-22",
+  "decided_by": "owner",
+  "dev": [
+    "q01",
+    "q03",
+    "q06",
+    "q10",
+    "q11",
+    "q12",
+    "q16",
+    "q18"
+  ],
+  "dev_deferred": [
+    "q07",
+    "q08"
+  ],
+  "reason": "Listening time. Dev: q07 (gradual build) and q08 (playful, rhythmically unusual) are left unjudged and out of calibration. Test: only q02 q04 q05 (judged with q01-q06) are judged; the final test run reports means over these 3 queries and lists the other 7 as left out.",
+  "test": [
+    "q02",
+    "q04",
+    "q05"
+  ],
+  "test_deferred": [
+    "q09",
+    "q13",
+    "q14",
+    "q15",
+    "q17",
+    "q19",
+    "q20"
+  ]
+}

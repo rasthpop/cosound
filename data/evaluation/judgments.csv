@@ -1,0 +1,221 @@
+query_id,fma_track_id,overall_relevance,mood_relevance,instrument_present,constraint_satisfied,judge,basis,judged_at
+q01,117668,1,2,uncertain,,taras,latin atmosphere,2026-10-22T11:20:09.814590Z
+q01,35184,1,2,no,,taras,"it is chill, no flute present",2026-10-22T11:20:55.986605Z
+q01,1544,3,3,yes,,taras,flute folk,2026-10-22T11:21:36.350256Z
+q01,115392,0,0,no,,taras,"electronic, sharp music, not chill, flute not present",2026-10-22T11:22:29.140451Z
+q01,110630,1,2,no,,taras,"guitar, melancholic",2026-10-22T11:23:27.557813Z
+q01,45152,2,1,yes,,taras,"flute present, electronic and not chill",2026-10-22T11:24:20.569691Z
+q01,76075,3,2,yes,,taras,not a flute but sounds like it,2026-10-22T11:25:01.493383Z
+q01,11782,0,0,no,,taras,not relevant at all,2026-10-22T11:25:43.264686Z
+q01,42044,0,0,no,,taras,"rock, intense, not relevant at all",2026-10-22T11:26:32.283921Z
+q01,116455,1,1,no,,taras,"it is chill, but no flute",2026-10-22T11:27:16.005468Z
+q01,36615,0,0,no,,taras,"not relevant, no flute present, not chill",2026-10-22T11:29:16.231330Z
+q01,45154,0,0,no,,taras,"not relevant, electronic, not chill",2026-10-22T11:30:04.337664Z
+q01,23156,0,0,no,,taras,"energetic, not chill, flute not present",2026-10-22T11:31:42.745029Z
+q01,97959,0,0,no,,taras,"not relevant, el",2026-10-22T11:33:06.322622Z
+q01,27552,0,1,no,,taras,"a piano and a female voice, emotional",2026-10-22T11:34:29.021455Z
+q01,88846,0,0,no,,taras,"00's or 90's rock, not chill, energetic",2026-10-22T11:35:20.693055Z
+q02,110630,2,2,no,,taras,"guitar, experimental, chill",2026-10-22T11:36:37.288350Z
+q03,110630,0,1,,,taras,"dreamy music, no female vocals",2026-10-22T11:37:38.557335Z
+q04,110630,1,1,,,taras,"not relaxed jazz, but moody",2026-10-22T11:38:19.277270Z
+q01,825,0,0,no,,taras,"intense, aggresive music, with an organ",2026-10-22T11:39:03.154112Z
+q01,107476,1,1,no,,taras,"slow pased rock, indie rock",2026-10-22T11:39:23.998315Z
+q01,716,1,1,uncertain,,taras,scary choir with speech on the background,2026-10-22T11:39:56.220208Z
+q01,29043,0,1,no,,taras,"jumpy chill music, electronic",2026-10-22T11:40:38.429166Z
+q02,11782,0,0,no,,taras,hip hop rapper talking,2026-10-22T11:41:00.958930Z
+q02,45154,3,3,yes,,taras,"glitchy electronic, heavy with vocals",2026-10-22T11:41:22.655310Z
+q02,716,2,1,uncertain,,taras,"folk with a choir, speech on background",2026-10-22T11:42:07.897395Z
+q02,107476,0,0,no,,taras,sunset rock,2026-10-22T11:42:22.528198Z
+q02,27552,0,0,no,,taras,emotional piano with a woman singing,2026-10-22T11:42:38.782485Z
+q02,117668,0,0,no,,taras,latin dub song,2026-10-22T11:42:55.771741Z
+q02,825,1,1,no,,taras,"dark, but not electronic, organ",2026-10-22T11:43:22.881614Z
+q02,23156,0,0,no,,taras,"trumpet, parade song",2026-10-22T11:43:48.388081Z
+q02,97959,1,1,no,,taras,"light electronic music, with drums",2026-10-22T11:44:10.537593Z
+q02,116455,0,0,no,,taras,string instruments with an upbringing vibe,2026-10-22T11:44:28.775599Z
+q02,115392,2,3,yes,,taras,"electronic music with a heavy bassline, synth",2026-10-22T11:44:51.683154Z
+q02,88846,0,0,no,,taras,rock music,2026-10-22T11:45:05.843426Z
+q02,1544,0,1,no,,taras,"dark, slow folk, ambient",2026-10-22T11:45:19.660068Z
+q02,35184,0,1,no,,taras,"lounge like, evening, chill",2026-10-22T11:45:38.948761Z
+q02,45152,3,3,yes,,taras,"electronic with a strong baseline, slightly optimistic",2026-10-22T11:46:01.566688Z
+q02,36615,0,0,no,,taras,jumpy pop music with autotune,2026-10-22T11:46:34.134727Z
+q02,29043,2,2,yes,,taras,"dark electronic, not aggresive, chill",2026-10-22T11:46:55.382123Z
+q02,76075,0,0,no,,taras,"folk, instrumental, ukrainian",2026-10-22T11:47:13.822072Z
+q02,42044,0,0,no,,taras,heavy rock,2026-10-22T11:47:34.144639Z
+q03,27552,3,3,,,taras,dreamy piano acoustic music with a woman singing,2026-10-22T11:48:00.014520Z
+q03,117668,0,0,,,taras,spanish/brazilian summer music,2026-10-22T11:48:38.481620Z
+q03,35184,2,2,,,taras,"dreamy chill music, feels electronic",2026-10-22T11:48:54.979222Z
+q03,11782,0,0,,,taras,hip hop rap,2026-10-22T11:49:09.980151Z
+q03,825,0,0,,,taras,aggresive instrumental jumpy music,2026-10-22T11:49:20.115742Z
+q03,1544,2,2,,,taras,dreamy music with a flute,2026-10-22T11:49:47.446844Z
+q03,116455,1,1,,,taras,upbringing,2026-10-22T11:50:19.643861Z
+q03,29043,0,1,,,taras,"electronic, moody",2026-10-22T11:50:40.717588Z
+q03,45154,0,0,,,taras,strong electronic,2026-10-22T11:50:51.658429Z
+q03,97959,2,1,,,taras,"violin with dums, soundtrack",2026-10-22T11:51:11.337526Z
+q03,23156,0,0,,,taras,"trumpet, drums",2026-10-22T11:52:18.507953Z
+q03,88846,0,0,,,taras,"rock, backdoor vibe",2026-10-22T11:52:30.785686Z
+q03,76075,0,0,,,taras,folk instruments of ukraine,2026-10-22T11:52:44.109233Z
+q03,716,1,2,,,taras,"dreamy, female vocals",2026-10-22T11:52:58.985130Z
+q03,36615,0,0,,,taras,"pop, optimistic",2026-10-22T11:53:15.205068Z
+q03,115392,0,0,,,taras,strong synth pop,2026-10-22T11:53:21.248103Z
+q03,42044,0,0,,,taras,hard rock,2026-10-22T11:53:27.160846Z
+q03,107476,0,0,,,taras,slow rock,2026-10-22T11:53:34.592451Z
+q03,45152,0,0,,,taras,intense instrumental electronic,2026-10-22T11:53:52.957809Z
+q04,115392,0,0,,,taras,"electronic synth, challenging",2026-10-22T12:10:27.906462Z
+q04,27552,1,1,,,taras,"somewhat emotional, piano, vocal",2026-10-22T12:10:40.691707Z
+q04,716,0,0,,,taras,experimental ambient,2026-10-22T12:11:08.629235Z
+q04,107476,0,0,,,taras,rock,2026-10-22T12:11:13.332589Z
+q04,42044,0,0,,,taras,"hard rock, american",2026-10-22T12:11:22.048269Z
+q04,23156,0,0,,,taras,"instrumetal, happy",2026-10-22T12:11:35.954250Z
+q04,117668,0,0,,,taras,latino dub,2026-10-22T12:11:59.408242Z
+q04,45154,0,0,,,taras,jumpy glitch electronic,2026-10-22T12:12:17.725405Z
+q04,97959,1,1,,,taras,"relaxed, drums",2026-10-22T12:12:30.004339Z
+q04,35184,2,2,,,taras,relaxed lounge music,2026-10-22T12:12:42.258549Z
+q04,76075,0,0,,,taras,folk music,2026-10-22T12:12:48.840330Z
+q04,29043,0,1,,,taras,"chill, warm electronic",2026-10-22T12:12:57.300058Z
+q04,116455,3,2,,,taras,"relaxed, windy",2026-10-22T12:13:39.995503Z
+q04,45152,0,0,,,taras,"intense electronic, drumming",2026-10-22T12:13:51.586994Z
+q04,36615,1,0,,,taras,optimistic pop,2026-10-22T12:14:01.372230Z
+q04,1544,2,1,,,taras,slow folk,2026-10-22T12:14:09.992893Z
+q04,825,0,0,,,taras,"intense, instrumental",2026-10-22T12:14:16.225221Z
+q04,11782,0,0,,,taras,"hip hop acapella, no song",2026-10-22T12:14:25.216721Z
+q04,88846,0,0,,,taras,indie rock,2026-10-22T12:14:55.690129Z
+q05,11782,0,0,no,,taras,hip hop acapella with no beat,2026-10-22T12:15:19.710336Z
+q05,36615,1,0,no,,taras,soul drums,2026-10-22T12:15:48.329135Z
+q05,110630,0,0,no,,taras,chill music with a guitar,2026-10-22T12:16:41.046692Z
+q05,23156,0,0,no,,taras,rfast trumpet on a drum tempo,2026-10-22T12:17:39.075637Z
+q05,115392,2,2,yes,,taras,aggresive synth music,2026-10-22T12:18:02.728162Z
+q05,97959,1,1,uncertain,,taras,"acoustic, medium pace",2026-10-22T12:19:46.082512Z
+q05,29043,2,2,no,,taras,"fast, relaxed percussion",2026-10-22T12:20:07.338618Z
+q05,117668,2,2,yes,,taras,fast tempo hispanic music,2026-10-22T12:20:20.880252Z
+q05,35184,1,0,no,,taras,slow percussion relaxed music,2026-10-22T12:20:36.654511Z
+q05,45152,1,2,yes,,taras,"flutes and drums, fast pace",2026-10-22T12:21:03.421131Z
+q05,716,0,0,no,,taras,experimental vocal ambient,2026-10-22T12:21:17.219756Z
+q05,825,3,3,yes,,taras,fast aggresive music,2026-10-22T12:21:32.629891Z
+q05,88846,2,2,yes,,taras,"somewhat aggressive percussion, moderate fast pace",2026-10-22T12:21:52.432777Z
+q05,27552,0,0,no,,taras,"not fast, slow, relaxed",2026-10-22T12:22:03.350471Z
+q05,1544,0,0,no,,taras,folk ambient,2026-10-22T12:22:13.194978Z
+q05,116455,1,1,no,,taras,"moderate pace, not aggresive",2026-10-22T12:22:24.673902Z
+q05,45154,3,3,yes,,taras,aggresive fast electronic music,2026-10-22T12:22:46.189781Z
+q05,76075,1,1,no,,taras,folk with drumming,2026-10-22T12:22:58.435572Z
+q05,42044,3,3,yes,,taras,fast and aggressive hard rock,2026-10-22T12:23:09.965935Z
+q05,107476,1,1,no,,taras,sad rock,2026-10-22T12:23:18.682859Z
+q06,45152,0,1,,yes,taras,"vocals present, song is not calm",2026-10-22T12:25:27.385899Z
+q06,27552,0,0,,no,taras,female vocals on the piano,2026-10-22T12:25:44.776542Z
+q06,116455,3,3,,yes,taras,calm acoustic without vocals,2026-10-22T12:26:19.347456Z
+q06,117668,0,0,,no,taras,vocals present and intense drums,2026-10-22T12:26:34.638306Z
+q06,110630,3,3,,yes,taras,"no vocals present, guitar playing",2026-10-22T12:26:50.073102Z
+q06,97959,2,2,,yes,taras,"no vocals, somewhat calm",2026-10-22T12:27:01.481875Z
+q06,35184,2,2,,yes,taras,vocals present,2026-10-22T12:27:41.873016Z
+q06,107476,0,0,,no,taras,"vocals are not present, not calm",2026-10-22T12:28:38.822671Z
+q06,45154,0,0,,no,taras,aggressive electronic with vocals,2026-10-22T12:28:50.642578Z
+q06,42044,0,0,,no,taras,hard rock with vocals,2026-10-22T12:29:01.350768Z
+q06,115392,0,1,,yes,taras,"not calm, vocals not present",2026-10-22T12:29:22.302646Z
+q06,11782,0,0,,no,taras,the song is only vocals,2026-10-22T12:29:34.264466Z
+q06,36615,0,0,,no,taras,"vocals present, autotune",2026-10-22T12:29:48.733618Z
+q06,825,0,0,,yes,taras,not calm,2026-10-22T12:29:56.294763Z
+q06,1544,3,2,,yes,taras,"no vocals, slow and calm",2026-10-22T12:30:09.583547Z
+q06,716,0,0,,no,taras,mostly composed of vocal elements,2026-10-22T12:30:27.402873Z
+q06,23156,1,1,,yes,taras,"not calm, no vocals",2026-10-22T12:30:40.537590Z
+q06,88846,0,0,,no,taras,"energized, with vocals",2026-10-22T12:30:50.755012Z
+q06,76075,2,1,,yes,taras,"somewhat calm, no vocals",2026-10-22T12:31:02.051043Z
+q06,29043,1,2,,no,taras,"calm, with vocals",2026-10-22T12:31:13.904333Z
+q10,107476,0,0,no,,taras,no piano and the music is quite energetic,2026-10-22T12:39:52.009418Z
+q10,45154,0,0,no,,taras,aggressive music with no piano,2026-10-22T12:40:55.395899Z
+q10,116455,0,0,no,,taras,"no piano, guitar mostly, optimistic",2026-10-22T12:41:09.821593Z
+q10,117668,0,0,no,,taras,"no piano, energetic happy music",2026-10-22T12:41:19.860949Z
+q10,45152,1,1,no,,taras,no piano,2026-10-22T12:41:33.864542Z
+q10,97959,0,0,no,,taras,"no piano, challenging music",2026-10-22T12:41:56.526443Z
+q10,36615,0,0,no,,taras,autotune pop,2026-10-22T12:42:13.568070Z
+q10,825,0,0,no,,taras,"no piano, aggressive music",2026-10-22T12:42:22.329344Z
+q10,42044,0,0,no,,taras,"hard rock with no piano, screaming",2026-10-22T12:42:35.358181Z
+q10,23156,2,1,uncertain,,taras,"piano is present but it's jumpy, not melancholic",2026-10-22T12:43:01.753963Z
+q10,110630,2,3,no,,taras,"melancholic, no piano",2026-10-22T12:43:12.310514Z
+q10,29043,1,1,no,,taras,"no piano, eletronic, somewhat melancholic",2026-10-22T12:43:26.330690Z
+q10,1544,2,2,no,,taras,"melancholic, no piano",2026-10-22T12:43:37.142647Z
+q10,115392,0,0,no,,taras,"aggressive, no piano",2026-10-22T12:43:45.117393Z
+q10,11782,0,0,no,,taras,"not melancholic, acapella only",2026-10-22T12:43:53.483800Z
+q10,76075,0,0,no,,taras,not melancholic folk without piano,2026-10-22T12:44:08.402835Z
+q10,35184,1,2,uncertain,,taras,soft piano is present but it's not melancholic,2026-10-22T12:44:35.455881Z
+q10,716,1,2,no,,taras,"somewhat melancholic, no piano",2026-10-22T12:44:53.732591Z
+q10,27552,3,3,yes,,taras,soft piano and melancholic vocal,2026-10-22T12:45:06.315551Z
+q10,88846,0,0,no,,taras,rock,2026-10-22T12:45:12.099098Z
+q11,97959,0,2,no,,taras,relaxed soundtrack,2026-10-22T12:45:52.958161Z
+q11,117668,0,0,no,,taras,energetic latin music,2026-10-22T12:46:05.810838Z
+q11,45154,0,0,no,,taras,aggressive electronic,2026-10-22T12:46:22.073918Z
+q11,825,0,0,no,,taras,aggressive fast temp instrumental,2026-10-22T12:46:33.705335Z
+q11,29043,1,1,uncertain,,taras,"relaxed music, flute might be used in a synth",2026-10-22T12:46:54.380219Z
+q11,11782,0,0,no,,taras,vocal only,2026-10-22T12:47:00.354789Z
+q11,110630,1,2,no,,taras,"relaxed, no flute",2026-10-22T12:47:14.678983Z
+q11,23156,2,2,yes,,taras,some flutes are present,2026-10-22T12:47:28.788620Z
+q11,27552,0,0,no,,taras,piano with vocal only,2026-10-22T12:47:39.276134Z
+q11,1544,2,2,yes,,taras,"flute or similar instrument present, relaxing, melancholic",2026-10-22T12:47:58.196877Z
+q11,716,1,1,no,,taras,"intense, vocal, ambient",2026-10-22T12:48:12.812235Z
+q11,115392,0,0,no,,taras,synth,2026-10-22T12:48:21.625516Z
+q11,116455,0,0,no,,taras,"acoustic, no flute",2026-10-22T12:48:33.015093Z
+q11,107476,0,0,no,,taras,rock without flute,2026-10-22T12:48:42.829095Z
+q11,76075,2,1,yes,,taras,"flute present or similar instrument, happy tone",2026-10-22T12:49:02.253509Z
+q11,35184,2,1,no,,taras,"relaxed, no flute",2026-10-22T12:49:12.963857Z
+q11,36615,0,0,no,,taras,pop with autotune,2026-10-22T12:49:23.888223Z
+q11,45152,2,1,yes,,taras,"intense, flute present",2026-10-22T12:49:37.250530Z
+q11,88846,0,0,no,,taras,rock,2026-10-22T12:49:47.993783Z
+q11,42044,0,0,no,,taras,"metal, no flute, not relaxing",2026-10-22T12:49:56.484445Z
+q12,1544,2,,,yes,taras,"instrumental, not electronic, no vocals",2026-10-22T12:50:51.399823Z
+q12,42044,0,,,no,taras,hard rock metal,2026-10-22T12:51:05.283898Z
+q12,27552,0,,,no,taras,vocals with a piano,2026-10-22T12:51:18.012661Z
+q12,45154,1,,,no,taras,"electronic, instrumental, vocals present, glitchy",2026-10-22T12:51:32.436876Z
+q12,88846,0,,,no,taras,indie,2026-10-22T12:51:39.204605Z
+q12,110630,2,,,yes,taras,"no vocals, guitar only, not electronic",2026-10-22T12:51:55.752685Z
+q12,45152,2,,,no,taras,"vocals present, instrumental electronicmusic",2026-10-22T12:52:41.976899Z
+q12,23156,1,,,yes,taras,not electronic,2026-10-22T12:52:52.331917Z
+q12,116455,1,,,yes,taras,not electronical,2026-10-22T12:52:59.459760Z
+q12,115392,3,,,yes,taras,electronic synth without vocals,2026-10-22T12:53:15.812402Z
+q12,11782,0,,,no,taras,"not electronic, vocals only",2026-10-22T12:53:24.573142Z
+q12,76075,1,,,no,taras,"hard constraint satisfied, not electronic",2026-10-22T12:53:44.571538Z
+q12,117668,0,,,no,taras,hispanic vocals,2026-10-22T12:54:00.815530Z
+q12,107476,0,,,no,taras,rock,2026-10-22T12:54:18.609748Z
+q12,825,2,,,yes,taras,"no vocals, only instrumental",2026-10-22T12:54:33.959454Z
+q12,36615,0,,,no,taras,electronic with vocals,2026-10-22T12:54:42.333514Z
+q12,35184,2,,,yes,taras,instrumental without vocals,2026-10-22T12:54:56.774839Z
+q12,716,1,,,no,taras,consists mostly of vocals,2026-10-22T12:55:10.361004Z
+q12,29043,1,,,no,taras,"vocals present, electronic instrumental",2026-10-22T12:55:21.978802Z
+q12,97959,1,,,yes,taras,"instrumental electronic without vocals, good relevance",2026-10-22T12:55:39.249877Z
+q16,42044,0,0,no,unknown,taras,hard rock,2026-10-22T12:56:23.682568Z
+q16,76075,0,1,no,unknown,taras,folk without piano,2026-10-22T12:56:54.710458Z
+q16,35184,1,1,yes,unknown,taras,unknown,2026-10-22T12:57:45.817588Z
+q16,825,0,0,no,unknown,taras,aggressive instrumental,2026-10-22T12:58:05.338501Z
+q16,110630,0,0,no,unknown,taras,guitar instrumental,2026-10-22T12:58:29.743982Z
+q16,117668,0,0,no,unknown,taras,hispanic music,2026-10-22T12:58:51.506393Z
+q16,45154,0,0,no,unknown,taras,electronic glitchy,2026-10-22T12:59:28.442680Z
+q16,11782,0,0,no,unknown,taras,hip hop acapella,2026-10-22T12:59:41.452115Z
+q16,36615,0,0,uncertain,unknown,taras,"autotune piano present, not calm",2026-10-22T13:00:05.075188Z
+q16,29043,0,1,no,unknown,taras,electronic with vocals,2026-10-22T13:00:21.781052Z
+q16,88846,0,0,no,unknown,taras,indie rock,2026-10-22T13:02:19.022132Z
+q16,716,0,0,no,unknown,taras,experimental choir,2026-10-22T13:02:41.189082Z
+q16,1544,1,1,no,unknown,taras,ambient,2026-10-22T13:02:53.820547Z
+q16,97959,0,0,no,unknown,taras,violin sountrack,2026-10-22T13:04:38.313615Z
+q16,45152,0,0,no,unknown,taras,electronic flutes and glitches,2026-10-22T13:04:52.461140Z
+q16,107476,0,0,no,unknown,taras,rock,2026-10-22T13:05:11.044088Z
+q16,115392,0,0,no,unknown,taras,"electronic, not relevant",2026-10-22T13:05:19.427799Z
+q16,23156,1,0,yes,unknown,taras,not calm but piano present,2026-10-22T13:05:35.481594Z
+q16,27552,2,2,yes,unknown,taras,piano piece with a vocal,2026-10-22T13:05:51.835655Z
+q16,116455,0,1,no,unknown,taras,calm guitar piece,2026-10-22T13:06:09.031698Z
+q18,45152,3,,,,taras,electronic with glitching and intrusments,2026-10-22T13:06:28.505097Z
+q18,116455,1,,,,taras,"calm, not energetic",2026-10-22T13:06:36.991525Z
+q18,42044,2,,,,taras,"rock, energetic",2026-10-22T13:06:44.841779Z
+q18,107476,1,,,,taras,slow pace rock,2026-10-22T13:06:49.550593Z
+q18,716,0,,,,taras,"not dance, more experimental",2026-10-22T13:06:56.867495Z
+q18,115392,3,,,,taras,synth dance track,2026-10-22T13:07:02.553632Z
+q18,36615,1,,,,taras,pop dance track,2026-10-22T13:07:11.641749Z
+q18,11782,0,,,,taras,acapell only,2026-10-22T13:07:17.002782Z
+q18,117668,3,,,,taras,energetic hispanic track,2026-10-22T13:07:26.529762Z
+q18,35184,0,,,,taras,"chill, trip hop",2026-10-22T13:07:56.738810Z
+q18,27552,0,,,,taras,not a dance track,2026-10-22T13:08:01.957043Z
+q18,23156,3,,,,taras,"energetic, instrumental dance",2026-10-22T13:08:09.700962Z
+q18,97959,1,,,,taras,chill dance,2026-10-22T13:08:14.263698Z
+q18,29043,3,,,,taras,energetic but calm dance,2026-10-22T13:08:21.658653Z
+q18,110630,0,,,,taras,more ambient,2026-10-22T13:08:37.103808Z
+q18,825,1,,,,taras,aggressive,2026-10-22T13:08:46.474073Z
+q18,1544,0,,,,taras,"ambient folk, not for dancing",2026-10-22T13:08:56.536878Z
+q18,88846,2,,,,taras,suits for dancing,2026-10-22T13:09:03.993556Z
+q18,45154,3,,,,taras,aggressive and energetic,2026-10-22T13:09:11.793499Z
+q18,76075,2,,,,taras,energetic yet calm,2026-10-22T13:09:21.498044Z

@@ -1,6 +1,6 @@
-# Hybrid retrieval configuration (P04). Starting values, not tuned: P05.T06 calibrates
-# normalization, weights and diversity on the dev split only and bumps weights_version.
-weights_version: "w0-initial"
+# Hybrid retrieval configuration (P04). Calibrated on the dev split on 2026-10-22 (P05.T06,
+# docs/calibration.md): the starting values scored best, so only weights_version changed.
+weights_version: "w1-dev-2026-10-22"
 
 weights:
   semantic: 0.6

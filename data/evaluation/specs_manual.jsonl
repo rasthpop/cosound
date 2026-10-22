@@ -8,3 +8,13 @@
 {"query_id": "q08", "spec": {"original_query": "Something playful and rhythmically unusual.", "mood_preferences": [{"value": "playful", "weight": 0.8}]}}
 {"query_id": "q09", "spec": {"original_query": "Minimal electronic music with repetitive rhythms.", "genre_preferences": [{"value": "minimal electronic", "weight": 0.9}]}}
 {"query_id": "q10", "spec": {"original_query": "Melancholic music with soft piano.", "mood_preferences": [{"value": "melancholic", "weight": 0.8}], "instrument_preferences": [{"value": "piano", "weight": 1.0}]}}
+{"query_id": "q11", "spec": {"original_query": "Something relaxed with flutes.", "mood_preferences": [{"value": "relaxed", "weight": 0.7}], "instrument_preferences": [{"value": "flute", "weight": 1.0}]}}
+{"query_id": "q12", "spec": {"original_query": "Instrumental electronic music, no vocals at all.", "genre_preferences": [{"value": "electronic", "weight": 0.8}], "vocal_preferences": "excluded", "hard_constraints": [{"attribute": "vocals", "operator": "excluded"}]}}
+{"query_id": "q13", "spec": {"original_query": "Upbeat folk music.", "mood_preferences": [{"value": "upbeat", "weight": 0.8}], "genre_preferences": [{"value": "folk", "weight": 0.8}]}}
+{"query_id": "q14", "spec": {"original_query": "Music for a rainy afternoon."}}
+{"query_id": "q15", "spec": {"original_query": "Loud rock without any electronic sounds.", "genre_preferences": [{"value": "rock", "weight": 0.8}], "energy_preferences": [{"value": "loud", "weight": 0.8}], "negative_preferences": [{"value": "electronic", "weight": 0.6}]}}
+{"query_id": "q16", "spec": {"original_query": "A calm piano piece under three minutes.", "mood_preferences": [{"value": "calm", "weight": 0.8}], "instrument_preferences": [{"value": "piano", "weight": 1.0}], "hard_constraints": [{"attribute": "duration", "operator": "range", "range": [null, 180]}]}}
+{"query_id": "q17", "spec": {"original_query": "Hip-hop beats without rapping.", "genre_preferences": [{"value": "hip-hop", "weight": 0.8}], "vocal_preferences": "excluded", "hard_constraints": [{"attribute": "vocals", "operator": "excluded"}]}}
+{"query_id": "q18", "spec": {"original_query": "An energetic dance track.", "energy_preferences": [{"value": "energetic", "weight": 0.8}], "genre_preferences": [{"value": "dance", "weight": 0.8}]}}
+{"query_id": "q19", "spec": {"original_query": "Mellow acoustic guitar.", "mood_preferences": [{"value": "mellow", "weight": 0.8}], "instrument_preferences": [{"value": "guitar", "weight": 1.0}], "texture_preferences": [{"value": "acoustic", "weight": 0.8}]}}
+{"query_id": "q20", "spec": {"original_query": "Something chill but also aggressive.", "mood_preferences": [{"value": "chill", "weight": 0.6}, {"value": "aggressive", "weight": 0.6}]}}
