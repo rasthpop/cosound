@@ -44,9 +44,9 @@ values as `w0-initial`**: semantic 0.6 / metadata 0.4, semantic normalization `m
   candidate is missing a modality. It stays 0 and is untested on this corpus.
 - Not tuned, deliberately: the MMR scale (0.6), because diversity only acts on specs that ask
   for it and nDCG@5 does not reward it, and the relationship weight (0), because the relationship
-  signal only runs for specs with reference tracks and no evaluation query has one. There is no semantic-strength
-  threshold τ in the code: "no confident match" is only reached when hard constraints leave
-  nothing. A τ would be a new config field, and 8 queries are too few to set it.
+  signal only runs for specs with reference tracks and no evaluation query has one. The semantic strength
+  threshold τ is not a retrieval parameter: it sets the strength bands of track descriptions
+  (grounded-explanations) and does not exist until P06.T05, which sets it on dev only.
 - Dev-only: `calibrate()` refuses any split but dev, and the test split was not run.
 
 ## Results

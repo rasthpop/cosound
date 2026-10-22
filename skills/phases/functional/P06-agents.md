@@ -54,6 +54,7 @@
 - **Files:** src/music_discovery/descriptions/evidence_builder.py, src/music_discovery/descriptions/claim_validator.py, src/music_discovery/descriptions/description_service.py, config/descriptions.yaml, tests/unit/descriptions/*.py
 - **Do:**
   - Build `TrackEvidence` from candidate + trace + catalog; strength bands; template generator for `description` + `match_reasons`; validator with forbidden lexicon and claim coverage; conservative/None output when evidence is thin.
+  - τ (strength-band threshold) is config, not calibrated in P05: choose it from dev-split queries only, never test, and record the choice in `docs/calibration.md`.
 - **Done when:**
   - Golden tests; forbidden phrasing rejected; no-audio track never gets sound descriptors; every template sentence maps to an evidence item.
 - **Status:** [ ]
