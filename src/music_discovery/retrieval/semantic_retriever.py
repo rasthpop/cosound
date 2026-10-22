@@ -108,11 +108,11 @@ class SemanticRetriever:
         if isinstance(vectors, str):
             return SemanticResult(status="unavailable", model_id=index.model_id, reason=vectors)
 
+        limit = cfg.top_k if k is None else k
+        per_query = max(cfg.per_query_pool, limit)  # never gather fewer candidates than asked for
         pool: set[str] = set()
         for vector in vectors:
-            pool.update(
-                t for t, _ in index.search(vector, cfg.per_query_pool, restrict_to=restrict_to)
-            )
+            pool.update(t for t, _ in index.search(vector, per_query, restrict_to=restrict_to))
         if restrict_to is not None:
             pool.update(t for t in restrict_to if t in index)
 
@@ -129,7 +129,6 @@ class SemanticRetriever:
             scored.append((float(weighted[best]), float(cosines[best]), track_id, queries[best]))
 
         scored.sort(key=lambda item: (-item[0], item[2]))
-        limit = cfg.top_k if k is None else k
         hits = [
             SemanticHit(track_id=t, rank=i, score=s, raw_cosine=c, best_query=q)
             for i, (s, c, t, q) in enumerate(scored[:limit], start=1)

@@ -126,3 +126,9 @@ def test_deterministic_ties() -> None:
     twins = {"trk_b": text_vec(QUERY), "trk_a": text_vec(QUERY)}
     result = SemanticRetriever(FakeEncoder(dim=DIM), BruteForceVectorIndex(twins)).retrieve(spec())
     assert [h.track_id for h in result.hits] == ["trk_a", "trk_b"]
+
+
+def test_large_k_is_not_capped_by_the_candidate_pool() -> None:
+    result = retriever(SemanticConfig(per_query_pool=3)).retrieve(spec(), k=len(VECTORS))
+    assert len(result.hits) == len(VECTORS)
+    assert [h.rank for h in result.hits] == list(range(1, len(VECTORS) + 1))
