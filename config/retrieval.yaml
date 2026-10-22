@@ -1,0 +1,31 @@
+# Hybrid retrieval configuration (P04). Starting values, not tuned: P05.T06 calibrates
+# normalization, weights and diversity on the dev split only and bumps weights_version.
+weights_version: "w0-initial"
+
+weights:
+  semantic: 0.6
+  metadata: 0.4
+  relationship: 0.0        # off until the evaluation shows it helps (P04.T08, P05.T06)
+
+normalization:
+  semantic: minmax         # CLAP cosines live in a narrow band; rescale within the pool
+  metadata: max_scale      # BM25 score / best score in the pool; no match stays 0
+  relationship: max_scale
+  min_pool: 3
+
+constraints:
+  unknown: keep_flagged    # keep_flagged | demote | exclude
+  unknown_demotion: 0.5
+
+diversity:
+  scale: 0.6               # MMR lambda = 1 - spec.diversity * scale
+  duplicate_cosine: 0.9999 # identical audio (FMA double uploads) is never shown twice
+
+penalties:
+  negative_reference: 0.3
+  negative_preference: 0.2
+
+coverage_penalty_gamma: 0.0
+pool_size: 100
+semantic_top_k: 100
+metadata_top_k: 100

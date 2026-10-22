@@ -14,7 +14,8 @@
   - **MVP (ADR-0005):** the catalog is FMA-only, so the indexed fields are title, artist name, album title, genre names (`genres`, with the `genres_all` parents) and FMA `tags`. Discogs styles, labels and tracklists are empty until post-MVP.
 - **Done when:**
   - Tests: genre tag match, artist alias match, era range match, lexical "flute" in title flagged as `lexical` not instrument evidence; works with semantic components absent.
-- **Status:** [ ]
+- **Notes:** In-memory field-weighted BM25 (no new dependency). `LexicalIndex` protocol gained `matches()` (fake updated). Era preferences ("80s", "1980s") match the year and add a configurable bonus. Synonym hook is identity until P06.
+- **Status:** [x]
 
 ### P04.T02 — CandidateMerger
 - **Skills:** hybrid-retrieval
@@ -24,7 +25,7 @@
   - Union by track id, per-source (raw score, rank), `retrieval_sources`, back-fill scores for `not_retrieved` candidates (semantic `restrict_to`, metadata recompute), `not_available` ⇒ `None`; pool size config.
 - **Done when:**
   - Tests: dedupe, provenance preserved, back-fill vs not-available distinguished, pool cap honored.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P04.T03 — Score normalization strategies
 - **Skills:** hybrid-retrieval
@@ -34,7 +35,8 @@
   - `minmax`, `rank`, `zscore_sigmoid`, `calibrated` (params from config); ignore missing values; degenerate-pool fallback to `rank` with a trace note.
 - **Done when:**
   - Tests per strategy, missing values untouched, degenerate pools fall back and log.
-- **Status:** [ ]
+- **Notes:** Added a `max_scale` strategy (x / best in pool, "no match" stays 0) for BM25 metadata scores; minmax would turn a no-match pool into rank noise.
+- **Status:** [x]
 
 ### P04.T04 — Hard-constraint evaluation & no-confident-match
 - **Skills:** hybrid-retrieval, domain-modeling
@@ -44,7 +46,8 @@
   - Per-constraint evaluators returning `ConstraintResult(status, evidence)`; reliable vs weak evidence table from the skill; `unknown` policy (`keep_flagged`/`demote`/`exclude`); VIOLATED always excluded; empty result ⇒ `NO_CONFIDENT_MATCH` with reasons (never relax silently).
 - **Done when:**
   - Tests: top-scoring violator excluded; unknown handling per policy; weak evidence never decides; NO_CONFIDENT_MATCH returned with constraint list.
-- **Status:** [ ]
+- **Notes:** MVP evidence: vocals decided only by the FMA genre "Instrumental"; instrument and tempo always UNKNOWN; echonest/CLAP never decide (and are not loaded, so not flagged either).
+- **Status:** [x]
 
 ### P04.T05 — HybridRanker & retrieval config
 - **Skills:** hybrid-retrieval
@@ -54,7 +57,8 @@
   - Weighted sum with renormalization over available signals, optional `coverage_penalty`, negative-reference and negative-preference terms, excluded ids; `ScoreBreakdown` with `weights_version`; config loaded/validated (weights, normalization, pool size, constraint policy, λ, thresholds).
 - **Done when:**
   - Tests: missing-modality scenarios from the skill; evaluated-low semantic ≠ missing semantic; weights only from config; relationship weight 0 by default.
-- **Status:** [ ]
+- **Notes:** The semantic signal is the retriever's weighted score (expansions discounted to 0.8), not the raw cosine; raw cosine stays in the semantic hit for explanations. With gamma = 0 a metadata-only track can top a hybrid plate (tested); P05 decides gamma.
+- **Status:** [x]
 
 ### P04.T06 — MMR diversity reranker
 - **Skills:** hybrid-retrieval
@@ -65,7 +69,8 @@
 - **Done when:**
   - Tests: λ=1 equals relevance order; first item always top relevance; duplicate versions spread; deterministic output.
 - **Notes (from P03):** the catalog has 13 pairs of identical audio (cosine ≥ 0.9999, FMA double uploads), listed under `duplicate_audio_groups` in `data/indexes/<version>.json`. Treat them as duplicates (similarity 1) so a plate never shows the same recording twice.
-- **Status:** [ ]
+- **Notes:** Same album is **not** a duplicate (the skill said same release = duplicate, a Discogs-versions rule; in FMA an album holds different songs). Duplicates = audio cosine ≥ 0.9999 or same Discogs master. Skill updated.
+- **Status:** [x]
 
 ### P04.T07 — HybridRetriever composition, modes & trace
 - **Skills:** hybrid-retrieval
@@ -75,7 +80,7 @@
   - Compose retrievers → merger → constraints → normalization → ranker → MMR; modes `metadata_only` / `semantic_only` / `hybrid`; semantic-unavailable degradation; full `RetrievalTrace`.
 - **Done when:**
   - Integration test on a small real local index (fake or real encoder) runs all three modes; `metadata_only` never calls the encoder; degraded flag set when semantic is unavailable.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### P04.T08 — RelationshipRetriever (optional signal)
 - **MVP:** FMA relationships only (same artist, same album); label/master/style edges arrive with Discogs post-MVP.
@@ -86,7 +91,8 @@
   - Score candidates by relationship edges to reference tracks / strong candidates; contributes only when weight > 0 in config; never labeled as audio similarity.
 - **Done when:**
   - Tests pass with weight 0 (no effect) and weight > 0 (expected boost); evaluation decides whether to enable (P05.T06).
-- **Status:** [ ]
+- **Notes:** Anchors are only the user's reference tracks (MORE_LIKE_THIS), not "strong candidates": scoring against the engine's own top results would feed relevance back into itself. Weight 0 by default.
+- **Status:** [x]
 
 ### P04.T09 — Side-by-side baseline runner (M3 acceptance)
 - **Skills:** hybrid-retrieval, retrieval-evaluation
@@ -96,9 +102,10 @@
   - For a list of query texts (deterministic parser stub or hand-built specs until P06), run all three modes on the same catalog and print/CSV the top-k with score breakdowns.
 - **Done when:**
   - Runs on the 20-track corpus; output CSV in `artifacts/evaluation/scratch/` (git-ignored); identical across two runs.
-- **Status:** [ ]
+- **Notes:** 2026-10-22: `data/evaluation/specs_manual.jsonl` holds 10 hand-written specs (base.md §12.2 queries; temporary until Agent A, and not P05's labeled set). `compare_baselines.py`: 20-track corpus in about 12 s, CSV byte-identical across two runs; full catalog (7,993 with audio) in about 16 s for 30 searches. Observations for P05: (1) on the 20-track corpus, semantic-only puts "U Fine" first for 7 of 10 queries (CLAP hubness, amplified by min-max over 20 items); (2) metadata-only finds nothing for mood-only queries (FMA has almost no mood tags).
+- **Status:** [x]
 
 ## Exit criteria (Milestone 3, part 1)
-- [ ] All three retrieval approaches run against the same catalog and can be compared.
-- [ ] Hard constraints enforced independently of weighted score; NO_CONFIDENT_MATCH path tested.
-- [ ] Missing modalities never treated as zero.
+- [x] All three retrieval approaches run against the same catalog and can be compared.
+- [x] Hard constraints enforced independently of weighted score; NO_CONFIDENT_MATCH path tested.
+- [x] Missing modalities never treated as zero.

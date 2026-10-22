@@ -32,7 +32,7 @@ SearchSpecification
 
 ## 2. MetadataRetriever
 
-- Index over normalized catalog fields: track/release title, artist names + aliases, genres, styles, labels, year, tracklist text, FMA genres/tags. Use SQLite FTS5 or an in-memory BM25 (`rank-bm25`) behind a `LexicalIndex` protocol.
+- Index over normalized catalog fields: track/release title, artist names + aliases, genres, styles, labels, year, tracklist text, FMA genres/tags. Implemented as an in-memory field-weighted BM25 (`infrastructure/lexical_index.py`, no extra dependency) behind the `LexicalIndex` protocol, which also has `matches(doc_id, terms)` so the retriever can report which field matched which term. MVP fields (ADR-0005): title, artist, album, genres, tags.
 - Query terms come from the spec: preference values (+ lexicon synonyms) and the original query tokens. Genre/style preferences match tags; era preferences match year ranges.
 - Output per track: `metadata_score_raw`, `matched_fields: list[FieldMatch(field, term, source)]`. The matched fields become explanation evidence.
 - **Tags do not encode audible attributes.** A "flute" token matching a *title* is a lexical match, not instrument evidence (`FieldMatch.kind = "lexical"`).
@@ -57,11 +57,13 @@ Each constraint evaluates per track to `SATISFIED | VIOLATED | UNKNOWN` with the
 | duration range | duration | — |
 | instrument required | human label only | CLAP score, tags — never decisive |
 
+**MVP evidence (FMA-only, ADR-0005):** vocals are decided only by the curated FMA genre "Instrumental" (satisfies *no vocals*, violates *vocals required*); otherwise UNKNOWN. Weak evidence (echonest, CLAP) is not loaded into the catalog, so it neither decides nor flags. Instrument and tempo constraints are always UNKNOWN. FMA's artist-declared `track_instrumental` flag (697 of 8,000 `fma_small` tracks) is a candidate source of reliable instrumental evidence, not yet imported.
+
 Policy (`ConstraintPolicy.unknown`): `keep_flagged` (default) | `demote` | `exclude`. `VIOLATED` is always excluded **independently of the weighted score**. If nothing remains with `SATISFIED` or tolerated `UNKNOWN`, return `SearchOutcome.NO_CONFIDENT_MATCH` with the reasons — **never relax constraints silently**.
 
 ## 5. Score normalization (`retrieval/normalization.py`)
 
-Strategies (config `normalization.semantic`, `normalization.metadata`): `minmax` (per query over the pool), `rank` (`1 - (rank-1)/(n-1)` or reciprocal), `zscore→sigmoid`, `calibrated` (affine fit on **dev split only**, stored in config with its fit date). Rules:
+Strategies (config `normalization.semantic`, `normalization.metadata`): `minmax` (per query over the pool), `max_scale` (x / best in the pool; a pool where nothing matched stays 0, used for BM25 metadata scores), `rank` (`1 - (rank-1)/(n-1)` or reciprocal), `zscore→sigmoid`, `calibrated` (affine fit on **dev split only**, stored in config with its fit date). Rules:
 
 - Normalize only over candidates that *have* the signal.
 - Degenerate pools (n < 3 or zero variance) fall back to `rank` and log it.
@@ -87,7 +89,8 @@ S(t,q) = Σ_i w_i · s_i(t,q) / Σ_{i ∈ available(t)} w_i      over i ∈ {sem
 select argmax_{t ∉ S}  λ·rel(t) − (1−λ)·max_{s ∈ S} sim(t, s)        λ = 1 − spec.diversity·config.diversity_scale
 ```
 
-- `sim` = cosine of audio embeddings when both exist; else Jaccard over (artists ∪ release ∪ styles); `same_master`/`same_release` count as near-duplicates (sim = 1).
+- `sim` = cosine of audio embeddings when both exist; else Jaccard over (artists ∪ release ∪ genres).
+- Duplicates (dropped, never shown twice): audio cosine ≥ `diversity.duplicate_cosine` (FMA double uploads) or the same Discogs `master_release_id`. **Same release/album is not a duplicate**: in FMA an album holds different songs, so it only raises similarity.
 - First pick is always the top relevance item (MMR guarantees it with any λ>0 — test it).
 - Deterministic tie-breaking by `track_id`.
 
