@@ -28,7 +28,7 @@
   - Record `has_relevant_in_corpus` per query afterwards.
 - **Done when:**
   - All 400 pairs judged (or the documented minimum), file validates, judge + date recorded.
-- **Notes:** Tooling done: `scripts/judge.py` (resumable, seeded order, asks only the fields that apply, never shows system scores, optional `--play` command), `data/evaluation/JUDGING.md`, empty `judgments.csv`. **Blocked on the owner's listening pass** (0/400 judged), which should follow the manifest listening pass (P02.T10). Judgments use an `fma_track_id` column (not `track_id`) so rows match audio file names.
+- **Notes:** Tooling done: `scripts/judge.py` (resumable, seeded order, asks only the fields that apply, never shows system scores; the clip plays in the background so answers never wait for it, `--by-track` plays each clip once for all queries, `r`/`x` replay/stop, invalid answers are re-asked), `data/evaluation/JUDGING.md`, empty `judgments.csv`. **Blocked on the owner's listening pass** (0/400 judged), which should follow the manifest listening pass (P02.T10). Judgments use an `fma_track_id` column (not `track_id`) so rows match audio file names.
 - **Status:** [!]
 
 ### P05.T03 — Dataset loaders & validation

@@ -8,10 +8,13 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import shlex
+import subprocess
 from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
 from pydantic import ValidationError
 
@@ -50,8 +53,13 @@ def pending_pairs(
     seed: int = 42,
     only_queries: Collection[str] | None = None,
     only_tracks: Collection[int] | None = None,
+    order: Literal["pair", "track"] = "pair",
 ) -> list[Pair]:
-    """Unjudged pairs in a fixed pseudo-random order (avoids judging one query in a row)."""
+    """Unjudged pairs in a fixed pseudo-random order.
+
+    `pair` mixes queries and tracks (avoids judging one query in a row); `track` groups all
+    queries of a track together, so each clip is played once.
+    """
     judged = {(j.query_id, j.fma_track_id) for j in dataset.judgments}
     pairs = [
         Pair(q, m)
@@ -61,16 +69,34 @@ def pending_pairs(
         and (only_queries is None or q.query_id in only_queries)
         and (only_tracks is None or m.fma_track_id in only_tracks)
     ]
-    return sorted(
-        pairs,
-        key=lambda p: hashlib.sha256(
-            f"{seed}:{p.query.query_id}:{p.track.fma_track_id}".encode()
-        ).hexdigest(),
-    )
+
+    def digest(text: str) -> str:
+        return hashlib.sha256(f"{seed}:{text}".encode()).hexdigest()
+
+    if order == "track":
+        return sorted(pairs, key=lambda p: (digest(str(p.track.fma_track_id)), p.query.query_id))
+    return sorted(pairs, key=lambda p: digest(f"{p.query.query_id}:{p.track.fma_track_id}"))
 
 
 class AnswerError(ValueError):
     pass
+
+
+FIELD_CHOICES: dict[str, tuple[str, ...]] = {
+    "overall_relevance": ("0", "1", "2", "3"),
+    "mood_relevance": ("0", "1", "2", "3"),
+    "instrument_present": ("yes", "no", "uncertain"),
+    "constraint_satisfied": ("yes", "no", "unknown"),
+}
+
+
+def check_answer(field: str, value: str) -> str | None:
+    """Normalized answer, or None if it is not valid for the field (so the prompt can re-ask)."""
+    value = value.strip()
+    if field == "basis":
+        return value or None
+    value = value.lower()
+    return value if value in FIELD_CHOICES.get(field, ()) else None
 
 
 def build_judgment(
@@ -105,3 +131,37 @@ def append_judgment(path: Path, judgment: Judgment) -> None:
             writer.writeheader()
         data = judgment.model_dump(mode="json")
         writer.writerow({k: "" if data.get(k) is None else data[k] for k in JUDGMENT_COLUMNS})
+
+
+class Player:
+    """Plays a clip in the background so judging can continue (and stop it) at any time."""
+
+    def __init__(self, command_template: str | None) -> None:
+        self._template = command_template
+        self._process: subprocess.Popen[bytes] | None = None
+
+    def play(self, path: Path) -> None:
+        self.stop()
+        if self._template is None:
+            return
+        self._process = subprocess.Popen(
+            shlex.split(self._template.format(path=path)),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,  # Ctrl+C reaches the judging script, which then stops the clip
+        )
+
+    @property
+    def playing(self) -> bool:
+        return self._process is not None and self._process.poll() is None
+
+    def stop(self) -> None:
+        if self._process is not None and self._process.poll() is None:
+            self._process.terminate()
+            try:
+                self._process.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                self._process.kill()
+                self._process.wait()
+        self._process = None

@@ -20,14 +20,10 @@ NOW = datetime(2026, 1, 1, tzinfo=UTC)
 
 @pytest.fixture
 def evaldir(tmp_path: Path) -> Path:
-    for name in (
-        "fma_20_manifest.csv",
-        "queries.jsonl",
-        "split.json",
-        "specs_manual.jsonl",
-        "judgments.csv",
-    ):
+    for name in ("fma_20_manifest.csv", "queries.jsonl", "split.json", "specs_manual.jsonl"):
         shutil.copy(REAL / name, tmp_path / name)
+    # start from no judgments: tests never depend on the owner's judging progress
+    (tmp_path / "judgments.csv").write_text(",".join(JUDGMENT_COLUMNS) + "\n")
     return tmp_path
 
 

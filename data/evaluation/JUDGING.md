@@ -6,15 +6,27 @@ Relevance judgments are the ground truth of the evaluation (base.md §12.3). The
 ## How
 
 ```bash
-uv run python scripts/judge.py --judge "<your name>" --play "mpv --really-quiet {path}"
+# fastest: play each clip once and rate it against every query
+uv run python scripts/judge.py --judge "<your name>" --play "cvlc --play-and-exit --quiet {path}" --by-track
+
+# one query at a time, or one track at a time
+uv run python scripts/judge.py --judge "<your name>" --play "cvlc --play-and-exit --quiet {path}" --query q01
+uv run python scripts/judge.py --judge "<your name>" --play "cvlc --play-and-exit --quiet {path}" --track 76075
 ```
 
-Any player works (`ffplay -nodisp -autoexit {path}`, `vlc --play-and-exit {path}`), or leave out
-`--play` and open the printed path yourself. Pairs come in a fixed shuffled order; answers are
-saved after every pair, so you can stop with `q` and resume later. `s` skips a pair.
+`{path}` is filled in by the script; any player works (`mpv --really-quiet {path}`,
+`ffplay -nodisp -autoexit {path}`), or leave out `--play` and open the printed path yourself.
 
-Judge the full grid of 20 queries × 20 tracks (400 pairs). It avoids pooling bias, and the
-clips are 30 s each. Judge the query as written; do not reinterpret it.
+The clip plays in the background: answer as soon as you have heard enough, there is no need
+to wait for it to end. In `--by-track` mode the clip keeps playing across that track's queries
+and stops when the next track starts; otherwise it stops as soon as a pair is answered.
+
+At any prompt: `r` replays the clip, `x` stops it, `s` skips the pair, `q` (or Ctrl+C) stops
+judging. Invalid answers are asked again. Every answered pair is saved immediately, so you can
+stop and resume at any time; judged pairs never come back.
+
+Judge the full grid of 20 queries x 20 tracks (400 pairs). Most pairs are an instant `0`:
+answer those as soon as you can tell. Judge the query as written; do not reinterpret it.
 
 ## Scale
 
