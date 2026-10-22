@@ -33,6 +33,10 @@ class FakeLexicalIndex:
         scored.sort(key=lambda pair: (-pair[1], pair[0]))
         return scored[:k]
 
+    def matches(self, doc_id: str, terms: Sequence[str]) -> list[tuple[str, str]]:
+        tokens = self._tokens.get(doc_id, set())
+        return [("text", t) for t in terms if t.casefold() in tokens]
+
 
 class FakeAudioProbe:
     """Every file decodes unless listed in `failures` (path name -> error code)."""

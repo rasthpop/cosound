@@ -205,7 +205,13 @@ class VectorIndex(Protocol):
 class LexicalIndex(Protocol):
     def search(
         self, terms: Sequence[str], k: int, *, restrict_to: Collection[str] | None = None
-    ) -> list[tuple[str, float]]: ...
+    ) -> list[tuple[str, float]]:
+        """Top-k (track_id, score) for the terms, best first. Tracks matching nothing are absent."""
+        ...
+
+    def matches(self, doc_id: str, terms: Sequence[str]) -> list[tuple[str, str]]:
+        """(field, term) pairs where every token of the term occurs in that field."""
+        ...
 
 
 # --- Audio, LLM, spatial -------------------------------------------------------------
