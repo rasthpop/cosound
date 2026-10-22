@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -169,3 +169,25 @@ def test_dev_split_only_runs_dev_queries(evaldir: Path, tmp_path: Path) -> None:
     dataset = load_dataset(evaldir)
     assert dataset.split is not None
     assert {r["query_id"] for r in metrics["per_query"]} == set(dataset.split.dev)
+
+
+def drop_judgments(evaldir: Path, keep: Callable[[str, str], bool]) -> None:
+    path = evaldir / "judgments.csv"
+    header, *rows = path.read_text().splitlines()
+    kept = [r for r in rows if keep(*r.split(",", 2)[:2])]
+    path.write_text("\n".join([header, *kept]) + "\n")
+
+
+def test_report_names_unjudged_queries_left_out(evaldir: Path, tmp_path: Path) -> None:
+    drop_judgments(evaldir, lambda q, _: q not in {"q09", "q13"})
+    report = (run_once(evaldir, tmp_path / "run", split="test") / "report.md").read_text()
+    assert "Judgments incomplete" not in report
+    assert "8/10 queries of this split are judged" in report
+    assert "left out of every mean: q09, q13" in report
+
+
+def test_report_warns_on_partly_judged_query(evaldir: Path, tmp_path: Path) -> None:
+    first = load_dataset(evaldir).manifest[0].fma_track_id
+    drop_judgments(evaldir, lambda q, t: not (q == "q09" and t == str(first)))
+    report = (run_once(evaldir, tmp_path / "run", split="test") / "report.md").read_text()
+    assert "Judgments incomplete: 199/200 pairs judged in this split" in report

@@ -15,7 +15,12 @@ from music_discovery.domain.schemas import (
     SearchOutcome,
     SearchSpecification,
 )
-from music_discovery.evaluation.calibration import CalibrationError, calibrate, grid
+from music_discovery.evaluation.calibration import (
+    CalibrationError,
+    calibrate,
+    check_dev_judgments,
+    grid,
+)
 from music_discovery.evaluation.datasets import JUDGMENT_COLUMNS, internal_track_id, load_dataset
 from music_discovery.retrieval.config import RetrievalConfig
 from music_discovery.retrieval.hybrid_retriever import HybridResult, Mode
@@ -67,7 +72,9 @@ def evaldir(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def judge_dev(directory: Path) -> dict[str, list[str]]:
+def judge_dev(
+    directory: Path, queries: Collection[str] | None = None, tracks: int | None = None
+) -> dict[str, list[str]]:
     """Synthetic judgments for dev only: the first 5 manifest tracks are relevant (3..2)."""
     dataset = load_dataset(directory)
     assert dataset.split is not None
@@ -75,7 +82,9 @@ def judge_dev(directory: Path) -> dict[str, list[str]]:
     ideal: dict[str, list[str]] = {}
     for qid in dataset.split.dev:
         ideal[dataset.specs[qid]["original_query"]] = [m.track_id for m in dataset.manifest[:5]]
-        for i, m in enumerate(dataset.manifest):
+        if queries is not None and qid not in queries:
+            continue
+        for i, m in enumerate(dataset.manifest[:tracks]):
             rel = 3 if i < 2 else 2 if i < 5 else 0
             lines.append(
                 f"{qid},{m.fma_track_id},{rel},,,,synthetic,generated,2026-10-22T10:00:00Z"
@@ -109,3 +118,42 @@ def test_picks_the_best_dev_configuration(evaldir: Path) -> None:
     scores = [t.ndcg for t in trials]
     assert scores == sorted(scores, reverse=True)
     assert internal_track_id(dataset.manifest[0].fma_track_id) == ideal[next(iter(ideal))][0]
+
+
+def test_documented_minimum_leaves_out_unjudged_dev_queries(evaldir: Path) -> None:
+    dataset = load_dataset(evaldir)
+    assert dataset.split is not None
+    required = dataset.split.dev[:-2]
+    with pytest.raises(CalibrationError, match="dev judgments incomplete: 0/160"):
+        check_dev_judgments(dataset, required)
+    with pytest.raises(CalibrationError, match="not in the dev split: q02"):
+        check_dev_judgments(dataset, ["q02"])
+
+    ideal = judge_dev(evaldir, queries=required)
+    dataset = load_dataset(evaldir)
+    assert check_dev_judgments(dataset, required) == dataset.split.dev[-2:]  # type: ignore[union-attr]
+    with pytest.raises(CalibrationError, match="dev judgments incomplete"):
+        check_dev_judgments(dataset)
+    trials = calibrate(
+        dataset, lambda c: ConfigSensitiveRetriever(c, ideal), BASE, required=required
+    )
+    assert trials[0].n == len(required)
+
+
+def test_partly_judged_dev_query_is_refused(evaldir: Path) -> None:
+    dataset = load_dataset(evaldir)
+    assert dataset.split is not None
+    judge_dev(evaldir, queries=dataset.split.dev[:1], tracks=3)
+    with pytest.raises(CalibrationError, match="partly judged"):
+        check_dev_judgments(load_dataset(evaldir), [])
+
+
+def test_real_minimum_partitions_each_split() -> None:
+    import json
+
+    minimum = json.loads((REAL / "judging_minimum.json").read_text())
+    split = load_dataset(REAL).split
+    assert split is not None
+    for name, queries in (("dev", split.dev), ("test", split.test)):
+        assert set(minimum[name]) <= set(queries)
+        assert set(minimum[name]) | set(minimum[f"{name}_deferred"]) == set(queries)

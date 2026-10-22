@@ -25,8 +25,35 @@ At any prompt: `r` replays the clip, `x` stops it, `s` skips the pair, `q` (or C
 judging. Invalid answers are asked again. Every answered pair is saved immediately, so you can
 stop and resume at any time; judged pairs never come back.
 
-Judge the full grid of 20 queries x 20 tracks (400 pairs). Most pairs are an instant `0`:
-answer those as soon as you can tell. Judge the query as written; do not reinterpret it.
+The target is the full grid of 20 queries x 20 tracks (400 pairs). Most pairs are an instant
+`0`: answer those as soon as you can tell. Judge the query as written; do not reinterpret it.
+Judge a query against all 20 tracks or not at all: a partly judged query is refused by
+calibration.
+
+## Documented minimum (2026-10-22, owner)
+
+Fewer than 400 pairs are judged before calibration. The minimum is recorded in
+`judging_minimum.json`, and `scripts/calibrate.py` checks it.
+
+| Split | Queries | Pairs | State on 2026-10-22 |
+|---|---|---|---|
+| dev, required for calibration | q01 q03 q06 q10 q11 q12 q16 q18 | 160 | all judged (160/160) |
+| dev, deferred | q07 q08 | 40 | unjudged, left out of calibration |
+| test, required | q02 q04 q05 | 60 | all judged (60/60) |
+| test, deferred | q09 q13 q14 q15 q17 q19 q20 | 140 | unjudged, left out of test metrics |
+
+- Calibration uses the 8 required dev queries (plus q07/q08 only if they get fully judged later).
+  Its nDCG@5 is therefore a mean over at most 8 queries, and q07/q08 (gradual build, rhythmic
+  playfulness) are the structure-heavy requests the grid never sees.
+- Test metrics (P10) are means over the 3 judged test queries. The report names the 7 unjudged
+  ones as left out; with n=3, test numbers show the workflow, not a quality claim.
+- A query is judged against all 20 tracks or not at all; a partly judged query is flagged in
+  the report as incomplete.
+
+```bash
+uv run python scripts/judge.py --judge "<your name>" --play "cvlc --play-and-exit --quiet {path}" --by-track \
+  --query q10 --query q11 --query q12 --query q16 --query q18
+```
 
 ## Scale
 

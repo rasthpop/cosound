@@ -28,8 +28,8 @@
   - Record `has_relevant_in_corpus` per query afterwards.
 - **Done when:**
   - All 400 pairs judged (or the documented minimum), file validates, judge + date recorded.
-- **Notes:** Tooling done: `scripts/judge.py` (resumable, seeded order, asks only the fields that apply, never shows system scores; the clip plays in the background so answers never wait for it, `--by-track` plays each clip once for all queries, `r`/`x` replay/stop, invalid answers are re-asked), `data/evaluation/JUDGING.md`, empty `judgments.csv`. **Blocked on the owner's listening pass** (0/400 judged), which should follow the manifest listening pass (P02.T10). Judgments use an `fma_track_id` column (not `track_id`) so rows match audio file names.
-- **Status:** [!]
+- **Notes:** Tooling done: `scripts/judge.py` (resumable, seeded order, asks only the fields that apply, never shows system scores; the clip plays in the background so answers never wait for it, `--by-track` plays each clip once for all queries, `r`/`x` replay/stop, invalid answers are re-asked), `data/evaluation/JUDGING.md`, empty `judgments.csv`. **Blocked on the owner's listening pass** (0/400 judged), which should follow the manifest listening pass (P02.T10). Judgments use an `fma_track_id` column (not `track_id`) so rows match audio file names. **Documented minimum (owner, 2026-10-22):** dev q01 q03 q06 q10 q11 q12 q16 q18 fully judged before calibration, q07/q08 deferred (`data/evaluation/judging_minimum.json`, checked by `scripts/calibrate.py`); test q02 q04 q05 (q09 q13 q14 q15 q17 q19 q20 deferred). Done 2026-10-22: 220/400 judged by the owner (q01-q06, q10 q11 q12 q16 q18), dev minimum 160/160, file validates; `has_relevant_in_corpus` recorded in `queries.jsonl` for the 11 judged queries (all `true`), the 9 unjudged stay `null`. Not judged, by decision: dev q07 q08 and test q09 q13 q14 q15 q17 q19 q20; reports list them as left out.
+- **Status:** [x]
 
 ### P05.T03 — Dataset loaders & validation
 - **Skills:** retrieval-evaluation
@@ -71,8 +71,8 @@
   - On **dev only**: choose normalization strategy, weights (small grid), MMR λ scale, semantic strength threshold τ, relationship weight (0 unless it helps). Record grid, results, and chosen `weights_version`.
 - **Done when:**
   - `docs/calibration.md` shows the dev-only procedure; test split untouched (assert in script that `--split test` is refused in calibration mode).
-- **Notes:** Tool built and tested on synthetic judgments: grid of 31 configurations (semantic weight 0.4-0.8, semantic normalization, coverage gamma), hybrid nDCG@5 on dev, writes a proposal (`config/retrieval.calibrated.yaml`) and `docs/calibration.md`. MMR scale, the semantic strength threshold τ and the relationship weight are not in the grid (see the PR). **Blocked until dev judgments exist.**
-- **Status:** [!]
+- **Notes:** Tool built and tested on synthetic judgments: grid of 31 configurations (semantic weight 0.4-0.8, semantic normalization, coverage gamma), hybrid nDCG@5 on dev, writes a proposal (`config/retrieval.calibrated.yaml`) and `docs/calibration.md`. MMR scale, the semantic strength threshold τ and the relationship weight are not in the grid (see the PR). Calibration checks the documented dev minimum, not all of dev. Run 2026-10-22 on 8 dev queries: the starting configuration scored best (hybrid nDCG@5 0.780, next 0.756), adopted unchanged as `weights_version: w1-dev-2026-10-22`; gamma has no effect on this corpus; MMR scale and relationship weight not tuned, and there is no τ in the code (reasons in `docs/calibration.md`).
+- **Status:** [x]
 
 ### P05.T07 — Report generator skeleton
 - **Skills:** retrieval-evaluation
@@ -87,5 +87,5 @@
 
 ## Exit criteria (Milestone 3, part 2)
 - [x] `scripts/evaluate.py --systems metadata_only,semantic_only,hybrid --split dev` produces all artifacts reproducibly.
-- [ ] Calibration used dev split only and is documented. *(Tool and procedure ready; run pending judgments.)*
-- [ ] Judgments are human, listening-based, with basis recorded. *(Pending the owner's listening pass.)*
+- [x] Calibration used dev split only and is documented.
+- [x] Judgments are human, listening-based, with basis recorded. *(220/400 per the documented minimum.)*

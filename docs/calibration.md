@@ -6,7 +6,10 @@ used for tuning.
 
 ## Procedure
 
-1. All dev (query, track) pairs are judged (`scripts/judge.py`); the tool refuses to run otherwise.
+1. The required dev queries are fully judged (`scripts/judge.py`); the tool refuses to run
+   otherwise. On 2026-10-22 the owner set the minimum to 8 of the 10 dev queries
+   (`data/evaluation/judging_minimum.json`: q01 q03 q06 q10 q11 q12 q16 q18); q07 and q08 are
+   deferred and left out unless fully judged. A partly judged dev query is refused.
 2. `uv run python scripts/calibrate.py` scores the hybrid system on the dev split for:
    - semantic weight 0.4, 0.5, 0.6, 0.7, 0.8 (metadata weight = 1 - semantic; relationship
      weight unchanged, 0 by default),
@@ -17,12 +20,69 @@ used for tuning.
 3. Objective: mean nDCG@5 over dev queries that have at least one relevant track. Ties keep the
    current configuration, then the earlier grid point.
 4. The best configuration is written to `config/retrieval.calibrated.yaml` with a new
-   `weights_version`. A person reviews it and copies it over `config/retrieval.yaml`.
+   `weights_version`. A person reviews it and copies it over `config/retrieval.yaml`; the
+   proposal file is then deleted (it is regenerated on every run).
 5. The test split is then evaluated once: `scripts/evaluate.py --split test --allow-test`.
 
-With 10 dev queries the differences between configurations are small and noisy; prefer simpler
-configurations when scores are close, and do not read the ranking as a significance result.
+With 8 (at most 10) dev queries the differences between configurations are small and noisy;
+prefer simpler configurations when scores are close, and do not read the ranking as a
+significance result.
+
+## Decision (2026-10-22)
+
+Run on 8 dev queries (q01 q03 q06 q10 q11 q12 q16 q18; q07 q08 unjudged and left out), all with
+at least one relevant track. Adopted as `weights_version: w1-dev-2026-10-22`, with the **same
+values as `w0-initial`**: semantic 0.6 / metadata 0.4, semantic normalization `minmax`, gamma 0.
+
+- The starting configuration ranked first (hybrid nDCG@5 0.780). The next best (semantic 0.7,
+  `zscore_sigmoid`) scored 0.756; a gap of 0.024 over 8 queries is noise, so the simpler,
+  unchanged configuration is kept.
+- `minmax` was the best semantic normalization at 0.6 and 0.8 weight. Weights of 0.4-0.5
+  were worst under every normalization, consistent with metadata-only being the weakest system
+  (nDCG@5 0.412 vs 0.757 semantic-only, run `w0-initial-dev`).
+- Coverage gamma had no effect: every corpus track has both an embedding and metadata, so no
+  candidate is missing a modality. It stays 0 and is untested on this corpus.
+- Not tuned, deliberately: the MMR scale (0.6), because diversity only acts on specs that ask
+  for it and nDCG@5 does not reward it, and the relationship weight (0), because the relationship
+  signal only runs for specs with reference tracks and no evaluation query has one. There is no semantic-strength
+  threshold τ in the code: "no confident match" is only reached when hard constraints leave
+  nothing. A τ would be a new config field, and 8 queries are too few to set it.
+- Dev-only: `calibrate()` refuses any split but dev, and the test split was not run.
 
 ## Results
 
-Not run yet: judgments are pending (0/400 on 2026-10-22).
+Run 2026-10-22, 31 configurations. Unjudged dev queries left out: q07, q08.
+
+| Rank | Configuration | nDCG@5 (dev) | n |
+|---|---|---|---|
+| 1 | semantic=0.6 metadata=0.4 norm=minmax gamma=0 | 0.780 | 8 |
+| 2 | semantic=0.6 metadata=0.4 norm=minmax gamma=0 | 0.780 | 8 |
+| 3 | semantic=0.6 metadata=0.4 norm=minmax gamma=1 | 0.780 | 8 |
+| 4 | semantic=0.7 metadata=0.3 norm=zscore_sigmoid gamma=0 | 0.756 | 8 |
+| 5 | semantic=0.7 metadata=0.3 norm=zscore_sigmoid gamma=1 | 0.756 | 8 |
+| 6 | semantic=0.8 metadata=0.2 norm=minmax gamma=0 | 0.749 | 8 |
+| 7 | semantic=0.8 metadata=0.2 norm=minmax gamma=1 | 0.749 | 8 |
+| 8 | semantic=0.7 metadata=0.3 norm=minmax gamma=0 | 0.749 | 8 |
+| 9 | semantic=0.7 metadata=0.3 norm=minmax gamma=1 | 0.749 | 8 |
+| 10 | semantic=0.8 metadata=0.2 norm=rank gamma=0 | 0.748 | 8 |
+| 11 | semantic=0.8 metadata=0.2 norm=rank gamma=1 | 0.748 | 8 |
+| 12 | semantic=0.8 metadata=0.2 norm=zscore_sigmoid gamma=0 | 0.737 | 8 |
+| 13 | semantic=0.8 metadata=0.2 norm=zscore_sigmoid gamma=1 | 0.737 | 8 |
+| 14 | semantic=0.7 metadata=0.3 norm=rank gamma=0 | 0.737 | 8 |
+| 15 | semantic=0.7 metadata=0.3 norm=rank gamma=1 | 0.737 | 8 |
+| 16 | semantic=0.5 metadata=0.5 norm=minmax gamma=0 | 0.722 | 8 |
+| 17 | semantic=0.5 metadata=0.5 norm=minmax gamma=1 | 0.722 | 8 |
+| 18 | semantic=0.6 metadata=0.4 norm=rank gamma=0 | 0.719 | 8 |
+| 19 | semantic=0.6 metadata=0.4 norm=rank gamma=1 | 0.719 | 8 |
+| 20 | semantic=0.6 metadata=0.4 norm=zscore_sigmoid gamma=0 | 0.710 | 8 |
+| 21 | semantic=0.6 metadata=0.4 norm=zscore_sigmoid gamma=1 | 0.710 | 8 |
+| 22 | semantic=0.4 metadata=0.6 norm=rank gamma=0 | 0.707 | 8 |
+| 23 | semantic=0.4 metadata=0.6 norm=rank gamma=1 | 0.707 | 8 |
+| 24 | semantic=0.5 metadata=0.5 norm=rank gamma=0 | 0.707 | 8 |
+| 25 | semantic=0.5 metadata=0.5 norm=rank gamma=1 | 0.707 | 8 |
+| 26 | semantic=0.4 metadata=0.6 norm=zscore_sigmoid gamma=0 | 0.706 | 8 |
+| 27 | semantic=0.4 metadata=0.6 norm=zscore_sigmoid gamma=1 | 0.706 | 8 |
+| 28 | semantic=0.5 metadata=0.5 norm=zscore_sigmoid gamma=0 | 0.700 | 8 |
+| 29 | semantic=0.5 metadata=0.5 norm=zscore_sigmoid gamma=1 | 0.700 | 8 |
+| 30 | semantic=0.4 metadata=0.6 norm=minmax gamma=0 | 0.699 | 8 |
+| 31 | semantic=0.4 metadata=0.6 norm=minmax gamma=1 | 0.699 | 8 |

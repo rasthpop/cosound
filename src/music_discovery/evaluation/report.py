@@ -190,13 +190,24 @@ def render_report(
     coverage: Mapping[str, int],
     runs: Sequence[QueryRun],
 ) -> str:
-    total = len(dataset.queries) * len(dataset.manifest)
-    judged = len(dataset.judgments)
     lines = [f"# Evaluation report: {snapshot.get('run_id', '')}", ""]
-    if judged < total:
+    full = len(dataset.manifest)
+    judged = {q: len(dataset.relevance(q)) for q in dict.fromkeys(r.query_id for r in runs)}
+    partial = [q for q, n in judged.items() if 0 < n < full]
+    unjudged = [q for q, n in judged.items() if n == 0]
+    if partial or len(unjudged) == len(judged):
+        pairs = sum(judged.values())
         lines += [
-            f"> **Judgments incomplete: {judged}/{total} pairs judged.** Metrics below are",
-            "> undefined (—) or computed on partial judgments and must not be read as results.",
+            f"> **Judgments incomplete: {pairs}/{len(judged) * full} pairs judged in this split.**",
+            "> Metrics below are undefined (—) or computed on partial judgments and must not be",
+            "> read as results.",
+            "",
+        ]
+    elif unjudged:
+        lines += [
+            f"> **{len(judged) - len(unjudged)}/{len(judged)} queries of this split are judged.**",
+            f"> Unjudged queries are left out of every mean: {', '.join(unjudged)}",
+            "> (documented minimum, `data/evaluation/judging_minimum.json`).",
             "",
         ]
     genres: dict[str, int] = {}
@@ -210,7 +221,7 @@ def render_report(
         f"{confirmed} confirmed by listening.",
         f"- Top genres: {', '.join(f'{g} {n}' for g, n in sorted(genres.items()))}.",
         f"- Queries: {len(dataset.queries)} ({len({q.family for q in dataset.queries})} families).",
-        f"- Judgments: {judged}/{total} (query, track) pairs.",
+        f"- Judgments: {len(dataset.judgments)}/{len(dataset.queries) * full} pairs.",
         "",
         "## Model and checkpoint versions",
         "",

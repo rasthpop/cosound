@@ -44,8 +44,8 @@ def test_asked_fields_follow_the_query() -> None:
     assert asked_fields(dataset.query("q14")) == ["overall_relevance", "basis"]
 
 
-def test_pairs_cover_the_grid_in_a_fixed_shuffled_order() -> None:
-    dataset = load_dataset(REAL)
+def test_pairs_cover_the_grid_in_a_fixed_shuffled_order(evaldir: Path) -> None:
+    dataset = load_dataset(evaldir)
     pairs = pending_pairs(dataset)
     assert len(pairs) == 400 - len(dataset.judgments)
     assert pairs == pending_pairs(dataset)
@@ -54,8 +54,8 @@ def test_pairs_cover_the_grid_in_a_fixed_shuffled_order() -> None:
     assert {p.query.query_id for p in pending_pairs(dataset, only_queries=["q05"])} == {"q05"}
 
 
-def test_build_judgment_validates_answers() -> None:
-    dataset = load_dataset(REAL)
+def test_build_judgment_validates_answers(evaldir: Path) -> None:
+    dataset = load_dataset(evaldir)
     pair = next(p for p in pending_pairs(dataset) if p.query.query_id == "q01")
     answers = {
         "overall_relevance": "3",
