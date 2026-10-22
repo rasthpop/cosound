@@ -80,6 +80,21 @@ class HybridRetriever:
         self._index = index
         self._relationships = relationships
 
+    @property
+    def config(self) -> RetrievalConfig:
+        return self._config
+
+    def with_config(self, config: RetrievalConfig) -> HybridRetriever:
+        """Same retrievers and indexes, different weights/normalization (for calibration)."""
+        return HybridRetriever(
+            config,
+            metadata=self._metadata,
+            semantic=self._semantic,
+            tracks=self._tracks,
+            index=self._index,
+            relationships=self._relationships,
+        )
+
     def retrieve(
         self,
         spec: SearchSpecification,

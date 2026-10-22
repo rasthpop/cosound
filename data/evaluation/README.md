@@ -61,3 +61,19 @@ is audible, and a genre tag does not prove a mood. That is why listening is requ
 | `theme` | Query theme the track was drafted for |
 | `selection_reason` | Why it was picked (metadata evidence, later: what was heard) |
 | `listening_status` | `pending` → `confirmed` after listening |
+
+## Queries, split and judgments
+
+| File | What it is |
+|---|---|
+| `queries.jsonl` | 20 queries: q01-q10 are base.md §12.2, q11-q20 are controlled variants. Each has a `family` (a query and its rephrasings), `expected_attributes` and `expected_hard_constraints` (for Agent A, P06), and `has_relevant_in_corpus` (filled in after judging). |
+| `split.json` | Fixed dev/test split by family (`scripts/make_split.py`, seed 42; refuses to overwrite). Calibration uses dev only; test is evaluated once per reported configuration. |
+| `specs_manual.jsonl` | Hand-written search specifications per query, used until Agent A exists (P06.T11), so the retrieval comparison isolates retrieval from query understanding. |
+| `judgments.csv` | Listening-based relevance for every (query, track) pair, keyed by `fma_track_id`. Filled with `scripts/judge.py`; guidelines in `JUDGING.md`. |
+
+Authoring rules for queries: write them before looking at system output; include phrasing
+variants, a negation, hard constraints and a vague request; do not assume every query has a
+relevant track in the corpus. The 20 queries were drafted on 2026-10-22 and are awaiting owner review.
+
+Order of the manual steps: (1) listening pass on the 20 tracks above, (2) review the queries,
+(3) judge all 400 pairs, (4) `scripts/calibrate.py`, (5) `scripts/evaluate.py --split test --allow-test`.
