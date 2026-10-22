@@ -1,0 +1,25 @@
+# Mood vocabulary: canonical term -> phrases that mean it. A synonym written as
+# {phrase: factor} counts at that fraction of the category weight.
+weight: 0.7
+terms:
+  chill: [chill, chilled, chillout, chill out, chilled out]
+  relaxed: [relaxed, relaxing, laid back, laidback, easygoing, easy going]
+  calm: [calm, calming, peaceful, tranquil, serene, quiet]
+  mellow: [mellow]
+  dark: [dark, darker, ominous, brooding, sinister, gloomy]
+  dreamy: [dreamy, dreamlike, ethereal, hazy]
+  warm: [warm]
+  aggressive: [aggressive, angry, fierce, furious]
+  atmospheric: [atmospheric, spacey, spacy, airy]
+  moody: [moody]
+  playful: [playful, quirky, whimsical, fun]
+  melancholic: [melancholic, melancholy, sad, sorrowful, wistful, mournful, bittersweet]
+  happy: [happy, cheerful, joyful, joyous]
+  upbeat: [upbeat, uplifting, feel good]
+  romantic: [romantic, sensual, tender]
+  epic: [epic, cinematic, majestic]
+  hypnotic: [hypnotic, mesmerizing, mesmerising]
+  eerie: [eerie, creepy, spooky, haunting]
+  nostalgic: [nostalgic]
+  groovy: [groovy, funky]
+  tense: [tense, suspenseful]

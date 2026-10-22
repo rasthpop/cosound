@@ -1,0 +1,9 @@
+# Vocal presence. Every term sets `vocal_preferences`; the vocal *type* (female, male,
+# rapping) cannot be filtered on and is reported as an uncertainty. `instrumental` means
+# "no vocals" (soft unless a hard cue is present).
+terms:
+  vocals: [vocals, vocal, singing, singer, singers, voice, voices, sung, lyrics, vocalist]
+  female vocals: [female vocals, female vocal, female singer, female voice, female vocalist, woman singing]
+  male vocals: [male vocals, male vocal, male singer, male voice, male vocalist, man singing]
+  rapping: [rapping, rapper, rappers, rapped]
+  instrumental: [instrumental, instrumentals]

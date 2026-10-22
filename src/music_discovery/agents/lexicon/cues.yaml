@@ -1,0 +1,59 @@
+# Cue words for the deterministic parser (agents/query_parser.py).
+
+# A negation cue applies to the next attribute phrase in the same clause only (extended
+# across "or" / "nor": "no drums or bass").
+negation: [without, "no", not, minus, avoid, less, never, zero, free of, lacking]
+
+# Negation cues that make an exclusion a hard constraint, per constraint attribute.
+# "without vocals" / "without drums" are explicit; "without electronic sounds" is a soft
+# negative genre preference, "no rock" a hard one.
+hard_negation:
+  vocals: [without, "no", never, zero, free of]
+  instrument: [without, "no", never, zero, free of]
+  genre: ["no", never, zero]
+
+# Cues that make a preference a hard requirement, within two words before the phrase
+# ("only jazz", "must have a flute") or right after it ("instrumental only").
+hard: [only, strictly, must, exclusively, purely, solely]
+# Emphasis after a negated phrase makes the exclusion hard ("no vocals at all").
+emphasis: [at all, whatsoever, completely, entirely]
+
+# Multiply the weight of the phrase they directly precede.
+intensifiers:
+  very: 1.2
+  really: 1.2
+  super: 1.2
+  extremely: 1.3
+  so: 1.1
+  slightly: 0.6
+  a bit: 0.6
+  a little: 0.6
+  a little bit: 0.6
+  somewhat: 0.7
+  kind of: 0.8
+  kinda: 0.8
+  too: 1.0
+
+# "with a flute", "featuring piano": raise the next instrument within three words.
+with_cues: [with, featuring, feat, lots of, plenty of]
+with_boost: 1.25
+
+# Negative preferences (soft) start at this weight before intensifiers.
+negative_weight: 0.6
+
+# Words that end a negation or hard-cue scope (punctuation always does).
+clause_breaks: [but, though, although, however, yet, while, whereas]
+
+# Hard numeric ranges.
+range:
+  upper: [under, below, before, less than, shorter than, up to, at most, "no more than", "no longer than", slower than, max, maximum]
+  lower: [over, above, after, since, more than, longer than, at least, faster than, min, minimum]
+  between: [between, from]
+units:
+  duration: {minute: 60, minutes: 60, min: 60, mins: 60, second: 1, seconds: 1, sec: 1, secs: 1}
+  tempo: [bpm]
+numbers: {a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, fifteen: 15, twenty: 20, thirty: 30, forty: 40, forty five: 45, fifty: 50, sixty: 60, ninety: 90}
+
+# Words that look musical but map to nothing: listed in `uncertainties` (CLAP still sees
+# them through the original query).
+musical_words: [soft, softly, build, buildup, crescendo, gradual, gradually, repetitive, repeating, loop, loops, looping, rhythm, rhythms, rhythmic, rhythmically, unusual, odd, complex, beat, beats, groove, grooves, melody, melodies, melodic, harmony, harmonies, chords, riff, riffs, drop, solo, layered, texture, textures, swing, swinging, syncopated]

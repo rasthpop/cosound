@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from music_discovery.agents.lexicon_loader import load_lexicon
 from music_discovery.audio.clap_encoder import ClapEncoder
 from music_discovery.audio.embedding_store import NpyEmbeddingStore, resolve_version_dir
 from music_discovery.domain.models import Track
@@ -56,6 +57,7 @@ def build_runtime(settings: Settings, *, semantic: bool = True) -> Runtime:
     metadata = MetadataRetriever(
         BM25FieldIndex(documents, field_weights=DEFAULT_FIELD_WEIGHTS),
         {t.id: TrackFacts(year=t.year, source=t.provenance.source) for t in tracks.values()},
+        expand=load_lexicon().expand,
     )
 
     index = None

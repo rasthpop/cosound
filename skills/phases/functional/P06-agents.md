@@ -14,7 +14,8 @@
   - Wire the lexicon into MetadataRetriever synonym expansion (replace the P04.T01 stub).
 - **Done when:**
   - Table tests: "Something chill with a flute" ⇒ 2 soft prefs, 0 hard; "Calm acoustic music without vocals" ⇒ vocals excluded hard; "slightly dark" weight < "very dark"; negation scope correct.
-- **Status:** [ ]
+- **Notes:** Lexicon is 9 YAML files (261 phrases; each phrase maps to exactly one canonical term, checked at load; version = content hash, `QueryParser.lexicon_version`). Canonical terms are near-exact synonyms (laid-back -> relaxed, chill stays separate) so parser output lines up with `expected_attributes`: all 20 evaluation queries match their labels and hard constraints (table test). Hard/soft rules: "without"/"no" + vocals or instrument -> hard; "without" + genre -> negative soft preference (q15 label), "no" + genre or "at all" -> hard; numeric ranges (duration, era years/decades, bpm) -> hard; "only"/"strictly"/"must" -> required (mood/energy/texture/tempo stay soft, with an uncertainty). Hard instrument/genre exclusions also add a negative preference, since the instrument constraint is always UNKNOWN in the MVP. Vocal type (female/male/rapping) is an uncertainty, contradictions ask a clarification question and drop the conflicting parts. Expansion is wired in `scripts/_runtime.py`; it drops synonyms whose words contain a shorter expansion ("chill out" next to "chill"), which otherwise double-counted FMA's "Chill-out" genre and lowered q01. Dev run (manual specs, weights unchanged): hybrid nDCG@5 0.780 -> 0.787, P@5 0.525 -> 0.550, metadata-only nDCG@5 0.412 -> 0.436; test split not run.
+- **Status:** [x]
 
 ### P06.T02 — Agent A (query understanding)
 - **Skills:** agent-orchestration, domain-modeling

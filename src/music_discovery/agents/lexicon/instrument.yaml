@@ -1,0 +1,26 @@
+# Instrument vocabulary. Naming an instrument is a soft preference ("with a flute" does not
+# exclude other instruments); only explicit cues make it a hard constraint.
+weight: 0.8
+terms:
+  flute: [flute, flutes, pan flute, panflute, {woodwind: 0.6}, {woodwinds: 0.6}]
+  piano: [piano, pianos, keyboard, keyboards, {keys: 0.7}]
+  guitar: [guitar, guitars]
+  bass: [bass, bassline, basslines, bass line, bass lines, bass guitar, sub bass, subbass]
+  drums: [drums, drum, drumming, drum kit]
+  percussion: [percussion, percussive]
+  violin: [violin, violins, fiddle]
+  cello: [cello, cellos]
+  strings: [strings, string section]
+  saxophone: [saxophone, saxophones, sax]
+  trumpet: [trumpet, trumpets]
+  brass: [brass, horns, horn section]
+  synth: [synth, synths, synthesizer, synthesizers, synthesiser, synthesisers]
+  organ: [organ, organs]
+  harp: [harp]
+  accordion: [accordion]
+  banjo: [banjo]
+  ukulele: [ukulele, uke]
+  clarinet: [clarinet]
+  harmonica: [harmonica]
+  mandolin: [mandolin]
+  sitar: [sitar]
