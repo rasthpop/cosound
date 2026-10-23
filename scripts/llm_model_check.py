@@ -12,6 +12,12 @@ model configured in .env has a problem.
 (responses cached under data/llm_cache/, so reruns are free and reproducible) and prints
 validity, attribute F1, hard-constraint accuracy and p50/p95 latency next to the deterministic
 parser; results go to artifacts/evaluation/llm_models/<date>.json. Only query text is sent.
+
+Free endpoints are often rate-limited upstream (OpenRouter's `upstream_provider_shared_pool`).
+Calls are paced (--pause, default 4 s: under the 20 requests/minute free cap), and queries the
+model never answered (rate limit, timeout, outage) are counted as `unanswered`, not as invalid
+output; validity and F1 use answered queries only. Only successful answers are cached, so a
+rerun later repeats just the unanswered queries. --models limits the run to some candidates.
 """
 
 from __future__ import annotations
@@ -22,6 +28,7 @@ import statistics
 import sys
 import time
 from datetime import UTC, datetime
+from typing import Any
 
 import httpx
 import yaml
@@ -41,7 +48,7 @@ def configured(settings: Settings) -> list[str]:
     return [i for i in ids if i]
 
 
-def check(settings: Settings, config: dict, strict: bool) -> int:
+def check(settings: Settings, config: dict[str, Any], strict: bool) -> int:
     response = httpx.get(f"{settings.openrouter_base_url}/models", timeout=30)
     response.raise_for_status()
     catalog = response.json().get("data", [])
@@ -63,7 +70,21 @@ def check(settings: Settings, config: dict, strict: bool) -> int:
     return 1 if strict and failing_env else 0
 
 
-def evaluate(settings: Settings, config: dict) -> int:
+OUTAGES = frozenset(
+    {
+        "llm_rate_limited",
+        "llm_timeout",
+        "llm_unavailable",
+        "llm_circuit_open",
+        "llm_model_unavailable",
+        "llm_unsupported_parameters",
+        "llm_data_policy_refused",
+        "llm_quota_exhausted",
+    }
+)
+
+
+def evaluate(settings: Settings, config: dict[str, Any], *, pause: float, only: list[str]) -> int:
     if settings.openrouter_api_key is None:
         print("OPENROUTER_API_KEY is not set: skipping the model comparison", file=sys.stderr)
         return 2
@@ -71,13 +92,16 @@ def evaluate(settings: Settings, config: dict) -> int:
     assert dataset.split is not None
     queries = [dataset.query(q) for q in dataset.split.dev]
     lexicon = load_lexicon()
-    results: dict[str, dict] = {}
+    results: dict[str, dict[str, Any]] = {}
     baseline = agent_eval.agent_a_metrics(
         agent_eval.evaluate_agent_a(queries, QueryAgent(lexicon)), llm_enabled=False
     )
     results["deterministic"] = {"metrics": baseline}
-    for candidate in config.get("candidates", []):
-        model = candidate["id"]
+    candidates = [c["id"] for c in config.get("candidates", [])]
+    if only:
+        candidates = [m for m in candidates if m in only]
+    incomplete = False
+    for model in candidates:
         llm = OpenRouterLLM(
             api_key=settings.openrouter_api_key,
             models=[model],
@@ -91,34 +115,63 @@ def evaluate(settings: Settings, config: dict) -> int:
         agent = QueryAgent(lexicon, LLMQueryInterpreter(llm, lexicon))
         latencies: list[float] = []
         rows = []
+        unanswered: list[str] = []
         for q in queries:
             started = time.perf_counter()
-            rows += agent_eval.evaluate_agent_a([q], agent)
-            latencies.append((time.perf_counter() - started) * 1000)
+            [row] = agent_eval.evaluate_agent_a([q], agent)
+            elapsed = (time.perf_counter() - started) * 1000
+            if row.llm_fallback_reason in OUTAGES:
+                unanswered.append(f"{q.query_id}:{row.llm_fallback_reason}")
+            else:
+                rows.append(row)
+                latencies.append(elapsed)
+            if elapsed > 200:  # a real request (cache hits return in milliseconds)
+                time.sleep(pause)
         llm.close()
-        metrics = agent_eval.agent_a_metrics(rows, llm_enabled=True)
+        incomplete |= bool(unanswered)
         ordered = sorted(latencies)
         results[model] = {
-            "metrics": metrics,
+            "metrics": agent_eval.agent_a_metrics(rows, llm_enabled=True) if rows else None,
+            "answered": len(rows),
+            "unanswered": unanswered,
             "latency_ms": {
                 "p50": statistics.median(ordered),
                 "p95": ordered[min(len(ordered) - 1, round(0.95 * (len(ordered) - 1)))],
-            },
-            "fallback_reasons": [r.llm_fallback_reason for r in rows if r.llm_fallback_reason],
+            }
+            if ordered
+            else None,
+            "rejected_reasons": [r.llm_fallback_reason for r in rows if r.llm_fallback_reason],
         }
-    print(f"{'model':<45} {'accepted':>8} {'F1':>6} {'hard':>6} {'p50 ms':>8} {'p95 ms':>8}")
+    columns = ("answered", "valid", "F1", "hard", "p50 ms", "p95 ms")
+    print(f"{'model':<45} " + " ".join(f"{c:>8}" for c in columns))
     for name, r in results.items():
-        m, lat = r["metrics"], r.get("latency_ms", {})
-        accepted = m["llm_acceptance_rate"]
+        m, lat = r["metrics"], r.get("latency_ms") or {}
+        answered = r.get("answered", len(queries))
+        if m is None:
+            print(f"{name:<45} {answered:>5}/{len(queries):<2} (no answers)")
+            continue
+        valid = m["llm_acceptance_rate"]
         print(
-            f"{name:<45} {'' if accepted is None else f'{accepted:.2f}':>8} "
+            f"{name:<45} {answered:>5}/{len(queries):<2} "
+            f"{'' if valid is None else f'{valid:.2f}':>6} "
             f"{m['micro']['f1'] or 0:>6.3f} {m['hard_constraint_accuracy'] or 0:>6.3f} "
-            f"{lat.get('p50', 0):>8.0f} {lat.get('p95', 0):>8.0f}"
+            f"{lat.get('p50', 0):>7.0f} {lat.get('p95', 0):>7.0f}"
+        )
+    if incomplete:
+        print(
+            "some queries were not answered (rate limit / outage, see 'unanswered' in the JSON); "
+            "rerun later: answered queries come from the cache and cost nothing"
         )
     out = settings.evaluation_artifacts_dir / "llm_models"
     out.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y-%m-%d")
-    payload = {"date": stamp, "prompt_version": "query-v1", "split": "dev", "results": results}
+    payload = {
+        "date": stamp,
+        "prompt_version": "query-v1",
+        "split": "dev",
+        "complete": not incomplete,
+        "results": results,
+    }
     (out / f"{stamp}.json").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
     print(f"written: {out / f'{stamp}.json'}")
     return 0
@@ -130,12 +183,15 @@ def main() -> int:
     )
     parser.add_argument("--evaluate", action="store_true")
     parser.add_argument("--strict", action="store_true")
+    parser.add_argument("--pause", type=float, default=4.0, help="seconds between LLM calls")
+    parser.add_argument("--models", default="", help="comma-separated subset of candidates")
     args = parser.parse_args()
     settings = get_settings()
     config = yaml.safe_load((settings.project_root / "config" / "llm.yaml").read_text())
     status = check(settings, config, args.strict)
     if args.evaluate:
-        status = max(status, evaluate(settings, config))
+        only = [m for m in args.models.split(",") if m]
+        status = max(status, evaluate(settings, config, pause=args.pause, only=only))
     return status
 
 
