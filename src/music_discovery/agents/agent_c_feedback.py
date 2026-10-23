@@ -70,8 +70,16 @@ class FeedbackAgent:
         self._evidence = evidence
         self._descriptions = descriptions
 
-    def apply_feedback(self, session: SearchSession, event: FeedbackEvent) -> FeedbackDecision:
-        spec = self._validate(session, event)
+    def apply_feedback(
+        self,
+        session: SearchSession,
+        event: FeedbackEvent,
+        *,
+        spec: SearchSpecification | None = None,
+    ) -> FeedbackDecision:
+        """`spec` overrides the session's current spec (several events applied in one batch)."""
+        current = self._validate(session, event)
+        spec = spec or current
         result = apply_rule(spec, event, self._ctx)
         if result.rejected is not None:
             return FeedbackDecision(False, spec, NextAction.NONE, reason=result.rejected)

@@ -116,7 +116,8 @@
   - `search()` and `refine()` flows: A → B → C.explain; session turn recording; "what changed" summary; degraded/clarification/no-match outcomes.
 - **Done when:**
   - Integration test on the small local index: NL query ⇒ plate with descriptions; feedback ⇒ next plate changes in the expected direction (e.g. NOT_RELEVANT track gone, MORE_LIKE_THIS neighbors rise); multi-turn constraint preservation across 3 turns.
-- **Status:** [ ]
+- **Notes:** `Orchestrator(query, discovery, feedback, sessions, feedback_events, clock, ids, feedback_text=None)` with `search()`, `refine()` and `refine_text()` (free text → events applied in order → one new search); each returns a `SearchTurn` (session, spec, query id, outcome with evidence on candidates, explanations, trace, change summary, feedback decision, LLM fallback reason). Rejected feedback and SELECT_TRACK record the event without a new search. Sessions are saved at the version they were read (stale writes raise); feedback events are stored after the session save. `FeedbackAgent.apply_feedback` gained an optional `spec` so a batch builds on earlier events. The integration test uses a 12-track catalog with the real BM25 and NumPy cosine indexes and the fake encoder (CLAP is `slow`); the real 20-track index is exercised in P06.T11.
+- **Status:** [x]
 
 ### P06.T11 — Agent A & C component evaluation
 - **Skills:** retrieval-evaluation, agent-orchestration
