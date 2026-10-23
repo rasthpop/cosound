@@ -74,6 +74,8 @@ class Settings(BaseSettings):
     llm_model_query: str | None = None
     llm_model_feedback: str | None = None
     llm_model_descriptions: str | None = None
+    llm_descriptions: bool = False
+    """LLM phrasing of track descriptions; off by default even when LLM_PROVIDER is set."""
     llm_fallback_models: CsvList = Field(default_factory=list)
     llm_timeout_s: float = Field(default=20.0, gt=0)
     llm_max_retries: int = Field(default=2, ge=0)

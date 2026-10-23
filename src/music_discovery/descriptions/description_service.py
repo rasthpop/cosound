@@ -4,7 +4,9 @@ Evidence becomes a list of claims, each with one fixed sentence and a reason chi
 description is at most two of those sentences: the strongest positive claim, then the most
 important caveat (an unverified constraint, missing audio) or else the next positive claim.
 Every sentence is checked by the claim validator before it is shown; a sentence that fails
-is dropped. No evidence, no description (`None`) - nothing is padded.
+is dropped. No evidence, no description (`None`) - nothing is padded. With an `LLMPhrasing`
+the same claims may be rephrased; any rejected output keeps the template (`generator` says
+which text is shown).
 """
 
 from __future__ import annotations
@@ -12,6 +14,7 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import Sequence
+from typing import Literal
 
 from music_discovery.descriptions.claim_validator import (
     CAVEATS,
@@ -22,6 +25,7 @@ from music_discovery.descriptions.claim_validator import (
     validate,
 )
 from music_discovery.descriptions.evidence_builder import REFERENCE_PROMPT
+from music_discovery.descriptions.llm_phrasing import LLMPhrasing
 from music_discovery.domain.enums import ConstraintStatus, DataSource, MatchStrength
 from music_discovery.domain.models import Track
 from music_discovery.domain.schemas import (
@@ -54,8 +58,9 @@ CAVEAT_ORDER = (ClaimKind.CONSTRAINT_UNKNOWN, ClaimKind.SEMANTIC_UNAVAILABLE, Cl
 
 
 class DescriptionService:
-    def __init__(self, config: DescriptionConfig) -> None:
+    def __init__(self, config: DescriptionConfig, phrasing: LLMPhrasing | None = None) -> None:
         self._config = config
+        self._phrasing = phrasing
 
     @property
     def config(self) -> DescriptionConfig:
@@ -84,11 +89,20 @@ class DescriptionService:
         chosen = chosen[: self._config.max_sentences]
         rest = [c for c in claims if c not in chosen]
         reasons = [c.reason for c in [*chosen, *rest] if c.reason is not None]
+        text = " ".join(c.text for c in chosen) or None
+        generator: Literal["template", "llm"] = "template"
+        if self._phrasing is not None and chosen:
+            required = [c.id for c in chosen if c.kind in CAVEATS]
+            outcome = self._phrasing.phrase(claims, evidence, required=required)
+            if outcome.text is not None:
+                text, generator = outcome.text, "llm"
+            else:
+                log.info("llm phrasing rejected for %s: %s", evidence.track_id, outcome.reason)
         return Explanation(
             track_id=evidence.track_id,
-            description=" ".join(c.text for c in chosen) or None,
+            description=text,
             match_reasons=list(dict.fromkeys(reasons))[: self._config.max_reasons],
-            generator="template",
+            generator=generator,
         )
 
     def _valid(self, claim: Claim, evidence: TrackEvidence) -> bool:

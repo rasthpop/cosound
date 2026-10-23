@@ -72,7 +72,8 @@
   - LLM receives only the claim list; must cite claim ids per sentence; validator post-check; fallback to template; disabled by default.
 - **Done when:**
   - Fake-LLM tests: cited output accepted; uncited/hallucinated/percentage output rejected ⇒ template used, reason logged.
-- **Status:** [ ]
+- **Notes:** `LLMPhrasing(llm, config)` with prompt `descriptions/prompts/descriptions.md` (`descriptions-v1`); the LLM gets only `[{id, claim}]` JSON. Accepted only if the claim validator passes and the text still cites the caveat the template shows (an unverified constraint is never dropped). `DescriptionService(config, phrasing=None)`; new setting `LLM_DESCRIPTIONS=false` for the composition root (P08) to opt in. Rejections are logged with the reason and keep the template.
+- **Status:** [x]
 
 ### P06.T07 — Session & feedback persistence
 - **Skills:** agent-orchestration, domain-modeling
