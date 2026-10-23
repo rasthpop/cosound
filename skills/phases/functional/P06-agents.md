@@ -105,7 +105,8 @@
   - Lexicon mapping "more X / less X / not X / no X" → typed events; optional LLM path with validation + fallback; unmappable ⇒ rejected with reason.
 - **Done when:**
   - Tests for compound feedback ("more electronic, less acoustic" ⇒ two events) and unmappable text.
-- **Status:** [ ]
+- **Notes:** `FeedbackTextNormalizer(lexicon, llm=None).normalize(text, session_id=, query_id=, event_id=, timestamp=)` -> `FeedbackText(accepted, events, reason, interpreter, llm_fallback_reason)`; events get ids `{event_id}.n` and keep the text in `free_text`. Lexicon path: clauses split at punctuation / and / but; a less-cue in the clause (less, fewer, not, no, without, too …) makes every term in it LESS_OF, otherwise MORE_OF (comparatives such as "darker" map through the lexicon). Feedback negation is always soft. LLM path: prompt `agents/prompts/feedback.md` (`feedback-v1`), every attribute must resolve through the lexicon or the answer is dropped for the lexicon reading. Also fixed in the rules: "more instrumental" means fewer vocals (it was read as more vocals).
+- **Status:** [x]
 
 ### P06.T10 — Orchestrator & end-to-end flow (M4 acceptance)
 - **Skills:** agent-orchestration

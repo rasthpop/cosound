@@ -306,3 +306,12 @@ def test_explain_delegates_to_descriptions_and_attaches_evidence() -> None:
         'Listed under "Folk" in FMA. Audio search was unavailable; matched on catalog metadata.'
     )
     assert explained.explanation.generator == "template"
+
+
+def test_more_instrumental_means_fewer_vocals() -> None:
+    spec, note, _ = apply(CHILL_FLUTE, FeedbackType.MORE_OF_ATTRIBUTE, attribute="instrumental")
+    assert spec.vocal_preferences == "avoided"
+    assert note == "vocals avoided"
+    with_vocals = QUERY.interpret("chill songs with vocals only")
+    _, _, rejected = apply(with_vocals, FeedbackType.MORE_OF_ATTRIBUTE, attribute="instrumental")
+    assert rejected == "vocals are required by your request"

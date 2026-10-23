@@ -161,10 +161,10 @@ class _Attribute:
     value: str
 
 
-def resolve_attribute(event: FeedbackEvent, lexicon: Lexicon) -> _Attribute | None:
+def resolve_attribute(attribute: str | None, value: object, lexicon: Lexicon) -> _Attribute | None:
     """`attribute` is a lexicon term, or a category name with the term in `value`."""
-    attribute = (event.attribute or "").strip()
-    value = event.value.strip() if isinstance(event.value, str) else None
+    attribute = (attribute or "").strip()
+    value = value.strip() if isinstance(value, str) else None
     if attribute.casefold() in CATEGORIES and value:
         entry = lexicon.entries.get(phrase(value))
         category: Category = attribute.casefold()  # type: ignore[assignment]
@@ -198,13 +198,18 @@ def _attribute_rule(
     more: bool,
 ) -> Callable[[SearchSpecification, FeedbackEvent, RuleContext], RuleResult]:
     def rule(spec: SearchSpecification, event: FeedbackEvent, ctx: RuleContext) -> RuleResult:
-        attr = resolve_attribute(event, ctx.lexicon)
+        attr = resolve_attribute(event.attribute, event.value, ctx.lexicon)
         if attr is None:
             return RuleResult(spec, None, rejected=f"unknown attribute {event.attribute!r}")
+        if attr.category == "vocals":
+            # "more instrumental" means fewer vocals
+            wants_vocals = more != (attr.value == "instrumental")
+            vocals = _Attribute("vocals", "vocals")
+            if conflict := _hard_conflict(spec, vocals, wants_vocals):
+                return RuleResult(spec, None, rejected=conflict)
+            return _vocals(spec, wants_vocals)
         if conflict := _hard_conflict(spec, attr, more):
             return RuleResult(spec, None, rejected=conflict)
-        if attr.category == "vocals":
-            return _vocals(spec, more)
         return (_more if more else _less)(spec, attr, ctx)
 
     return rule

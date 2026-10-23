@@ -112,7 +112,7 @@ class LLMQueryInterpreter:
         self._llm = llm
         self._lexicon = lexicon
         self._prompt = prompt or load_prompt()
-        self._system = self._prompt.text.replace("{{vocabulary}}", _vocabulary(lexicon))
+        self._system = self._prompt.text.replace("{{vocabulary}}", vocabulary(lexicon))
 
     @property
     def prompt_version(self) -> str:
@@ -227,7 +227,7 @@ def _key(attribute: ConstraintAttribute, operator: ConstraintOperator, value: st
     return attribute, operator, value.casefold()
 
 
-def _vocabulary(lexicon: Lexicon) -> str:
+def vocabulary(lexicon: Lexicon) -> str:
     by_category: Mapping[str, list[str]] = {c: [] for c in CATEGORIES}
     for category, canonical in lexicon.synonyms:
         by_category[category].append(canonical)
