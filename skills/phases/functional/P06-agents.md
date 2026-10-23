@@ -49,7 +49,8 @@
   - `DiscoveryAgent.discover(spec, limit)` → hybrid retriever; propagates degraded flags and NO_CONFIDENT_MATCH; dedup/diversity via retriever; no descriptions, no LLM scoring.
 - **Done when:**
   - Tests with fake retriever: limit honored, degraded propagated, no-confident-match propagated, deterministic output.
-- **Status:** [ ]
+- **Notes:** `DiscoveryAgent(retriever, corpus=None).discover(spec, limit) -> HybridResult` (the retriever's own result type: outcome + trace + matched fields + semantic hits, which the evidence builder needs). Also: a spec that needs clarification returns NEEDS_CLARIFICATION without retrieving; a spec without semantic prompts gets the deterministic ones; `limit` must be 1..100.
+- **Status:** [x]
 
 ### P06.T05 — Evidence builder, claim validator & template descriptions
 - **Skills:** grounded-explanations
