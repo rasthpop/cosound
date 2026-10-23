@@ -61,7 +61,8 @@
   - τ (strength-band threshold) is config, not calibrated in P05: choose it from dev-split queries only, never test, and record the choice in `docs/calibration.md`.
 - **Done when:**
   - Golden tests; forbidden phrasing rejected; no-audio track never gets sound descriptors; every template sentence maps to an evidence item.
-- **Status:** [ ]
+- **Notes:** `EvidenceBuilder(bands).build(candidate, track, matched_fields=, semantic=SemanticSignal, degraded=)` takes plain values (descriptions may import only `domain`); the orchestrator maps `HybridResult` into it. `DescriptionService.claims()` turns evidence into claims (one fixed sentence + chip + evidence reference each); `describe()` shows the strongest positive claim plus the top caveat (unverified constraint, no audio), every sentence validated, `None` without evidence. Validator: cited claims, ≤ 2 sentences, forbidden words, no numbers/percentages the claims do not state, instrument nouns and sound descriptors only inside quotes copied from a cited claim. Only expansion prompts are quoted: the request text can carry negations ("… without vocals") that CLAP does not understand, so a match on it reads "a strong match for your request" (added `SemanticEvidence.query_kind`, optional). τ chosen on dev (8 judged queries, 147 pairs): `tau_strong` 0.8, `tau_partial` 0.6; see `docs/calibration.md`. Test split not used.
+- **Status:** [x]
 
 ### P06.T06 — Optional LLM description phrasing
 - **Skills:** grounded-explanations, openrouter-llm
