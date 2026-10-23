@@ -82,7 +82,8 @@
   - SQL tables for sessions, turns (query id, spec snapshot, result ids), feedback events; optimistic versioning on session updates.
 - **Done when:**
   - Contract tests against fake + SQL; concurrent update with stale version raises.
-- **Status:** [ ]
+- **Notes:** `SqlSessionRepository` / `SqlFeedbackRepository` over new tables `search_sessions` (version, feedback history JSON), `search_turns` (position, query id, spec snapshot, result ids, change summary; unique query id per session) and `feedback_events`. `save` is a compare-and-set (`UPDATE … WHERE version = expected`, insert refuses an existing id) inside one transaction, so a stale writer changes nothing. The tables are additive, so `SCHEMA_VERSION` stays 2 and an existing local database keeps working (`create_all` adds them). One contract suite runs against the fakes and SQLite.
+- **Status:** [x]
 
 ### P06.T08 — Agent C feedback rules
 - **Skills:** agent-orchestration

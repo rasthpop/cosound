@@ -196,6 +196,48 @@ import_runs = Table(
     Column("errors", JSON, nullable=False),
 )
 
+# Search sessions (P06.T07). Added without a schema-version bump: `create_all` adds them to an
+# existing v2 database, and nothing else changed.
+search_sessions = Table(
+    "search_sessions",
+    metadata,
+    Column("id", String, primary_key=True),
+    Column("created_at", String, nullable=False),
+    Column("version", Integer, nullable=False),
+    Column("feedback_history", JSON, nullable=False),
+)
+
+search_turns = Table(
+    "search_turns",
+    metadata,
+    Column("session_id", String, nullable=False),
+    Column("position", Integer, nullable=False),
+    Column("query_id", String, nullable=False),
+    Column("query_text", Text, nullable=False),
+    Column("spec", JSON, nullable=False),
+    Column("result_track_ids", JSON, nullable=False),
+    Column("created_at", String, nullable=False),
+    Column("triggered_by_event_id", String),
+    Column("change_summary", JSON, nullable=False),
+    PrimaryKeyConstraint("session_id", "position"),
+    Index("ux_search_turns_query", "session_id", "query_id", unique=True),
+)
+
+feedback_events = Table(
+    "feedback_events",
+    metadata,
+    Column("event_id", String, primary_key=True),
+    Column("search_session_id", String, nullable=False),
+    Column("query_id", String, nullable=False),
+    Column("track_id", String),
+    Column("event_type", String, nullable=False),
+    Column("attribute", String),
+    Column("value", JSON),
+    Column("free_text", Text),
+    Column("timestamp", String, nullable=False),
+    Index("ix_feedback_events_session", "search_session_id"),
+)
+
 
 class SchemaVersionError(RuntimeError):
     """The database was created by a different schema version."""
