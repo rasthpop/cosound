@@ -15,7 +15,7 @@ candidates:
   - id: google/gemma-4-31b-it:free
     provider: Google AI Studio
     context_length: 262144
-    output_strategy: json_schema   # response_format + tools
+    output_strategy: tool          # response_format without structured_outputs: forced tool call
   - id: xingchen-agi/xing4.0-29b-a4b:free
     provider: Phala
     context_length: 262144
@@ -31,7 +31,7 @@ candidates:
   - id: google/gemma-4-26b-a4b-it:free
     provider: Google AI Studio
     context_length: 262144
-    output_strategy: json_schema   # response_format + tools
+    output_strategy: tool          # response_format without structured_outputs: forced tool call
 
 # Primary first, then fallbacks, per task (copy into .env to enable).
 tasks:

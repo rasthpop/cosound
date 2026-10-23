@@ -318,7 +318,7 @@ def test_model_statuses_flag_missing_paid_and_prompt_only_models() -> None:
 
     free = {"prompt": "0", "completion": "0"}
     catalog = [
-        {"id": JSON_MODEL, "pricing": free, "supported_parameters": ["response_format"]},
+        {"id": JSON_MODEL, "pricing": free, "supported_parameters": ["structured_outputs"]},
         {"id": TOOL_MODEL, "pricing": free, "supported_parameters": ["tools", "tool_choice"]},
         {"id": PLAIN_MODEL, "pricing": free, "supported_parameters": ["temperature"]},
         {"id": "vendor/paid", "pricing": {"prompt": "0.000001", "completion": "0"}},
@@ -368,3 +368,57 @@ def test_model_refused_by_the_data_policy_falls_through() -> None:
     result = generate(adapter(rec, [JSON_MODEL, PLAIN_MODEL]))
     assert result.parsed == Answer(mood="calm")
     assert result.model_id == PLAIN_MODEL
+
+
+def routing_404(step: str, message: str = "No endpoints found") -> httpx.Response:
+    metadata = {"failed_routing_step": step}
+    return httpx.Response(404, json={"error": {"message": message, "metadata": metadata}})
+
+
+def test_response_format_alone_is_not_json_schema_support() -> None:
+    from music_discovery.infrastructure.llm import Strategy, strategies_for
+
+    gemma = frozenset({"response_format", "tools", "tool_choice", "reasoning"})
+    assert strategies_for(gemma) == [Strategy.TOOL, Strategy.PROMPT]
+    assert strategies_for(frozenset({"structured_outputs", "tools", "tool_choice"})) == [
+        Strategy.JSON_SCHEMA,
+        Strategy.TOOL,
+        Strategy.PROMPT,
+    ]
+    assert strategies_for(frozenset({"response_format"})) == [Strategy.PROMPT]
+
+
+def test_rejected_parameters_retry_the_same_model_with_the_next_strategy(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    rec = Recorder(
+        [
+            routing_404(
+                "Filter by Parameters", "No endpoints found that can handle the parameters"
+            ),
+            tool_call('{"mood": "calm"}', JSON_MODEL),
+        ]
+    )
+    result = generate(adapter(rec, [JSON_MODEL, TOOL_MODEL]))
+    assert result.parsed == Answer(mood="calm")
+    assert result.model_id == JSON_MODEL
+    assert "response_format" in rec.payload(0)
+    assert "tools" in rec.payload(1)
+    assert "can handle the parameters" in caplog.text
+
+
+def test_all_strategies_rejected_moves_to_the_next_model() -> None:
+    rejected = [routing_404("Filter by Tool Compatibility") for _ in range(2)]
+    rec = Recorder([*rejected, content('{"mood": "x"}', PLAIN_MODEL)])
+    result = generate(adapter(rec, [TOOL_MODEL, PLAIN_MODEL]))
+    assert result.model_id == PLAIN_MODEL
+    assert [rec.payload(i)["model"] for i in range(3)] == [TOOL_MODEL, TOOL_MODEL, PLAIN_MODEL]
+    assert "tools" in rec.payload(0)
+    assert "tools" not in rec.payload(1), "second try is prompt-only JSON"
+
+
+def test_data_policy_refusal_has_its_own_code() -> None:
+    rec = Recorder([routing_404("Filter by Data Policy")])
+    result = generate(adapter(rec, [JSON_MODEL]))
+    assert result.error_code == "data_policy_refused"
+    assert len(rec.requests) == 1

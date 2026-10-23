@@ -3,8 +3,11 @@
 One call walks the model chain (the task's model or `LLM_MODEL`, then `LLM_FALLBACK_MODELS`):
 
 - the structured-output strategy is chosen per model from `supported_parameters` in
-  `GET /models`: `json_schema` response format -> a forced tool call -> JSON-only prompt;
-  every answer is validated with Pydantic, content is never repaired beyond code fences;
+  `GET /models`: `json_schema` response format (needs `structured_outputs`; `response_format`
+  alone may mean JSON mode only) -> a forced tool call -> JSON-only prompt. If OpenRouter's
+  routing rejects the parameters (404 at a "Filter by ..." step), the same model is retried
+  with the next strategy. Every answer is validated with Pydantic; content is never repaired
+  beyond code fences;
 - 429 waits `Retry-After` (capped) and retries, then moves on; 5xx and timeouts retry, then
   move on; a model that is gone moves on at once; 402 (quota) stops the chain;
 - after `breaker_threshold` failed calls in a row the circuit opens for `breaker_cooldown_s`
@@ -57,11 +60,14 @@ class Strategy(StrEnum):
 
 
 class _CallError(Exception):
-    def __init__(self, code: str, *, retryable: bool = False, wait_s: float = 0.0) -> None:
+    def __init__(
+        self, code: str, *, retryable: bool = False, wait_s: float = 0.0, detail: str = ""
+    ) -> None:
         super().__init__(code)
         self.code = code
         self.retryable = retryable
         self.wait_s = wait_s
+        self.detail = detail
 
 
 @dataclass
@@ -188,7 +194,25 @@ class OpenRouterLLM:
         schema: type[T],
         timeout_s: float | None,
     ) -> LLMResult[T]:
-        strategy = self._strategy(model)
+        result: LLMResult[T] = LLMResult[T](error_code="unsupported_parameters", model_id=model)
+        for strategy in self._strategies(model):
+            result = self._attempt(model, routing, task, system, user, schema, strategy, timeout_s)
+            if result.error_code != "unsupported_parameters":
+                return result
+            log.info("llm %s: %s rejected the %s strategy, trying the next", task, model, strategy)
+        return result
+
+    def _attempt(
+        self,
+        model: str,
+        routing: Sequence[str],
+        task: str,
+        system: str,
+        user: str,
+        schema: type[T],
+        strategy: Strategy,
+        timeout_s: float | None,
+    ) -> LLMResult[T]:
         payload = _payload(model, routing, task, system, user, schema, strategy)
         payload["provider"] = {
             **payload.get("provider", {}),
@@ -203,6 +227,8 @@ class OpenRouterLLM:
                     attempt += 1
                     self.sleep(min(failure.wait_s, MAX_RETRY_AFTER_S))
                     continue
+                if failure.detail:
+                    log.warning("llm %s: %s %s: %s", task, model, failure.code, failure.detail)
                 return LLMResult[T](error_code=failure.code, model_id=model)
             return _parse(body, schema, strategy, model)
 
@@ -222,7 +248,12 @@ class OpenRouterLLM:
         if status == 402:
             raise _CallError("quota_exhausted")
         if status == 404 or (status == 400 and _mentions_model(response)):
-            raise _CallError("model_unavailable", retryable=False)
+            message, step = _routing_error(response)
+            if step is not None and "data policy" in step.casefold():
+                raise _CallError("data_policy_refused", detail=message)
+            if step is not None and step.casefold().startswith("filter by"):
+                raise _CallError("unsupported_parameters", detail=f"{step}: {message}")
+            raise _CallError("model_unavailable", detail=message)
         if status >= 500:
             raise _CallError("unavailable", retryable=True)
         if status >= 400:
@@ -238,13 +269,8 @@ class OpenRouterLLM:
             raise _CallError("invalid_output")
         return body
 
-    def _strategy(self, model: str) -> Strategy:
-        params = self._capabilities().get(model, frozenset())
-        if "structured_outputs" in params or "response_format" in params:
-            return Strategy.JSON_SCHEMA
-        if "tools" in params and "tool_choice" in params:
-            return Strategy.TOOL
-        return Strategy.PROMPT
+    def _strategies(self, model: str) -> list[Strategy]:
+        return strategies_for(self._capabilities().get(model, frozenset()))
 
     def _capabilities(self) -> Mapping[str, frozenset[str]]:
         if self.capabilities is None:
@@ -300,7 +326,16 @@ class OpenRouterLLM:
         (self.cache_dir / f"{key}.json").write_text(json.dumps(entry))
 
 
-_NEXT_MODEL_CODES = frozenset({"rate_limited", "timeout", "unavailable", "model_unavailable"})
+_NEXT_MODEL_CODES = frozenset(
+    {
+        "rate_limited",
+        "timeout",
+        "unavailable",
+        "model_unavailable",
+        "unsupported_parameters",
+        "data_policy_refused",
+    }
+)
 
 
 def _payload(
@@ -385,6 +420,27 @@ def _mentions_model(response: httpx.Response) -> bool:
     return "model" in response.text.casefold()
 
 
+def _routing_error(response: httpx.Response) -> tuple[str, str | None]:
+    """OpenRouter's error message and failed routing step (no request data, no key)."""
+    try:
+        error = response.json().get("error") or {}
+    except (ValueError, AttributeError):
+        return response.text[:200], None
+    metadata = error.get("metadata") or {}
+    step = metadata.get("failed_routing_step") if isinstance(metadata, dict) else None
+    return str(error.get("message") or "")[:200], step
+
+
+def strategies_for(params: frozenset[str]) -> list[Strategy]:
+    """Output strategies a model supports, best first; prompt-only JSON always comes last."""
+    ordered = []
+    if "structured_outputs" in params:
+        ordered.append(Strategy.JSON_SCHEMA)
+    if "tools" in params and "tool_choice" in params:
+        ordered.append(Strategy.TOOL)
+    return [*ordered, Strategy.PROMPT]
+
+
 def build_llm(settings: Settings, *, cache: bool = False) -> OpenRouterLLM | None:
     """The configured adapter, or None when LLM paths are disabled or incomplete."""
     if not settings.llm_enabled:
@@ -454,11 +510,6 @@ def model_statuses(
         pricing = m.get("pricing") or {}
         free = all(str(pricing.get(k, "1")) in ("0", "0.0") for k in ("prompt", "completion"))
         params = frozenset(m.get("supported_parameters") or [])
-        if "structured_outputs" in params or "response_format" in params:
-            strategy = Strategy.JSON_SCHEMA
-        elif "tools" in params and "tool_choice" in params:
-            strategy = Strategy.TOOL
-        else:
-            strategy = Strategy.PROMPT
+        strategy = strategies_for(params)[0]
         statuses.append(ModelStatus(model_id, True, free, strategy, m.get("context_length")))
     return statuses

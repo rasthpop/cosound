@@ -20,11 +20,11 @@ calls (`supported_parameters`), with a healthy endpoint, from different provider
 
 | Model id | Provider (endpoint) | Context | Output strategy | Endpoint on 2026-10-23 |
 |---|---|---|---|---|
-| `google/gemma-4-31b-it:free` | Google AI Studio | 262,144 | json_schema (`response_format`, tools) | up (100 % 30 min) |
+| `google/gemma-4-31b-it:free` | Google AI Studio | 262,144 | forced tool call (`response_format` is JSON mode only) | up (100 % 30 min) |
 | `xingchen-agi/xing4.0-29b-a4b:free` | Phala | 262,144 | json_schema (`structured_outputs`) | up |
 | `dots-studio/dots-3-note-preview:free` | AtlasCloud | 512,000 | json_schema (`structured_outputs`) | up |
 | `nvidia/nemotron-3-super-120b-a12b:free` | Nvidia | 262,144 | json_schema (`structured_outputs`) | **down** (status -5) |
-| `google/gemma-4-26b-a4b-it:free` | Google AI Studio | 262,144 | json_schema (`response_format`, tools) | up |
+| `google/gemma-4-26b-a4b-it:free` | Google AI Studio | 262,144 | forced tool call (`response_format` is JSON mode only) | up |
 
 Excluded:
 - `poolside/laguna-*`: their model pages say Poolside may use inputs and outputs for training
@@ -90,8 +90,8 @@ model ties it, while adding latency, free-tier limits and a data-policy question
    - feedback and descriptions: `google/gemma-4-31b-it:free` →
      `xingchen-agi/xing4.0-29b-a4b:free`.
 
-   Gemma 4 31B is primary because it supports both `response_format` and forced tool calls
-   (two output strategies), its endpoint is from a large provider with stable uptime, and it
+   Gemma 4 31B is primary because it supports forced tool calls (with prompt-only JSON as a
+   second strategy), its endpoint is from a large provider with stable uptime, and it
    is the largest healthy dense model on the list. This is a judgment from the listing, not a
    measured result.
 3. Description phrasing stays off even when the LLM is on (`LLM_DESCRIPTIONS=false`), because
@@ -110,6 +110,16 @@ model ties it, while adding latency, free-tier limits and a data-policy question
   `scripts/llm_model_check.py --strict --evaluate` and record the comparison here.
 - Free models change behind the same id: every LLM-derived spec records `interpreter_model`, and
   evaluation reports list the model ids and dates used.
+
+## Correction (2026-10-23)
+
+A first live call returned 404 "No endpoints found that can handle the requested parameters"
+for Gemma. `response_format` in `supported_parameters` does not mean JSON-schema support; only
+`structured_outputs` does. The adapter now picks JSON schema only for `structured_outputs`
+models, retries a model with its next strategy when OpenRouter's routing rejects the
+parameters, and reports `unsupported_parameters` / `data_policy_refused` with OpenRouter's
+message instead of `model_unavailable`. On the same day Gemma's free endpoint also returned
+429 from Google's shared upstream pool, which is transient and moves to the next model.
 
 ## Open items
 
