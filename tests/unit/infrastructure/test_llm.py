@@ -103,7 +103,7 @@ def test_json_schema_strategy() -> None:
     payload = rec.payload(0)
     assert payload["response_format"]["type"] == "json_schema"
     assert payload["response_format"]["json_schema"]["schema"] == Answer.model_json_schema()
-    assert payload["provider"] == {"require_parameters": True}
+    assert payload["provider"] == {"require_parameters": True, "data_collection": "deny"}
     assert payload["temperature"] == 0
     assert "tools" not in payload
 
@@ -335,3 +335,36 @@ def test_model_statuses_flag_missing_paid_and_prompt_only_models() -> None:
     )
     assert statuses["vendor/paid"].problem == "no longer free"
     assert statuses["vendor/gone:free"].problem == "not listed by OpenRouter (renamed or removed)"
+
+
+@pytest.mark.parametrize("model", [JSON_MODEL, TOOL_MODEL, PLAIN_MODEL])
+def test_every_strategy_denies_data_collection_by_default(model: str) -> None:
+    answer = '{"mood": "x"}'
+    response = tool_call(answer, model) if model == TOOL_MODEL else content(answer, model)
+    rec = Recorder([response])
+    generate(adapter(rec, [model]))
+    assert rec.payload(0)["provider"]["data_collection"] == "deny"
+
+
+def test_data_collection_follows_settings() -> None:
+    settings = Settings(  # type: ignore[call-arg]
+        _env_file=None,
+        llm_provider="openrouter",
+        openrouter_api_key=KEY,
+        llm_model=JSON_MODEL,
+        llm_data_collection="allow",
+    )
+    llm = build_llm(settings)
+    assert llm is not None
+    assert llm.data_collection == "allow"
+    assert Settings(_env_file=None).llm_data_collection == "deny"  # type: ignore[call-arg]
+
+
+def test_model_refused_by_the_data_policy_falls_through() -> None:
+    refused = httpx.Response(
+        404, json={"error": {"message": "No endpoints found matching your data policy for model"}}
+    )
+    rec = Recorder([refused, content('{"mood": "calm"}', PLAIN_MODEL)])
+    result = generate(adapter(rec, [JSON_MODEL, PLAIN_MODEL]))
+    assert result.parsed == Answer(mood="calm")
+    assert result.model_id == PLAIN_MODEL

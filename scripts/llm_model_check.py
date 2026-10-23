@@ -86,6 +86,7 @@ def evaluate(settings: Settings, config: dict) -> int:
             max_retries=settings.llm_max_retries,
             app_title=settings.openrouter_app_title,
             cache_dir=settings.llm_cache_dir,
+            data_collection=settings.llm_data_collection,
         )
         agent = QueryAgent(lexicon, LLMQueryInterpreter(llm, lexicon))
         latencies: list[float] = []

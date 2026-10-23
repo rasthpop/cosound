@@ -10,7 +10,10 @@ One call walks the model chain (the task's model or `LLM_MODEL`, then `LLM_FALLB
 - after `breaker_threshold` failed calls in a row the circuit opens for `breaker_cooldown_s`
   and calls return `circuit_open` immediately, so searches do not wait on a dead provider;
 - an optional response cache (evaluation runs) keys on model chain, task, schema and a hash
-  of the prompts, so reruns are reproducible and stay inside free-tier limits.
+  of the prompts, so reruns are reproducible and stay inside free-tier limits;
+- every request carries `provider.data_collection` ("deny" by default): OpenRouter then routes
+  only to providers that do not store or train on inputs, whatever the account setting says.
+  A model with no such provider is refused and the chain moves on (deterministic fallback last).
 
 The API key is only ever placed in the Authorization header; it is never logged or cached.
 Failures are returned as `LLMResult(error_code=...)`, never raised, so agents can fall back.
@@ -27,7 +30,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import Any, Literal, TypeVar
 
 import httpx
 from pydantic import BaseModel, SecretStr, ValidationError
@@ -101,6 +104,8 @@ class OpenRouterLLM:
     breaker_threshold: int = 3
     breaker_cooldown_s: float = 60.0
     cache_dir: Path | None = None
+    data_collection: Literal["allow", "deny"] = "deny"
+    """OpenRouter provider filter; "deny" = only providers that do not collect user data."""
     capabilities: Mapping[str, frozenset[str]] | None = None
     """`supported_parameters` per model; fetched from `GET /models` on first use when None."""
     transport: httpx.BaseTransport | None = field(default=None, repr=False)
@@ -185,6 +190,10 @@ class OpenRouterLLM:
     ) -> LLMResult[T]:
         strategy = self._strategy(model)
         payload = _payload(model, routing, task, system, user, schema, strategy)
+        payload["provider"] = {
+            **payload.get("provider", {}),
+            "data_collection": self.data_collection,
+        }
         attempt = 0
         while True:
             try:
@@ -404,6 +413,7 @@ def build_llm(settings: Settings, *, cache: bool = False) -> OpenRouterLLM | Non
         app_title=settings.openrouter_app_title,
         http_referer=settings.openrouter_http_referer,
         cache_dir=settings.llm_cache_dir if cache else None,
+        data_collection=settings.llm_data_collection,
     )
 
 

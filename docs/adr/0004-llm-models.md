@@ -53,9 +53,14 @@ Neither the models API nor the model pages (they render client-side) gave a mach
 training or retention policy for these endpoints. **Not verified:** the owner checks each chosen
 model's provider policy in the OpenRouter UI before enabling it. Independently of that:
 
-- The OpenRouter account's privacy settings should **block providers that train on inputs** for
-  free models (there are separate free/paid settings). With that set, OpenRouter does not route
-  to such providers.
+- The OpenRouter account's privacy settings (https://openrouter.ai/settings/privacy) should
+  **block providers that train on inputs** for free models (there are separate free/paid
+  settings). With that set, OpenRouter does not route to such providers.
+- Independently of the account setting, every request sends `provider.data_collection: "deny"`
+  (`LLM_DATA_COLLECTION`, default `deny`, added 2026-10-23), so OpenRouter routes only to
+  providers that do not store or train on user data. A model with no such provider is refused
+  (404); the adapter moves to the next model, then to the deterministic path. Setting it to
+  `allow` requires a decision recorded here.
 - Each task sends only what it needs: the query text, the feedback text, or the claim list. No
   keys, user or session identifiers, or catalog data are sent (base §3 non-negotiables; enforced
   in `agents/llm_query_interpreter.py`, `agents/feedback_text.py` and

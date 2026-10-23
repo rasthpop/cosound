@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -75,6 +75,9 @@ class Settings(BaseSettings):
     llm_model_feedback: str | None = None
     llm_model_descriptions: str | None = None
     llm_descriptions: bool = False
+    llm_data_collection: Literal["allow", "deny"] = "deny"
+    """Sent as OpenRouter `provider.data_collection`; "deny" skips providers that store or
+    train on inputs (ADR-0004)."""
     """LLM phrasing of track descriptions; off by default even when LLM_PROVIDER is set."""
     llm_fallback_models: CsvList = Field(default_factory=list)
     llm_timeout_s: float = Field(default=20.0, gt=0)
