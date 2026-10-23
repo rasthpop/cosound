@@ -94,7 +94,8 @@
   - Rule table for all 7 event types; change notes; validation (session/query/track membership, SELECT_TRACK map exception); `explain()` delegating to DescriptionService.
 - **Done when:**
   - Unit test per rule; Hypothesis property tests: original query unchanged, hard constraints never dropped, idempotent set updates; base §8 example ("more electronic, less acoustic") preserves flute + chill.
-- **Status:** [ ]
+- **Notes:** `feedback_rules.py`: pure `(spec, event, ctx) -> RuleResult(spec, note, rejected)` per event type, δ = 0.2; prompts rebuilt after every change. An attribute is a lexicon term or `attribute=<category>, value=<term>`. A change that would contradict a hard constraint (more vocals after "without vocals", more drums after "no drums") is rejected with a reason, never applied; unknown attributes are rejected. WRONG_INSTRUMENT excludes the track and adds a session note, keeping the instrument preference. `FeedbackAgent(lexicon, tracks, evidence, descriptions)`: `apply_feedback` raises SessionNotFound / QueryNotInSession / TrackNotInResults / TrackNotFound; a repeat (no change) gives `NextAction.NONE`. `explain(result: HybridResult)` returns candidates with evidence attached plus their explanation (instead of the skill's `explain(candidates, spec)`, which lacks the trace/matches the evidence needs). Hypothesis: original query, hard constraints and hard vocal choices survive any event sequence; track-set rules idempotent; version grows by one per change.
+- **Status:** [x]
 
 ### P06.T09 — Free-text feedback normalization
 - **Skills:** agent-orchestration, openrouter-llm
