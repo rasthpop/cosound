@@ -127,7 +127,8 @@
   - Agent A: per-category P/R/F1, hard-constraint accuracy, validity rate (LLM path when enabled). Agent C: spec-delta correctness, constraint preservation, ranking direction on `feedback_cases.jsonl`. Switch `evaluate.py` from manual specs to deterministic Agent A specs.
 - **Done when:**
   - `evaluate.py --components agent_a,agent_c --split dev` writes `agent_a.csv` / `agent_c.csv` and metrics.
-- **Status:** [ ]
+- **Notes:** `evaluation/agent_eval.py` + 10 cases in `data/evaluation/feedback_cases.jsonl` (7 dev, 3 test; track references are `rank:N` in the initial plate). `evaluate.py` now uses Agent A deterministic specs by default (`--specs manual` keeps the hand-written ones) and `--components agent_a,agent_c` writes `agent_a.csv`, `agent_c.csv` and a `components` block in `metrics.json` / `report.md`. Dev run 2026-10-23 (`p06-agents-dev`): Agent A micro F1 1.000, hard-constraint and vocals accuracy 1.000, validity 1.000 (not independent: the lexicon was written against these labels, the report says so); Agent C 8/8 cases, preservation 1.000, ranking direction 4/4. Finding: with Agent A specs hybrid dev nDCG@5 is 0.741 vs 0.787 with manual specs, semantic-only 0.720 vs 0.757. The only difference is the deterministic CLAP prompt expansions (manual specs have none); they hurt q01 and q16 most. Not changed here: tuning expansion weight / count is a retrieval calibration (dev only) for a follow-up task.
+- **Status:** [x]
 
 ### P06.T12 — Free-model selection (ADR)
 - **Skills:** openrouter-llm, retrieval-evaluation

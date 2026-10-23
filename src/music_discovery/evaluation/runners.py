@@ -1,12 +1,13 @@
 """Run retrieval systems over evaluation queries and score them (base.md §12.5-12.6).
 
 The three systems are the same `HybridRetriever` in different modes, restricted to the fixed
-evaluation corpus. Specifications come from `specs_manual.jsonl` until Agent A exists (P06.T11).
+evaluation corpus. Specifications are Agent A's deterministic readings by default (P06.T11);
+`specs_manual.jsonl` is still available as a baseline (`scripts/evaluate.py --specs manual`).
 """
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Literal, Protocol
 
@@ -60,21 +61,27 @@ def run_systems(
     systems: Sequence[Mode] = SYSTEMS,
     split: SplitName = "dev",
     depth: int = 10,
+    specs: Mapping[str, SearchSpecification] | None = None,
 ) -> list[QueryRun]:
-    """Run every system on every query of the split (depth >= k so MRR sees past the top k)."""
+    """Run every system on every query of the split (depth >= k so MRR sees past the top k).
+
+    `specs` (query id -> spec) replaces the manual specs of the dataset when given.
+    """
     query_ids = dataset.split.of(split) if dataset.split else [q.query_id for q in dataset.queries]
     corpus = [m.track_id for m in dataset.manifest]
     to_fma = {m.track_id: m.fma_track_id for m in dataset.manifest}
     runs: list[QueryRun] = []
     for query_id in query_ids:
-        payload = dataset.specs.get(query_id)
+        if specs is not None:
+            spec = specs.get(query_id)
+        else:
+            payload = dataset.specs.get(query_id)
+            spec = None if payload is None else SearchSpecification.model_validate(payload)
         for system in systems:
-            if payload is None:
+            if spec is None:
                 runs.append(QueryRun(query_id, system, "skipped", [], [], [], skipped="no_spec"))
                 continue
-            result = retriever.retrieve(
-                SearchSpecification.model_validate(payload), mode=system, limit=depth, corpus=corpus
-            )
+            result = retriever.retrieve(spec, mode=system, limit=depth, corpus=corpus)
             candidates = result.outcome.candidates
             runs.append(
                 QueryRun(
