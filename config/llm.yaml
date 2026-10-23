@@ -1,5 +1,5 @@
 # Optional agent LLMs: OpenRouter free models (https://openrouter.ai/collections/free-models).
-# Decision and evidence: docs/adr/0004-llm-models.md (status: Proposed).
+# Decision and evidence: docs/adr/0004-llm-models.md (accepted 2026-10-23).
 # This file is the shortlist and the per-task choice; .env (LLM_MODEL, LLM_FALLBACK_MODELS,
 # LLM_MODEL_QUERY, ...) enables it. With LLM_PROVIDER empty every LLM path is off and the
 # deterministic fallbacks run. Check the list still exists and is free:

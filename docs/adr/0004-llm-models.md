@@ -1,6 +1,6 @@
 # ADR-0004: Free LLM models for the agents (OpenRouter)
 
-- **Status:** Proposed (awaiting project-owner acceptance)
+- **Status:** Accepted (project owner, 2026-10-23)
 - **Date:** 2026-10-23
 - **Phase/Task:** P06.T12; affects P06.T03 (query), P06.T09 (feedback), P06.T06 (descriptions), P08
 
@@ -74,7 +74,7 @@ lexicon was written against these labels, so that score shows consistency rather
 generalization. But it means no model can *beat* the baseline on the evaluation set. At best a
 model ties it, while adding latency, free-tier limits and a data-policy question.
 
-## Decision (proposed)
+## Decision
 
 1. **LLM paths stay disabled by default** (`LLM_PROVIDER` empty, `default_enabled: false` in
    `config/llm.yaml`). The skill names this as an acceptable outcome when no free model beats
@@ -106,9 +106,9 @@ model ties it, while adding latency, free-tier limits and a data-policy question
 - Free models change behind the same id: every LLM-derived spec records `interpreter_model`, and
   evaluation reports list the model ids and dates used.
 
-## Open items for acceptance
+## Open items
 
-- [ ] Owner accepts "disabled by default" (or chooses to enable).
+- [x] Owner accepts "disabled by default" (2026-10-23).
 - [ ] Owner checks each chosen model's data policy on OpenRouter and sets the account to block
       training providers for free models.
 - [ ] With a key: run `scripts/llm_model_check.py --evaluate`, add the table to this ADR.

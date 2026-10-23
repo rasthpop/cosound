@@ -141,10 +141,10 @@
   - `llm_model_check.py`: checks via `GET /api/v1/models` that the configured models still exist and are still free, and warns if not.
 - **Done when:**
   - ADR accepted by the user; `config/llm.yaml` / `.env.example` updated; the model check passes.
-- **Notes:** Shortlist of 5 free models with structured-output support taken from the live `GET /models` listing (2026-10-23, 17 of 468 models free); free-tier limits recorded from the OpenRouter docs (20 req/min; 50/day under 10 credits, 1,000/day otherwise). `config/llm.yaml` holds the candidates and per-task chains (Gemma 4 31B primary); `scripts/llm_model_check.py` passes (all listed, free, json_schema). ADR-0004 proposes keeping LLM paths **disabled by default**: the deterministic parser already scores 1.000 on the dev labels, so no model can beat it there. Blocked on: (1) owner acceptance of ADR-0004; (2) the per-model Agent A comparison (`llm_model_check.py --evaluate`), which needs `OPENROUTER_API_KEY` (none on this machine); (3) data policies, which were not machine-readable and must be checked by the owner in the OpenRouter UI.
-- **Status:** [!]
+- **Notes:** Shortlist of 5 free models with structured-output support taken from the live `GET /models` listing (2026-10-23, 17 of 468 models free); free-tier limits recorded from the OpenRouter docs (20 req/min; 50/day under 10 credits, 1,000/day otherwise). `config/llm.yaml` holds the candidates and per-task chains (Gemma 4 31B primary); `scripts/llm_model_check.py` passes (all listed, free, json_schema). ADR-0004 proposes keeping LLM paths **disabled by default**: the deterministic parser already scores 1.000 on the dev labels, so no model can beat it there. ADR-0004 accepted by the owner on 2026-10-23. Still open (recorded in the ADR, not blocking): the per-model Agent A comparison (`llm_model_check.py --evaluate`) needs `OPENROUTER_API_KEY`, and the data policies of the chosen models must be checked by the owner in the OpenRouter UI before enabling.
+- **Status:** [x]
 
 ## Exit criteria (Milestone 4)
 - [x] NL request ⇒ ranked plate with grounded descriptions; feedback changes the next plate predictably (P06.T10).
-- [ ] All agent outputs schema-validated; LLM paths (OpenRouter free models) optional, with tested fallback and the chosen models recorded in ADR-0004.
+- [x] All agent outputs schema-validated; LLM paths (OpenRouter free models) optional, with tested fallback and the chosen models recorded in ADR-0004.
 - [x] Constraint preservation property tests green.
