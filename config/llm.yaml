@@ -1,0 +1,40 @@
+# Optional agent LLMs: OpenRouter free models (https://openrouter.ai/collections/free-models).
+# Decision and evidence: docs/adr/0004-llm-models.md (status: Proposed).
+# This file is the shortlist and the per-task choice; .env (LLM_MODEL, LLM_FALLBACK_MODELS,
+# LLM_MODEL_QUERY, ...) enables it. With LLM_PROVIDER empty every LLM path is off and the
+# deterministic fallbacks run. Check the list still exists and is free:
+#   uv run python scripts/llm_model_check.py
+version: llm-2026-10-23
+checked_at: "2026-10-23"
+
+# Enabled by default? No: the deterministic parser scores 1.000 attribute F1 on the dev
+# queries, so no model can beat it there (ADR-0004). LLM paths are opt-in.
+default_enabled: false
+
+candidates:
+  - id: google/gemma-4-31b-it:free
+    provider: Google AI Studio
+    context_length: 262144
+    output_strategy: json_schema   # response_format + tools
+  - id: xingchen-agi/xing4.0-29b-a4b:free
+    provider: Phala
+    context_length: 262144
+    output_strategy: json_schema   # structured_outputs
+  - id: dots-studio/dots-3-note-preview:free
+    provider: AtlasCloud
+    context_length: 512000
+    output_strategy: json_schema   # structured_outputs
+  - id: nvidia/nemotron-3-super-120b-a12b:free
+    provider: Nvidia
+    context_length: 262144
+    output_strategy: json_schema   # structured_outputs; endpoint was down on 2026-10-23
+  - id: google/gemma-4-26b-a4b-it:free
+    provider: Google AI Studio
+    context_length: 262144
+    output_strategy: json_schema   # response_format + tools
+
+# Primary first, then fallbacks, per task (copy into .env to enable).
+tasks:
+  query: [google/gemma-4-31b-it:free, xingchen-agi/xing4.0-29b-a4b:free, dots-studio/dots-3-note-preview:free]
+  feedback: [google/gemma-4-31b-it:free, xingchen-agi/xing4.0-29b-a4b:free]
+  descriptions: [google/gemma-4-31b-it:free, xingchen-agi/xing4.0-29b-a4b:free]

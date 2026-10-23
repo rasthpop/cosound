@@ -311,3 +311,27 @@ def test_build_llm_uses_settings() -> None:
     assert llm is not None
     assert llm.chain("query") == [PLAIN_MODEL, JSON_MODEL, TOOL_MODEL]
     assert llm.chain("feedback") == [JSON_MODEL, TOOL_MODEL, PLAIN_MODEL]
+
+
+def test_model_statuses_flag_missing_paid_and_prompt_only_models() -> None:
+    from music_discovery.infrastructure.llm import Strategy, model_statuses
+
+    free = {"prompt": "0", "completion": "0"}
+    catalog = [
+        {"id": JSON_MODEL, "pricing": free, "supported_parameters": ["response_format"]},
+        {"id": TOOL_MODEL, "pricing": free, "supported_parameters": ["tools", "tool_choice"]},
+        {"id": PLAIN_MODEL, "pricing": free, "supported_parameters": ["temperature"]},
+        {"id": "vendor/paid", "pricing": {"prompt": "0.000001", "completion": "0"}},
+    ]
+    ids = [JSON_MODEL, TOOL_MODEL, PLAIN_MODEL, "vendor/paid", "vendor/gone:free", JSON_MODEL]
+    statuses = {s.model_id: s for s in model_statuses(catalog, ids)}
+    assert len(statuses) == 5
+    assert statuses[JSON_MODEL].ok
+    assert statuses[JSON_MODEL].strategy is Strategy.JSON_SCHEMA
+    assert statuses[TOOL_MODEL].ok
+    assert statuses[TOOL_MODEL].strategy is Strategy.TOOL
+    assert (
+        statuses[PLAIN_MODEL].problem == "no structured-output or tool support (prompt-only JSON)"
+    )
+    assert statuses["vendor/paid"].problem == "no longer free"
+    assert statuses["vendor/gone:free"].problem == "not listed by OpenRouter (renamed or removed)"

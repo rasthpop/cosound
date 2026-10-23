@@ -405,3 +405,50 @@ def build_llm(settings: Settings, *, cache: bool = False) -> OpenRouterLLM | Non
         http_referer=settings.openrouter_http_referer,
         cache_dir=settings.llm_cache_dir if cache else None,
     )
+
+
+@dataclass(frozen=True)
+class ModelStatus:
+    model_id: str
+    exists: bool
+    free: bool
+    strategy: Strategy | None
+    context_length: int | None
+
+    @property
+    def ok(self) -> bool:
+        return self.exists and self.free and self.strategy in (Strategy.JSON_SCHEMA, Strategy.TOOL)
+
+    @property
+    def problem(self) -> str | None:
+        if not self.exists:
+            return "not listed by OpenRouter (renamed or removed)"
+        if not self.free:
+            return "no longer free"
+        if self.strategy not in (Strategy.JSON_SCHEMA, Strategy.TOOL):
+            return "no structured-output or tool support (prompt-only JSON)"
+        return None
+
+
+def model_statuses(
+    catalog: Sequence[Mapping[str, Any]], model_ids: Sequence[str]
+) -> list[ModelStatus]:
+    """Check configured ids against a `GET /models` listing: listed, free, structured output."""
+    by_id = {str(m.get("id")): m for m in catalog}
+    statuses = []
+    for model_id in dict.fromkeys(model_ids):
+        m = by_id.get(model_id)
+        if m is None:
+            statuses.append(ModelStatus(model_id, False, False, None, None))
+            continue
+        pricing = m.get("pricing") or {}
+        free = all(str(pricing.get(k, "1")) in ("0", "0.0") for k in ("prompt", "completion"))
+        params = frozenset(m.get("supported_parameters") or [])
+        if "structured_outputs" in params or "response_format" in params:
+            strategy = Strategy.JSON_SCHEMA
+        elif "tools" in params and "tool_choice" in params:
+            strategy = Strategy.TOOL
+        else:
+            strategy = Strategy.PROMPT
+        statuses.append(ModelStatus(model_id, True, free, strategy, m.get("context_length")))
+    return statuses
