@@ -11,16 +11,23 @@ The deterministic parser reads the request; this agent adds the session context:
 - a refinement that contradicts an earlier hard constraint ("no vocals", then "with vocals")
   is not resolved by guessing: the previous spec comes back with a clarification question.
 
-Any other query starts a new search. Track ids only ever come from the previous spec (filled
-in by feedback), never from the query text. The agent does not retrieve, embed or rank, and
-every spec it returns has passed `SearchSpecification` validation.
+Any other query starts a new search. With an `LLMQueryInterpreter`, the text is read by the
+LLM first and by the deterministic parser on any failure (`spec.interpreter` records which);
+the parser's reading also decides hard constraints and clarification on both paths.
+
+Track ids only ever come from the previous spec (filled in by feedback), never from the query
+text. The agent does not retrieve, embed or rank, and every spec it returns has passed
+`SearchSpecification` validation.
 """
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 
 from music_discovery.agents.lexicon_loader import PUNCTUATION, Lexicon, Phrase, tokenize
+from music_discovery.agents.llm_query_interpreter import LLMQueryInterpreter
 from music_discovery.agents.query_parser import QueryParser
 from music_discovery.domain.errors import ContradictoryConstraintsError
 from music_discovery.domain.models import SearchSession
@@ -53,11 +60,20 @@ VOCALS_WANTED: frozenset[VocalPreference] = frozenset({"required", "preferred"})
 VOCALS_UNWANTED: frozenset[VocalPreference] = frozenset({"avoided", "excluded"})
 REFINEMENT_NOTE = "read as a refinement of the previous search"
 NOTHING_NEW_NOTE = "nothing in the follow-up mapped to a known attribute; previous search kept"
+log = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class QueryInterpretation:
+    spec: SearchSpecification
+    llm_fallback_reason: str | None = None
+    """Why the LLM reading was not used; None when it was used or no LLM is configured."""
 
 
 class QueryAgent:
-    def __init__(self, lexicon: Lexicon) -> None:
+    def __init__(self, lexicon: Lexicon, llm: LLMQueryInterpreter | None = None) -> None:
         self._parser = QueryParser(lexicon)
+        self._llm = llm
         self._follow_up = lexicon.cues.follow_up
         self._longest_cue = max((len(c) for c in self._follow_up), default=0)
 
@@ -67,11 +83,29 @@ class QueryAgent:
 
     def interpret(self, query: str, state: SearchSession | None = None) -> SearchSpecification:
         """Raises ValueError for an empty query; contradictions become clarification specs."""
-        parsed = self._parser.parse(query)
+        return self.interpret_traced(query, state).spec
+
+    def interpret_traced(
+        self, query: str, state: SearchSession | None = None
+    ) -> QueryInterpretation:
         previous = state.current_spec if state is not None else None
+        parsed, reason = self._read(query, previous)
         if previous is None or not self.is_follow_up(query, previous):
-            return parsed
-        return _refine(previous, parsed)
+            return QueryInterpretation(parsed, reason)
+        return QueryInterpretation(_refine(previous, parsed), reason)
+
+    def _read(
+        self, query: str, previous: SearchSpecification | None
+    ) -> tuple[SearchSpecification, str | None]:
+        parsed = self._parser.parse(query)
+        if self._llm is None or parsed.needs_clarification:
+            return parsed, None
+        known = previous.reference_track_ids if previous is not None else []
+        outcome = self._llm.interpret(query, parsed, known_track_ids=known)
+        if outcome.spec is None:
+            log.info("llm query interpretation rejected: %s", outcome.fallback_reason)
+            return parsed, outcome.fallback_reason
+        return outcome.spec, None
 
     def is_follow_up(self, query: str, previous: SearchSpecification) -> bool:
         """A pending clarification is always answered; otherwise the opening words decide."""
@@ -104,6 +138,8 @@ def _refine(previous: SearchSpecification, parsed: SearchSpecification) -> Searc
     nothing_new = nothing_new and parsed.vocal_preferences == "unspecified"
     data |= {
         "spec_version": version,
+        "interpreter": parsed.interpreter,
+        "interpreter_model": parsed.interpreter_model,
         "original_query": _extend(previous.original_query, parsed.original_query),
         "uncertainties": _notes(previous, parsed, nothing_new),
     }

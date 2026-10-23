@@ -71,6 +71,9 @@ class Settings(BaseSettings):
     openrouter_api_key: SecretStr | None = None
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     llm_model: str | None = None
+    llm_model_query: str | None = None
+    llm_model_feedback: str | None = None
+    llm_model_descriptions: str | None = None
     llm_fallback_models: CsvList = Field(default_factory=list)
     llm_timeout_s: float = Field(default=20.0, gt=0)
     llm_max_retries: int = Field(default=2, ge=0)
@@ -93,6 +96,9 @@ class Settings(BaseSettings):
         "active_projection_version",
         "llm_provider",
         "llm_model",
+        "llm_model_query",
+        "llm_model_feedback",
+        "llm_model_descriptions",
         "openrouter_http_referer",
         mode="before",
     )

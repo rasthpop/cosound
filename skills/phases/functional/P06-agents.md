@@ -38,7 +38,8 @@
   - Adapter tests with `httpx.MockTransport`: each output strategy, 429 + `Retry-After`, model not found → next fallback model, timeout, circuit breaker.
   - Fake-LLM tests: valid output accepted; invalid JSON, schema violation, hallucinated track ids, soft→hard escalation all rejected ⇒ deterministic fallback with reason.
   - System works end-to-end with the LLM disabled.
-- **Status:** [ ]
+- **Notes:** `infrastructure/llm.py` (`OpenRouterLLM`, `build_llm(settings)`; plain httpx, injectable transport/sleep/clock) and `agents/llm_query_interpreter.py` with the versioned prompt `agents/prompts/query.md` (`query-v1`, lexicon vocabulary injected). Added settings `LLM_MODEL_QUERY/FEEDBACK/DESCRIPTIONS`. The LLM draft is accepted only if every hard choice it makes is also in the deterministic parse (hard constraints and clarification always come from the parser); values are mapped to lexicon terms or dropped with a note; reference ids not in the session are rejected. `QueryAgent(lexicon, llm=None)`; `interpret_traced()` exposes the fallback reason. No API key on this machine: the `live` smoke test (`tests/integration/infrastructure/test_llm_live.py`) has not been run; `.env.example` keeps `LLM_MODEL` empty until P06.T12.
+- **Status:** [x]
 
 ### P06.T04 — Agent B (discovery orchestration)
 - **Skills:** agent-orchestration, hybrid-retrieval
