@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from enum import StrEnum
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -71,6 +71,14 @@ class Settings(BaseSettings):
     openrouter_api_key: SecretStr | None = None
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     llm_model: str | None = None
+    llm_model_query: str | None = None
+    llm_model_feedback: str | None = None
+    llm_model_descriptions: str | None = None
+    llm_descriptions: bool = False
+    llm_data_collection: Literal["allow", "deny"] = "deny"
+    """Sent as OpenRouter `provider.data_collection`; "deny" skips providers that store or
+    train on inputs (ADR-0004)."""
+    """LLM phrasing of track descriptions; off by default even when LLM_PROVIDER is set."""
     llm_fallback_models: CsvList = Field(default_factory=list)
     llm_timeout_s: float = Field(default=20.0, gt=0)
     llm_max_retries: int = Field(default=2, ge=0)
@@ -93,6 +101,9 @@ class Settings(BaseSettings):
         "active_projection_version",
         "llm_provider",
         "llm_model",
+        "llm_model_query",
+        "llm_model_feedback",
+        "llm_model_descriptions",
         "openrouter_http_referer",
         mode="before",
     )

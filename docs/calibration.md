@@ -86,3 +86,32 @@ Run 2026-10-22, 31 configurations. Unjudged dev queries left out: q07, q08.
 | 29 | semantic=0.5 metadata=0.5 norm=zscore_sigmoid gamma=1 | 0.700 | 8 |
 | 30 | semantic=0.4 metadata=0.6 norm=minmax gamma=0 | 0.699 | 8 |
 | 31 | semantic=0.4 metadata=0.6 norm=minmax gamma=1 | 0.699 | 8 |
+
+## Description strength threshold τ (P06.T05)
+
+`config/descriptions.yaml` (`semantic_bands`) sets the strength band a track's CLAP match is
+described with: **strong** = semantic rank ≤ 3 and normalized semantic score ≥ `tau_strong`;
+**partial** = normalized ≥ `tau_partial`; otherwise **weak**. Bands only change the wording of
+descriptions ("strong match for …" / "partial match" / "only a loose match"); they never change
+ranking.
+
+Procedure (2026-10-23, dev split only, the 8 judged dev queries of `judging_minimum.json`):
+Agent A deterministic specs, hybrid mode with `w1-dev-2026-10-22`, whole 20-track corpus per
+query; every returned track's semantic rank and minmax-normalized semantic score was paired with
+the owner's `overall_relevance` (relevant = ≥ 2). 147 judged pairs, base rate 0.26 relevant.
+The test split was not used.
+
+| Band rule | Precision (relevant) | n |
+|---|---|---|
+| top-3, any score | 0.67 | 21 |
+| top-3, normalized ≥ 0.80 | 0.71 | 17 |
+| top-3, normalized ≥ 0.85 | 0.71 | 14 |
+| top-3, normalized ≥ 0.95 | 0.78 | 9 |
+| rank > 3, normalized ≥ 0.6 | 0.44 | 25 |
+| rank > 3, normalized ≥ 0.5 | 0.34 | 41 |
+| normalized < 0.6 | 0.13 | 101 |
+
+Decision: `tau_strong: 0.8` (same precision as 0.85 with more coverage; higher thresholds
+differ by one or two tracks, which is noise at this size) and `tau_partial: 0.6` (the clearest
+split: 0.44 above vs 0.13 below, against a 0.26 base rate). Version `d1-dev-2026-10-23`. With
+eight queries these are coarse settings; re-check them when more dev queries are judged.

@@ -1,0 +1,6 @@
+# Tempo words (soft). Numeric tempo ("under 100 bpm") is parsed as a hard range.
+weight: 0.7
+terms:
+  fast: [fast, quick, uptempo, up tempo, rapid, speedy]
+  slow: [slow, slow paced, unhurried]
+  mid-tempo: [mid-tempo, midtempo, moderate tempo]

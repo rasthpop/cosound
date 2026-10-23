@@ -1,4 +1,4 @@
-"""SQLite implementations of the catalog repository protocols."""
+"""SQLite implementations of the catalog, session and feedback repository protocols."""
 
 from __future__ import annotations
 
@@ -6,10 +6,11 @@ from collections.abc import Collection, Mapping, Sequence
 from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
-from sqlalchemy import Connection, Table, delete, func, insert, select
+from sqlalchemy import Connection, Table, delete, func, insert, select, update
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from music_discovery.domain.enums import DataSource, MatchStatus, RelationshipType
+from music_discovery.domain.errors import StaleSessionVersion
 from music_discovery.domain.ids import ExternalId
 from music_discovery.domain.models import (
     Artist,
@@ -18,10 +19,13 @@ from music_discovery.domain.models import (
     ImportRun,
     Label,
     Release,
+    SearchSession,
+    SearchTurnRecord,
     Track,
     TrackAudio,
     TrackRelationship,
 )
+from music_discovery.domain.schemas import FeedbackEvent
 from music_discovery.infrastructure import database as db
 from music_discovery.infrastructure.database import Database
 
@@ -293,3 +297,105 @@ class SqlImportRunRepository:
         with self._db.connect() as conn:
             row = conn.execute(query).mappings().first()
         return None if row is None else ImportRun.model_validate(dict(row))
+
+
+class SqlSessionRepository:
+    """Sessions with their turns. `save` is a compare-and-set on the stored version."""
+
+    def __init__(self, database: Database) -> None:
+        self._db = database
+
+    def get(self, session_id: str) -> SearchSession | None:
+        sessions, turns = db.search_sessions, db.search_turns
+        with self._db.connect() as conn:
+            row = conn.execute(select(sessions).where(sessions.c.id == session_id)).mappings()
+            found = row.first()
+            if found is None:
+                return None
+            turn_rows = conn.execute(
+                select(turns).where(turns.c.session_id == session_id).order_by(turns.c.position)
+            ).mappings()
+            records = [
+                SearchTurnRecord.model_validate(
+                    {k: v for k, v in r.items() if k not in ("session_id", "position")}
+                )
+                for r in turn_rows
+            ]
+        return SearchSession.model_validate(
+            {
+                "session_id": found["id"],
+                "created_at": found["created_at"],
+                "version": found["version"],
+                "turns": records,
+                "feedback_history": found["feedback_history"],
+            }
+        )
+
+    def save(self, session: SearchSession, *, expected_version: int | None) -> None:
+        sessions = db.search_sessions
+        data = _row(session)
+        row = {
+            "id": session.session_id,
+            "created_at": data["created_at"],
+            "version": session.version,
+            "feedback_history": data["feedback_history"],
+        }
+        with self._db.transaction(), self._db.connect() as conn:
+            if expected_version is None:
+                exists = conn.execute(
+                    select(sessions.c.version).where(sessions.c.id == session.session_id)
+                ).first()
+                if exists is not None:
+                    raise _stale(session.session_id, exists[0], expected_version)
+                conn.execute(insert(sessions).values(**row))
+            else:
+                updated = conn.execute(
+                    update(sessions)
+                    .where(sessions.c.id == session.session_id)
+                    .where(sessions.c.version == expected_version)
+                    .values(**row)
+                )
+                if updated.rowcount != 1:
+                    stored = conn.execute(
+                        select(sessions.c.version).where(sessions.c.id == session.session_id)
+                    ).scalar()
+                    raise _stale(session.session_id, stored, expected_version)
+            self._replace_turns(conn, session.session_id, data["turns"])
+
+    def _replace_turns(
+        self, conn: Connection, session_id: str, turns: Sequence[Mapping[str, Any]]
+    ) -> None:
+        table = db.search_turns
+        conn.execute(delete(table).where(table.c.session_id == session_id))
+        if turns:
+            conn.execute(
+                insert(table),
+                [{**t, "session_id": session_id, "position": i} for i, t in enumerate(turns)],
+            )
+
+
+def _stale(session_id: str, stored: int | None, expected: int | None) -> StaleSessionVersion:
+    return StaleSessionVersion(
+        f"session {session_id} is at version {stored}, expected {expected}",
+        details={"session_id": session_id},
+    )
+
+
+class SqlFeedbackRepository:
+    def __init__(self, database: Database) -> None:
+        self._db = database
+
+    def add(self, event: FeedbackEvent) -> None:
+        with self._db.connect() as conn:
+            _upsert(conn, db.feedback_events, _row(event))
+
+    def for_session(self, session_id: str) -> list[FeedbackEvent]:
+        table = db.feedback_events
+        query = (
+            select(table)
+            .where(table.c.search_session_id == session_id)
+            .order_by(table.c.timestamp, table.c.event_id)
+        )
+        with self._db.connect() as conn:
+            rows = conn.execute(query).mappings().all()
+        return [FeedbackEvent.model_validate(dict(r)) for r in rows]

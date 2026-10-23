@@ -1,0 +1,11 @@
+# Sonic texture / production character.
+weight: 0.7
+terms:
+  acoustic: [acoustic, unplugged]
+  lo-fi: [lo-fi, lofi]
+  distorted: [distorted, distortion, fuzzy, gritty]
+  lush: [lush]
+  sparse: [sparse, minimal, minimalist, stripped down]
+  glitchy: [glitchy, glitch]
+  orchestral: [orchestral, symphonic]
+  noisy: [noisy]

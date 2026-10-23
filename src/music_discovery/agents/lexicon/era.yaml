@@ -1,0 +1,8 @@
+# Era words. Decades written as numbers ("80s", "1980s", "'90s") are recognised without
+# being listed. Canonical values are four-digit decades.
+weight: 0.7
+terms:
+  1960s: [sixties]
+  1970s: [seventies]
+  1980s: [eighties]
+  1990s: [nineties]

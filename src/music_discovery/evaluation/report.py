@@ -65,8 +65,10 @@ LIMITATIONS = """\
   they are subjective, especially for mood.
 - The 20 tracks were first drafted from metadata (genre, title, tags, echonest estimates) and
   then checked by ear; corpus composition still shapes which queries have relevant tracks.
-- Search specifications are hand-written (`specs_manual.jsonl`) until Agent A exists (P06),
-  so these results isolate retrieval from query understanding.
+- Search specifications come from Agent A's deterministic parser by default; every system
+  uses the same spec, so the comparison still isolates retrieval. `specs_source` in
+  `config_snapshot.json` records which ran (`--specs manual` uses `specs_manual.jsonl`). The
+  retrieval weights were calibrated on the manual specs (P05.T06).
 - Retrieval runs over the 20-track corpus only; min-max normalization over so few candidates
   exaggerates differences between close scores.
 - FMA genres and tags are sparse (few mood tags), which limits metadata-only retrieval.
@@ -81,7 +83,7 @@ def _mean(m: Mean) -> str:
     return f"{_fmt(m.value)} (n={m.n})"
 
 
-def _write_csv(path: Path, rows: Sequence[Mapping[str, Any]], columns: Sequence[str]) -> None:
+def write_csv(path: Path, rows: Sequence[Mapping[str, Any]], columns: Sequence[str]) -> None:
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(columns), lineterminator="\n")
         writer.writeheader()
@@ -118,7 +120,11 @@ def write_run(
     split: str,
     snapshot: Mapping[str, Any],
     coverage: Mapping[str, int],
+    components: Mapping[str, Any] | None = None,
+    component_lines: Sequence[str] = (),
 ) -> Path:
+    """`components` (metrics per component) goes into metrics.json; `component_lines` into the
+    report's component section."""
     out_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy(dataset_dir / MANIFEST_FILE, out_dir / "manifest.csv")
     shutil.copy(dataset_dir / QUERIES_FILE, out_dir / "queries.jsonl")
@@ -131,6 +137,8 @@ def write_run(
     payload = metrics_payload(
         summaries, rows, split=split, judged=len(dataset.judgments), total=total
     )
+    if components:
+        payload["components"] = dict(components)
     (out_dir / "metrics.json").write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -149,7 +157,7 @@ def write_run(
                 "degraded": ";".join(run.degraded),
             }
         )
-    _write_csv(
+    write_csv(
         out_dir / "per_query_results.csv",
         per_query,
         [*asdict(rows[0]).keys(), "ranked_fma_track_ids", "degraded"] if rows else ["query_id"],
@@ -168,12 +176,19 @@ def write_run(
         }
         for s in summaries
     ]
-    _write_csv(
+    write_csv(
         out_dir / "comparison.csv", comparison, list(comparison[0]) if comparison else ["system"]
     )
     (out_dir / "report.md").write_text(
         render_report(
-            dataset, rows, summaries, split=split, snapshot=snapshot, coverage=coverage, runs=runs
+            dataset,
+            rows,
+            summaries,
+            split=split,
+            snapshot=snapshot,
+            coverage=coverage,
+            runs=runs,
+            component_lines=component_lines,
         ),
         encoding="utf-8",
     )
@@ -189,6 +204,7 @@ def render_report(
     snapshot: Mapping[str, Any],
     coverage: Mapping[str, int],
     runs: Sequence[QueryRun],
+    component_lines: Sequence[str] = (),
 ) -> str:
     lines = [f"# Evaluation report: {snapshot.get('run_id', '')}", ""]
     full = len(dataset.manifest)
@@ -283,7 +299,13 @@ def render_report(
         "",
         "## Component evaluations",
         "",
-        "- Agent A (attribute extraction) and Agent C (feedback): P06.T11.",
+        *(
+            component_lines
+            or [
+                "- Agent A and Agent C: not run "
+                "(`scripts/evaluate.py --components agent_a,agent_c`)."
+            ]
+        ),
         "- UMAP neighborhood preservation: P07.T04.",
         "- Description factuality audit: P10.T04.",
         "",

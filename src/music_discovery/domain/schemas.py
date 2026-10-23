@@ -342,6 +342,8 @@ class SemanticEvidence(FrozenModel):
     rank: Annotated[int, Field(ge=1)]
     model_id: NonEmptyStr
     strength: MatchStrength
+    query_kind: Literal["original", "expansion", "reference"] | None = None
+    """Which query matched: the request text, a prompt expansion, or a liked track's audio."""
 
 
 class AudioFeature(FrozenModel):

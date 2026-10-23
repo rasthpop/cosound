@@ -77,7 +77,7 @@ _WORD = re.compile(r"[a-z0-9]+")
 _ERA = re.compile(r"^(?:(?P<century>1[89]|20)?(?P<decade>\d)0)'?s$")
 
 TermExpander = Callable[[str], Sequence[str]]
-"""Synonym hook (identity until the P06 lexicon is wired in)."""
+"""Synonym hook; the composition root passes the agents lexicon's `expand` (identity if unset)."""
 
 
 def metadata_document(track: Track, album_title: str | None) -> dict[str, str]:
