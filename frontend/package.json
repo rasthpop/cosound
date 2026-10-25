@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "contract:check": "node scripts/contract.mjs --check",
-    "contract": "node scripts/contract.mjs"
+    "contract": "node scripts/contract.mjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "react": "^19.3.1",

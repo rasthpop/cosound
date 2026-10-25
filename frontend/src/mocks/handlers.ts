@@ -153,7 +153,8 @@ export function handlersFor(scenario: Scenario, options: ScenarioOptions = {}): 
       return json<FeedbackResponse>({
         ...refined,
         updated_search_state: { ...refined.updated_search_state, session_id: body.session_id },
-        refreshed: body.refresh ? plate(body.session_id) : null,
+        // like the API, the refreshed plate reports what the feedback changed
+        refreshed: body.refresh ? { ...plate(body.session_id), change_summary: refined.change_summary } : null,
       });
     }),
 

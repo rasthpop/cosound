@@ -103,9 +103,10 @@
   - Playwright test runs it in mock mode, and (optionally, `slow`) against the real backend.
 - **Done when:**
   - E2E test proves search → plate → feedback → refreshed plate → map points with zero ML/retrieval logic in the frontend.
-- **Status:** [ ]
+- **Notes:** Served by `App.tsx` only when `import.meta.env.DEV` and the path is `/__dev/harness`; the production bundle contains neither the harness nor MSW (checked on build). Playwright runs the dev server in mock mode (3 tests: full flow, map-down, degraded semantic) and is now a CI step. `E2E_REAL_BACKEND=1 API_PROXY_TARGET=…` runs the real-backend test through a new Vite `/api` proxy; it passed against the fma_small install on 2026-10-25. The mock's refreshed plate now carries the feedback's `change_summary`, as the API's does.
+- **Status:** [x]
 
 ## Exit criteria (Milestone 6)
-- [ ] The interface layer can search, display a plate, submit feedback, and retrieve map points without implementing ML or retrieval logic (P09.T09).
-- [ ] Loading, error, empty, degraded, and stale-response states exposed by hooks and tested.
-- [ ] `contract:check` and boundary check green.
+- [x] The interface layer can search, display a plate, submit feedback, and retrieve map points without implementing ML or retrieval logic (P09.T09).
+- [x] Loading, error, empty, degraded, and stale-response states exposed by hooks and tested.
+- [x] `contract:check` and boundary check green.
