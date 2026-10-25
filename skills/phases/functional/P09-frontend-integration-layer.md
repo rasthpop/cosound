@@ -25,7 +25,8 @@
 - **Done when:**
   - Every handler response type-checks against `types.ts`; vitest server setup with `onUnhandledRequest: "error"`.
   - **Unblocks UI track** (U02, U03).
-- **Status:** [ ]
+- **Notes:** Fixtures are typed through `mocks/fixtures.ts` (JSON imports widen enum strings, so each fixture is bound to its DTO alias; a test checks the binding equals the backend's `fixtures/index.json`). Handlers type-check derived bodies via a `json<T>()` helper. Happy handlers echo session ids, issue `qry_mock_N` ids, paginate a fixed point list (or `?mapPoints=N` synthetic points); free-text-only feedback answers `feedback_rejected`; `artist_id` is ignored by the mock (map points carry no artist id). `main.tsx` starts the worker only when `VITE_API_MODE=mock`; the production bundle contains no MSW code (only the inert `mockServiceWorker.js` is copied from `public/`).
+- **Status:** [x]
 
 ### P09.T03 — API client
 - **Skills:** api-contracts, ui-architecture

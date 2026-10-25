@@ -25,7 +25,7 @@ const noFetch = [
 ];
 
 export default tseslint.config(
-  { ignores: ["dist", "coverage", "node_modules", "src/api/generated.ts", "playwright-report", "test-results"] },
+  { ignores: ["dist", "coverage", "node_modules", "src/api/generated.ts", "playwright-report", "test-results", "public/mockServiceWorker.js"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
