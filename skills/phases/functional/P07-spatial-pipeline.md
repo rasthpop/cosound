@@ -79,9 +79,10 @@
   - Fit on a subset, transform held-out points, compare with full refit (trustworthiness, displacement). Decide whether incremental updates are acceptable; until then catalog changes require an explicit rebuild.
 - **Done when:**
   - Experiment doc with numbers and a decision.
-- **Status:** [ ]
+- **Notes:** Run on the full fma_small embeddings (80/20 seeded split): held-out kNN overlap@10 0.191 vs 0.274 for a full refit; trustworthiness 0.952 vs 0.955; full refit ~24 s. Decision: no `transform()` in the MVP, catalog changes require an explicit rebuild (see the doc).
+- **Status:** [x]
 
 ## Exit criteria (Milestone 5)
-- [ ] Backend returns stable map coordinates without recalculating UMAP during searches.
-- [ ] Coordinate ↔ track-id alignment validated on load.
-- [ ] Neighbors computed in the original embedding space.
+- [x] Backend returns stable map coordinates without recalculating UMAP during searches.
+- [x] Coordinate ↔ track-id alignment validated on load.
+- [x] Neighbors computed in the original embedding space.
