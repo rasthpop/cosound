@@ -21,6 +21,7 @@ from music_discovery.agents.feedback_text import FeedbackTextNormalizer
 from music_discovery.agents.lexicon_loader import load_lexicon
 from music_discovery.agents.llm_query_interpreter import LLMQueryInterpreter
 from music_discovery.agents.orchestrator import Orchestrator
+from music_discovery.api.dependencies import Services
 from music_discovery.application.capabilities import CapabilityService
 from music_discovery.application.feedback_service import FeedbackService
 from music_discovery.application.map_service import MapService
@@ -271,4 +272,13 @@ class World:
             self.audio,
             NeighborService(self.index if semantic else None, self.relationships),
             self.data_dir,
+        )
+
+    def services(self) -> Services:
+        return Services(
+            search=self.search,
+            feedback=self.feedback,
+            tracks=self.track_service,
+            map=self.map,
+            capabilities=self.capabilities,
         )

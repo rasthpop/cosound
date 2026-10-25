@@ -38,7 +38,8 @@
   - `make serve` → `uvicorn music_discovery.api.app:create_app --factory`.
 - **Done when:**
   - Tests: each error code → expected status/envelope; app starts with CLAP checkpoint missing (semantic unavailable) and with projection missing (map unavailable).
-- **Status:** [ ]
+- **Notes:** `create_app(settings, services=…)` lets tests inject services built over fakes (`tests/support/world.py`); routes read them via `api/dependencies.get_*`. Startup degrades instead of failing: no embeddings → `embeddings_unavailable`, embeddings but no checkpoint → `clap_checkpoint_missing` (neighbors still use the index), bad/missing projection → map unavailable. Unmapped domain codes and unexpected exceptions return a generic 500 envelope. Added `infrastructure/ids.py` (`RandomIdGenerator`).
+- **Status:** [x]
 
 ### P08.T04 — Search, track & neighbor routes
 - **Skills:** api-contracts
