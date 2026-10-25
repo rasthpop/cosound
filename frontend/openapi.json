@@ -1,0 +1,3930 @@
+{
+  "components": {
+    "schemas": {
+      "ApiWarning": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "description": "e.g. `semantic_unavailable`, `llm_fallback`, `map_unavailable`",
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ApiWarning",
+        "type": "object"
+      },
+      "Artist": {
+        "additionalProperties": false,
+        "properties": {
+          "artist_id": {
+            "title": "Artist Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artist_id",
+          "name"
+        ],
+        "title": "Artist",
+        "type": "object"
+      },
+      "AudioInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "license": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License"
+          }
+        },
+        "required": [
+          "duration_seconds",
+          "license"
+        ],
+        "title": "AudioInfo",
+        "type": "object"
+      },
+      "Capabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "llm_interpreter": {
+            "$ref": "#/components/schemas/InterpreterStatus"
+          },
+          "map": {
+            "$ref": "#/components/schemas/CapabilityStatus"
+          },
+          "semantic": {
+            "$ref": "#/components/schemas/CapabilityStatus"
+          }
+        },
+        "required": [
+          "semantic",
+          "llm_interpreter",
+          "map"
+        ],
+        "title": "Capabilities",
+        "type": "object"
+      },
+      "CapabilityStatus": {
+        "enum": [
+          "available",
+          "unavailable"
+        ],
+        "title": "CapabilityStatus",
+        "type": "string"
+      },
+      "ConstraintAttribute": {
+        "enum": [
+          "vocals",
+          "instrument",
+          "genre",
+          "era",
+          "tempo",
+          "duration"
+        ],
+        "title": "ConstraintAttribute",
+        "type": "string"
+      },
+      "ConstraintCheck": {
+        "additionalProperties": false,
+        "properties": {
+          "attribute": {
+            "$ref": "#/components/schemas/ConstraintAttribute"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/ConstraintOperator"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ConstraintStatus"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "attribute",
+          "operator",
+          "value",
+          "status"
+        ],
+        "title": "ConstraintCheck",
+        "type": "object"
+      },
+      "ConstraintOperator": {
+        "enum": [
+          "required",
+          "excluded",
+          "range"
+        ],
+        "title": "ConstraintOperator",
+        "type": "string"
+      },
+      "ConstraintStatus": {
+        "enum": [
+          "satisfied",
+          "violated",
+          "unknown"
+        ],
+        "title": "ConstraintStatus",
+        "type": "string"
+      },
+      "ErrorBody": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "description": "Stable machine code, e.g. `track_not_found`.",
+            "title": "Code",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "default": {},
+            "title": "Details",
+            "type": "object"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorBody",
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "additionalProperties": false,
+        "description": "The envelope of every non-2xx response.",
+        "examples": [
+          {
+            "error": {
+              "code": "validation_error",
+              "details": {
+                "errors": [
+                  {
+                    "loc": "body.query",
+                    "msg": "too short"
+                  }
+                ]
+              },
+              "message": "Request is invalid."
+            }
+          },
+          {
+            "error": {
+              "code": "track_not_found",
+              "details": {
+                "track_id": "trk_example_9"
+              },
+              "message": "Track trk_example_9 does not exist."
+            }
+          },
+          {
+            "error": {
+              "code": "session_not_found",
+              "details": {
+                "session_id": "ses_example_9"
+              },
+              "message": "Session ses_example_9 does not exist."
+            }
+          },
+          {
+            "error": {
+              "code": "track_not_in_results",
+              "details": {
+                "query_id": "qry_example_1",
+                "track_id": "trk_example_9"
+              },
+              "message": "Track trk_example_9 was not returned for query qry_example_1."
+            }
+          },
+          {
+            "error": {
+              "code": "projection_unavailable",
+              "details": {},
+              "message": "The track map is not available."
+            }
+          },
+          {
+            "error": {
+              "code": "audio_missing",
+              "details": {
+                "track_id": "trk_example_3"
+              },
+              "message": "Track trk_example_3 has no validated audio."
+            }
+          },
+          {
+            "error": {
+              "code": "internal_error",
+              "details": {},
+              "message": "Something went wrong."
+            }
+          }
+        ],
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "EvidenceStatus": {
+        "enum": [
+          "audio_and_metadata",
+          "metadata_only",
+          "audio_only"
+        ],
+        "title": "EvidenceStatus",
+        "type": "string"
+      },
+      "FeedbackEventRecord": {
+        "additionalProperties": false,
+        "properties": {
+          "attribute": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribute"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_type": {
+            "$ref": "#/components/schemas/FeedbackType"
+          },
+          "free_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Free Text"
+          },
+          "query_id": {
+            "title": "Query Id",
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
+            "type": "string"
+          },
+          "track_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Track Id"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "event_id",
+          "query_id",
+          "event_type",
+          "track_id",
+          "attribute",
+          "value",
+          "free_text",
+          "timestamp"
+        ],
+        "title": "FeedbackEventRecord",
+        "type": "object"
+      },
+      "FeedbackRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "attribute": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribute"
+          },
+          "event_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FeedbackType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Typed event; omit to send free_text only."
+          },
+          "free_text": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Free Text"
+          },
+          "limit": {
+            "default": 10,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "query_id": {
+            "title": "Query Id",
+            "type": "string"
+          },
+          "refresh": {
+            "default": false,
+            "description": "Return the refreshed plate.",
+            "title": "Refresh",
+            "type": "boolean"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "track_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Track Id"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "session_id",
+          "query_id"
+        ],
+        "title": "FeedbackRequest",
+        "type": "object"
+      },
+      "FeedbackResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "accepted": true,
+            "change_summary": [
+              "excluded trk_example_1",
+              "added electronic"
+            ],
+            "next_action": "REFINE_SEARCH",
+            "refreshed": {
+              "capabilities": {
+                "llm_interpreter": "disabled",
+                "map": "available",
+                "semantic": "available"
+              },
+              "change_summary": [
+                "excluded trk_example_1",
+                "added electronic"
+              ],
+              "interpreted_query": {
+                "diversity": 0.5,
+                "energy_preferences": [],
+                "era_preferences": [],
+                "excluded_track_ids": [
+                  "trk_example_1"
+                ],
+                "genre_preferences": [
+                  {
+                    "value": "electronic",
+                    "weight": 0.6
+                  }
+                ],
+                "hard_constraints": [],
+                "instrument_preferences": [
+                  {
+                    "source_span": "flute",
+                    "value": "flute",
+                    "weight": 1.0
+                  }
+                ],
+                "interpreter": "deterministic",
+                "mood_preferences": [
+                  {
+                    "source_span": "chill",
+                    "value": "chill",
+                    "weight": 0.7
+                  }
+                ],
+                "negative_preferences": [],
+                "negative_reference_track_ids": [],
+                "original_query": "Something chill with a flute",
+                "reference_track_ids": [],
+                "semantic_prompts": [
+                  "chill music featuring flute"
+                ],
+                "spec_version": 2,
+                "tempo_preferences": [],
+                "texture_preferences": [],
+                "uncertainties": [],
+                "vocal_preferences": "unspecified"
+              },
+              "no_match_reasons": [],
+              "outcome": "ok",
+              "query_id": "qry_example_2",
+              "results": [
+                {
+                  "artists": [
+                    {
+                      "artist_id": "art_example_1",
+                      "name": "Example Artist 1"
+                    }
+                  ],
+                  "audio_available": true,
+                  "constraint_status": [],
+                  "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+                  "evidence_status": "audio_and_metadata",
+                  "genres": [
+                    "Folk"
+                  ],
+                  "match_reasons": [
+                    "Strong semantic match",
+                    "Genre tag: Folk"
+                  ],
+                  "preview_url": "/api/tracks/trk_example_1/audio",
+                  "rank": 1,
+                  "retrieval_sources": [
+                    "semantic",
+                    "metadata"
+                  ],
+                  "score": 0.82,
+                  "score_breakdown": {
+                    "final": 0.82,
+                    "metadata": 0.65,
+                    "semantic": 0.82
+                  },
+                  "spatial": {
+                    "projection_version": "umap-example",
+                    "x": -0.5,
+                    "y": 0.25
+                  },
+                  "styles": [],
+                  "title": "Example Track 1",
+                  "track_id": "trk_example_1",
+                  "uncertainty_flags": []
+                },
+                {
+                  "artists": [
+                    {
+                      "artist_id": "art_example_2",
+                      "name": "Example Artist 2"
+                    }
+                  ],
+                  "audio_available": true,
+                  "constraint_status": [],
+                  "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+                  "evidence_status": "audio_and_metadata",
+                  "genres": [
+                    "Folk"
+                  ],
+                  "match_reasons": [
+                    "Strong semantic match",
+                    "Genre tag: Folk"
+                  ],
+                  "preview_url": "/api/tracks/trk_example_2/audio",
+                  "rank": 2,
+                  "retrieval_sources": [
+                    "semantic",
+                    "metadata"
+                  ],
+                  "score": 0.74,
+                  "score_breakdown": {
+                    "final": 0.74,
+                    "metadata": 0.55,
+                    "semantic": 0.74
+                  },
+                  "spatial": {
+                    "projection_version": "umap-example",
+                    "x": -0.4,
+                    "y": 0.25
+                  },
+                  "styles": [],
+                  "title": "Example Track 2",
+                  "track_id": "trk_example_2",
+                  "uncertainty_flags": []
+                }
+              ],
+              "session_id": "ses_example_1",
+              "warnings": []
+            },
+            "updated_search_state": {
+              "interpreted_query": {
+                "diversity": 0.5,
+                "energy_preferences": [],
+                "era_preferences": [],
+                "excluded_track_ids": [
+                  "trk_example_1"
+                ],
+                "genre_preferences": [
+                  {
+                    "value": "electronic",
+                    "weight": 0.6
+                  }
+                ],
+                "hard_constraints": [],
+                "instrument_preferences": [
+                  {
+                    "source_span": "flute",
+                    "value": "flute",
+                    "weight": 1.0
+                  }
+                ],
+                "interpreter": "deterministic",
+                "mood_preferences": [
+                  {
+                    "source_span": "chill",
+                    "value": "chill",
+                    "weight": 0.7
+                  }
+                ],
+                "negative_preferences": [],
+                "negative_reference_track_ids": [],
+                "original_query": "Something chill with a flute",
+                "reference_track_ids": [],
+                "semantic_prompts": [
+                  "chill music featuring flute"
+                ],
+                "spec_version": 2,
+                "tempo_preferences": [],
+                "texture_preferences": [],
+                "uncertainties": [],
+                "vocal_preferences": "unspecified"
+              },
+              "session_id": "ses_example_1",
+              "session_version": 4
+            }
+          },
+          {
+            "accepted": false,
+            "change_summary": [],
+            "next_action": "NONE",
+            "reason": "nothing in the feedback text maps to a known attribute",
+            "updated_search_state": {
+              "interpreted_query": {
+                "diversity": 0.5,
+                "energy_preferences": [],
+                "era_preferences": [],
+                "excluded_track_ids": [],
+                "genre_preferences": [],
+                "hard_constraints": [],
+                "instrument_preferences": [
+                  {
+                    "source_span": "flute",
+                    "value": "flute",
+                    "weight": 1.0
+                  }
+                ],
+                "interpreter": "deterministic",
+                "mood_preferences": [
+                  {
+                    "source_span": "chill",
+                    "value": "chill",
+                    "weight": 0.7
+                  }
+                ],
+                "negative_preferences": [],
+                "negative_reference_track_ids": [],
+                "original_query": "Something chill with a flute",
+                "reference_track_ids": [],
+                "semantic_prompts": [
+                  "chill music featuring flute"
+                ],
+                "spec_version": 1,
+                "tempo_preferences": [],
+                "texture_preferences": [],
+                "uncertainties": [],
+                "vocal_preferences": "unspecified"
+              },
+              "session_id": "ses_example_1",
+              "session_version": 2
+            }
+          }
+        ],
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "change_summary": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Change Summary",
+            "type": "array"
+          },
+          "next_action": {
+            "$ref": "#/components/schemas/NextAction"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why the feedback was not applied.",
+            "title": "Reason"
+          },
+          "refreshed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SearchResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_search_state": {
+            "$ref": "#/components/schemas/SearchState"
+          }
+        },
+        "required": [
+          "accepted",
+          "reason",
+          "updated_search_state",
+          "change_summary",
+          "next_action",
+          "refreshed"
+        ],
+        "title": "FeedbackResponse",
+        "type": "object"
+      },
+      "FeedbackType": {
+        "description": "Feedback event types from base.md §8 (wire values are UPPER_SNAKE).",
+        "enum": [
+          "MORE_LIKE_THIS",
+          "LESS_LIKE_THIS",
+          "NOT_RELEVANT",
+          "WRONG_INSTRUMENT",
+          "MORE_OF_ATTRIBUTE",
+          "LESS_OF_ATTRIBUTE",
+          "SELECT_TRACK"
+        ],
+        "title": "FeedbackType",
+        "type": "string"
+      },
+      "HardConstraint": {
+        "additionalProperties": false,
+        "properties": {
+          "attribute": {
+            "$ref": "#/components/schemas/ConstraintAttribute"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/ConstraintOperator"
+          },
+          "range": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "attribute",
+          "operator"
+        ],
+        "title": "HardConstraint",
+        "type": "object"
+      },
+      "HealthResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "api_version": "1",
+            "capabilities": {
+              "llm_interpreter": "disabled",
+              "map": "available",
+              "semantic": "available"
+            },
+            "status": "ok"
+          },
+          {
+            "api_version": "1",
+            "capabilities": {
+              "llm_interpreter": "disabled",
+              "map": "unavailable",
+              "semantic": "unavailable"
+            },
+            "map_reason": "projection_unavailable",
+            "semantic_reason": "clap_checkpoint_missing",
+            "status": "ok"
+          }
+        ],
+        "properties": {
+          "api_version": {
+            "title": "Api Version",
+            "type": "string"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/Capabilities"
+          },
+          "map_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Map Reason"
+          },
+          "semantic_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Semantic Reason"
+          },
+          "status": {
+            "const": "ok",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "api_version",
+          "capabilities",
+          "semantic_reason",
+          "map_reason"
+        ],
+        "title": "HealthResponse",
+        "type": "object"
+      },
+      "InterpretedQuery": {
+        "additionalProperties": false,
+        "description": "Public view of Agent A's SearchSpecification.",
+        "properties": {
+          "diversity": {
+            "title": "Diversity",
+            "type": "number"
+          },
+          "energy_preferences": {
+            "items": {
+              "$ref": "#/components/schemas/Preference"
+            },
+            "title": "Energy Preferences",
+            "type": "array"
+          },
+          "era_preferences": {
+            "items": {
+              "$ref": "#/components/schemas/Preference"
+            },
+            "title": "Era Preferences",
+            "type": "array"
+          },
+          "excluded_track_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Excluded Track Ids",
+            "type": "array"
+          },
+          "genre_preferences": {
+            "items": {
+              "$ref": "#/components/schemas/Preference"
+            },
+            "title": "Genre Preferences",
+            "type": "array"
+          },
+          "hard_constraints": {
+            "items": {
+              "$ref": "#/components/schemas/HardConstraint"
+            },
+            "title": "Hard Constraints",
+            "type": "array"
+          },
+          "instrument_preferences": {
+            "items": {
+              "$ref": "#/components/schemas/Preference"
+            },
+            "title": "Instrument Preferences",
+            "type": "array"
+          },
+          "interpreter": {
+            "enum": [
+              "deterministic",
+              "llm"
+            ],
+            "title": "Interpreter",
+            "type": "string"
+          },
+          "interpreter_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interpreter Model"
+          },
+          "mood_preferences": {
+            "items": {
+              "$ref": "#/components/schemas/Preference"
+            },
+            "title": "Mood Preferences",
+            "type": "array"
+          },
+          "negative_preferences": {
+            "items": {
+              "$ref": "#/components/schemas/Preference"
+            },
+            "title": "Negative Preferences",
+            "type": "array"
+          },
+          "negative_reference_track_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Negative Reference Track Ids",
+            "type": "array"
+          },
+          "original_query": {
+            "title": "Original Query",
+            "type": "string"
+          },
+          "reference_track_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reference Track Ids",
+            "type": "array"
+          },
+          "semantic_prompts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Semantic Prompts",
+            "type": "array"
+          },
+          "spec_version": {
+            "title": "Spec Version",
+            "type": "integer"
+          },
+          "tempo_preferences": {
+            "items": {
+              "$ref": "#/components/schemas/Preference"
+            },
+            "title": "Tempo Preferences",
+            "type": "array"
+          },
+          "texture_preferences": {
+            "items": {
+              "$ref": "#/components/schemas/Preference"
+            },
+            "title": "Texture Preferences",
+            "type": "array"
+          },
+          "uncertainties": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Uncertainties",
+            "type": "array"
+          },
+          "vocal_preferences": {
+            "enum": [
+              "required",
+              "preferred",
+              "avoided",
+              "excluded",
+              "unspecified"
+            ],
+            "title": "Vocal Preferences",
+            "type": "string"
+          }
+        },
+        "required": [
+          "spec_version",
+          "original_query",
+          "mood_preferences",
+          "instrument_preferences",
+          "genre_preferences",
+          "tempo_preferences",
+          "energy_preferences",
+          "texture_preferences",
+          "era_preferences",
+          "vocal_preferences",
+          "hard_constraints",
+          "negative_preferences",
+          "reference_track_ids",
+          "negative_reference_track_ids",
+          "excluded_track_ids",
+          "semantic_prompts",
+          "diversity",
+          "uncertainties",
+          "interpreter",
+          "interpreter_model"
+        ],
+        "title": "InterpretedQuery",
+        "type": "object"
+      },
+      "InterpreterStatus": {
+        "enum": [
+          "used",
+          "fallback",
+          "disabled"
+        ],
+        "title": "InterpreterStatus",
+        "type": "string"
+      },
+      "JsonValue": {},
+      "MapBounds": {
+        "additionalProperties": false,
+        "properties": {
+          "max_x": {
+            "title": "Max X",
+            "type": "number"
+          },
+          "max_y": {
+            "title": "Max Y",
+            "type": "number"
+          },
+          "min_x": {
+            "title": "Min X",
+            "type": "number"
+          },
+          "min_y": {
+            "title": "Min Y",
+            "type": "number"
+          }
+        },
+        "required": [
+          "min_x",
+          "max_x",
+          "min_y",
+          "max_y"
+        ],
+        "title": "MapBounds",
+        "type": "object"
+      },
+      "MapMetaResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "bounds": {
+              "max_x": 1.0,
+              "max_y": 0.9,
+              "min_x": -1.0,
+              "min_y": -0.9
+            },
+            "coordinate_transform": {
+              "center": [
+                0.0,
+                0.0
+              ],
+              "kind": "center_scale",
+              "scale": 1.0
+            },
+            "created_at": "2026-01-01T12:00:00Z",
+            "embedding_version": "ev-example",
+            "excluded_tracks": 1,
+            "model_id": "example-clap-model",
+            "n_points": 5,
+            "projection_version": "umap-example",
+            "status": "available"
+          },
+          {
+            "n_points": 0,
+            "reason": "projection_unavailable",
+            "status": "unavailable"
+          }
+        ],
+        "properties": {
+          "bounds": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MapBounds"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coordinate_transform": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coordinate Transform"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "embedding_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Version"
+          },
+          "excluded_tracks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Catalog tracks without audio, not shown.",
+            "title": "Excluded Tracks"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
+          "n_points": {
+            "title": "N Points",
+            "type": "integer"
+          },
+          "projection_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Projection Version"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CapabilityStatus"
+          }
+        },
+        "required": [
+          "status",
+          "reason",
+          "projection_version",
+          "embedding_version",
+          "model_id",
+          "created_at",
+          "bounds",
+          "n_points",
+          "excluded_tracks",
+          "coordinate_transform"
+        ],
+        "title": "MapMetaResponse",
+        "type": "object"
+      },
+      "MapPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "artist": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artist"
+          },
+          "genre": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Genre"
+          },
+          "has_audio": {
+            "title": "Has Audio",
+            "type": "boolean"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "style": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Style"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "track_id": {
+            "title": "Track Id",
+            "type": "string"
+          },
+          "x": {
+            "title": "X",
+            "type": "number"
+          },
+          "y": {
+            "title": "Y",
+            "type": "number"
+          }
+        },
+        "required": [
+          "track_id",
+          "x",
+          "y",
+          "title",
+          "artist",
+          "genre",
+          "style",
+          "source_url",
+          "has_audio"
+        ],
+        "title": "MapPoint",
+        "type": "object"
+      },
+      "MapPointsResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "next_cursor": "trk_example_3",
+            "points": [
+              {
+                "artist": "Example Artist 1",
+                "genre": "Folk",
+                "has_audio": true,
+                "title": "Example Track 1",
+                "track_id": "trk_example_1",
+                "x": -0.6,
+                "y": 0.3
+              },
+              {
+                "artist": "Example Artist 2",
+                "genre": "Electronic",
+                "has_audio": true,
+                "title": "Example Track 2",
+                "track_id": "trk_example_2",
+                "x": -0.2,
+                "y": 0.0
+              },
+              {
+                "artist": "Example Artist 3",
+                "genre": "Folk",
+                "has_audio": true,
+                "title": "Example Track 3",
+                "track_id": "trk_example_3",
+                "x": 0.2,
+                "y": -0.3
+              }
+            ],
+            "projection_version": "umap-example"
+          },
+          {
+            "points": [
+              {
+                "artist": "Example Artist 4",
+                "genre": "Electronic",
+                "has_audio": true,
+                "title": "Example Track 4",
+                "track_id": "trk_example_4",
+                "x": 0.6,
+                "y": -0.6
+              },
+              {
+                "artist": "Example Artist 5",
+                "genre": "Folk",
+                "has_audio": true,
+                "title": "Example Track 5",
+                "track_id": "trk_example_5",
+                "x": 1.0,
+                "y": -0.9
+              }
+            ],
+            "projection_version": "umap-example"
+          }
+        ],
+        "properties": {
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Pass as `cursor` for the next page.",
+            "title": "Next Cursor"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/MapPoint"
+            },
+            "title": "Points",
+            "type": "array"
+          },
+          "projection_version": {
+            "title": "Projection Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "points",
+          "next_cursor",
+          "projection_version"
+        ],
+        "title": "MapPointsResponse",
+        "type": "object"
+      },
+      "Neighbor": {
+        "additionalProperties": false,
+        "properties": {
+          "artists": {
+            "items": {
+              "$ref": "#/components/schemas/Artist"
+            },
+            "title": "Artists",
+            "type": "array"
+          },
+          "audio_available": {
+            "title": "Audio Available",
+            "type": "boolean"
+          },
+          "relationship_types": {
+            "items": {
+              "$ref": "#/components/schemas/RelationshipType"
+            },
+            "title": "Relationship Types",
+            "type": "array"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cosine for clap_cosine; the relationship weight (often null) otherwise.",
+            "title": "Score"
+          },
+          "spatial": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Spatial"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "track_id": {
+            "title": "Track Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "track_id",
+          "title",
+          "artists",
+          "score",
+          "relationship_types",
+          "audio_available",
+          "spatial"
+        ],
+        "title": "Neighbor",
+        "type": "object"
+      },
+      "NeighborsResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "metric": "clap_cosine",
+            "model_id": "example-clap-model",
+            "neighbors": [
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_2",
+                    "name": "Example Artist 2"
+                  }
+                ],
+                "audio_available": true,
+                "relationship_types": [],
+                "score": 0.85,
+                "spatial": {
+                  "projection_version": "umap-example",
+                  "x": -0.4,
+                  "y": 0.3
+                },
+                "title": "Example Track 2",
+                "track_id": "trk_example_2"
+              },
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_4",
+                    "name": "Example Artist 4"
+                  }
+                ],
+                "audio_available": true,
+                "relationship_types": [],
+                "score": 0.75,
+                "spatial": {
+                  "projection_version": "umap-example",
+                  "x": -0.3,
+                  "y": 0.3
+                },
+                "title": "Example Track 4",
+                "track_id": "trk_example_4"
+              }
+            ],
+            "track_id": "trk_example_1"
+          },
+          {
+            "metric": "catalog_relationship",
+            "neighbors": [
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_3",
+                    "name": "Example Artist 3"
+                  }
+                ],
+                "audio_available": false,
+                "relationship_types": [
+                  "same_artist"
+                ],
+                "title": "Example Track 5",
+                "track_id": "trk_example_5"
+              }
+            ],
+            "reason": "no_audio_embedding",
+            "track_id": "trk_example_3"
+          }
+        ],
+        "properties": {
+          "metric": {
+            "enum": [
+              "clap_cosine",
+              "catalog_relationship"
+            ],
+            "title": "Metric",
+            "type": "string"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
+          "neighbors": {
+            "items": {
+              "$ref": "#/components/schemas/Neighbor"
+            },
+            "title": "Neighbors",
+            "type": "array"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "no_audio_embedding",
+                  "semantic_unavailable"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Why audio neighbors are missing; null for clap_cosine.",
+            "title": "Reason"
+          },
+          "track_id": {
+            "title": "Track Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "track_id",
+          "metric",
+          "model_id",
+          "reason",
+          "neighbors"
+        ],
+        "title": "NeighborsResponse",
+        "type": "object"
+      },
+      "NextAction": {
+        "enum": [
+          "REFINE_SEARCH",
+          "SHOW_DETAILS",
+          "NONE"
+        ],
+        "title": "NextAction",
+        "type": "string"
+      },
+      "Preference": {
+        "additionalProperties": false,
+        "properties": {
+          "source_span": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Span"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          },
+          "weight": {
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "value",
+          "weight"
+        ],
+        "title": "Preference",
+        "type": "object"
+      },
+      "RelatedTrack": {
+        "additionalProperties": false,
+        "properties": {
+          "artists": {
+            "items": {
+              "$ref": "#/components/schemas/Artist"
+            },
+            "title": "Artists",
+            "type": "array"
+          },
+          "relationship_type": {
+            "$ref": "#/components/schemas/RelationshipType"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "track_id": {
+            "title": "Track Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "track_id",
+          "title",
+          "artists",
+          "relationship_type"
+        ],
+        "title": "RelatedTrack",
+        "type": "object"
+      },
+      "RelationshipType": {
+        "enum": [
+          "same_artist",
+          "same_label",
+          "same_master",
+          "same_release",
+          "shared_style"
+        ],
+        "title": "RelationshipType",
+        "type": "string"
+      },
+      "Release": {
+        "additionalProperties": false,
+        "properties": {
+          "release_id": {
+            "title": "Release Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          }
+        },
+        "required": [
+          "release_id",
+          "title",
+          "year"
+        ],
+        "title": "Release",
+        "type": "object"
+      },
+      "RetrievalSource": {
+        "enum": [
+          "metadata",
+          "semantic",
+          "relationship"
+        ],
+        "title": "RetrievalSource",
+        "type": "string"
+      },
+      "ScoreBreakdown": {
+        "additionalProperties": false,
+        "description": "Normalized signals; `null` means the signal was not computed for this track.",
+        "properties": {
+          "final": {
+            "title": "Final",
+            "type": "number"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "relationship": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relationship"
+          },
+          "semantic": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Semantic"
+          }
+        },
+        "required": [
+          "semantic",
+          "metadata",
+          "relationship",
+          "final"
+        ],
+        "title": "ScoreBreakdown",
+        "type": "object"
+      },
+      "SearchOutcomeKind": {
+        "enum": [
+          "ok",
+          "no_confident_match",
+          "needs_clarification"
+        ],
+        "title": "SearchOutcomeKind",
+        "type": "string"
+      },
+      "SearchRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "default": 10,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "query": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Continue an existing session (follow-up query).",
+            "title": "Session Id"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "SearchRequest",
+        "type": "object"
+      },
+      "SearchResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "capabilities": {
+              "llm_interpreter": "disabled",
+              "map": "available",
+              "semantic": "available"
+            },
+            "change_summary": [],
+            "interpreted_query": {
+              "diversity": 0.5,
+              "energy_preferences": [],
+              "era_preferences": [],
+              "excluded_track_ids": [],
+              "genre_preferences": [],
+              "hard_constraints": [],
+              "instrument_preferences": [
+                {
+                  "source_span": "flute",
+                  "value": "flute",
+                  "weight": 1.0
+                }
+              ],
+              "interpreter": "deterministic",
+              "mood_preferences": [
+                {
+                  "source_span": "chill",
+                  "value": "chill",
+                  "weight": 0.7
+                }
+              ],
+              "negative_preferences": [],
+              "negative_reference_track_ids": [],
+              "original_query": "Something chill with a flute",
+              "reference_track_ids": [],
+              "semantic_prompts": [
+                "chill music featuring flute"
+              ],
+              "spec_version": 1,
+              "tempo_preferences": [],
+              "texture_preferences": [],
+              "uncertainties": [],
+              "vocal_preferences": "unspecified"
+            },
+            "no_match_reasons": [],
+            "outcome": "ok",
+            "query_id": "qry_example_1",
+            "results": [
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_1",
+                    "name": "Example Artist 1"
+                  }
+                ],
+                "audio_available": true,
+                "constraint_status": [],
+                "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+                "evidence_status": "audio_and_metadata",
+                "genres": [
+                  "Folk"
+                ],
+                "match_reasons": [
+                  "Strong semantic match",
+                  "Genre tag: Folk"
+                ],
+                "preview_url": "/api/tracks/trk_example_1/audio",
+                "rank": 1,
+                "retrieval_sources": [
+                  "semantic",
+                  "metadata"
+                ],
+                "score": 0.82,
+                "score_breakdown": {
+                  "final": 0.82,
+                  "metadata": 0.65,
+                  "semantic": 0.82
+                },
+                "spatial": {
+                  "projection_version": "umap-example",
+                  "x": -0.5,
+                  "y": 0.25
+                },
+                "styles": [],
+                "title": "Example Track 1",
+                "track_id": "trk_example_1",
+                "uncertainty_flags": []
+              },
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_2",
+                    "name": "Example Artist 2"
+                  }
+                ],
+                "audio_available": true,
+                "constraint_status": [],
+                "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+                "evidence_status": "audio_and_metadata",
+                "genres": [
+                  "Folk"
+                ],
+                "match_reasons": [
+                  "Strong semantic match",
+                  "Genre tag: Folk"
+                ],
+                "preview_url": "/api/tracks/trk_example_2/audio",
+                "rank": 2,
+                "retrieval_sources": [
+                  "semantic",
+                  "metadata"
+                ],
+                "score": 0.74,
+                "score_breakdown": {
+                  "final": 0.74,
+                  "metadata": 0.55,
+                  "semantic": 0.74
+                },
+                "spatial": {
+                  "projection_version": "umap-example",
+                  "x": -0.4,
+                  "y": 0.25
+                },
+                "styles": [],
+                "title": "Example Track 2",
+                "track_id": "trk_example_2",
+                "uncertainty_flags": []
+              },
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_3",
+                    "name": "Example Artist 3"
+                  }
+                ],
+                "audio_available": false,
+                "constraint_status": [],
+                "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+                "evidence_status": "metadata_only",
+                "genres": [
+                  "Folk"
+                ],
+                "match_reasons": [
+                  "Genre tag: Folk"
+                ],
+                "rank": 3,
+                "retrieval_sources": [
+                  "metadata"
+                ],
+                "score": 0.05,
+                "score_breakdown": {
+                  "final": 0.05,
+                  "metadata": 0.3
+                },
+                "styles": [],
+                "title": "Example Track 3",
+                "track_id": "trk_example_3",
+                "uncertainty_flags": [
+                  "no_audio"
+                ]
+              }
+            ],
+            "session_id": "ses_example_1",
+            "warnings": []
+          },
+          {
+            "capabilities": {
+              "llm_interpreter": "disabled",
+              "map": "available",
+              "semantic": "available"
+            },
+            "change_summary": [],
+            "interpreted_query": {
+              "diversity": 0.5,
+              "energy_preferences": [],
+              "era_preferences": [],
+              "excluded_track_ids": [],
+              "genre_preferences": [],
+              "hard_constraints": [],
+              "instrument_preferences": [
+                {
+                  "source_span": "flute",
+                  "value": "flute",
+                  "weight": 1.0
+                }
+              ],
+              "interpreter": "deterministic",
+              "mood_preferences": [
+                {
+                  "source_span": "chill",
+                  "value": "chill",
+                  "weight": 0.7
+                }
+              ],
+              "negative_preferences": [],
+              "negative_reference_track_ids": [],
+              "original_query": "Something chill with a flute",
+              "reference_track_ids": [],
+              "semantic_prompts": [
+                "chill music featuring flute"
+              ],
+              "spec_version": 1,
+              "tempo_preferences": [],
+              "texture_preferences": [],
+              "uncertainties": [],
+              "vocal_preferences": "unspecified"
+            },
+            "no_match_reasons": [],
+            "outcome": "ok",
+            "query_id": "qry_example_1",
+            "results": [],
+            "session_id": "ses_example_1",
+            "warnings": []
+          },
+          {
+            "capabilities": {
+              "llm_interpreter": "disabled",
+              "map": "available",
+              "semantic": "available"
+            },
+            "change_summary": [],
+            "interpreted_query": {
+              "diversity": 0.5,
+              "energy_preferences": [],
+              "era_preferences": [],
+              "excluded_track_ids": [],
+              "genre_preferences": [],
+              "hard_constraints": [
+                {
+                  "attribute": "vocals",
+                  "operator": "excluded"
+                }
+              ],
+              "instrument_preferences": [
+                {
+                  "source_span": "flute",
+                  "value": "flute",
+                  "weight": 1.0
+                }
+              ],
+              "interpreter": "deterministic",
+              "mood_preferences": [
+                {
+                  "source_span": "chill",
+                  "value": "chill",
+                  "weight": 0.7
+                }
+              ],
+              "negative_preferences": [],
+              "negative_reference_track_ids": [],
+              "original_query": "instrumental only flute",
+              "reference_track_ids": [],
+              "semantic_prompts": [
+                "chill music featuring flute"
+              ],
+              "spec_version": 1,
+              "tempo_preferences": [],
+              "texture_preferences": [],
+              "uncertainties": [],
+              "vocal_preferences": "excluded"
+            },
+            "no_match_reasons": [
+              "no track has reliable evidence for: vocals excluded"
+            ],
+            "outcome": "no_confident_match",
+            "query_id": "qry_example_1",
+            "results": [],
+            "session_id": "ses_example_1",
+            "warnings": []
+          },
+          {
+            "capabilities": {
+              "llm_interpreter": "disabled",
+              "map": "available",
+              "semantic": "available"
+            },
+            "change_summary": [],
+            "clarification_question": "Should the music have vocals or not?",
+            "interpreted_query": {
+              "diversity": 0.5,
+              "energy_preferences": [],
+              "era_preferences": [],
+              "excluded_track_ids": [],
+              "genre_preferences": [],
+              "hard_constraints": [],
+              "instrument_preferences": [],
+              "interpreter": "deterministic",
+              "mood_preferences": [],
+              "negative_preferences": [],
+              "negative_reference_track_ids": [],
+              "original_query": "no vocals with female vocals",
+              "reference_track_ids": [],
+              "semantic_prompts": [],
+              "spec_version": 1,
+              "tempo_preferences": [],
+              "texture_preferences": [],
+              "uncertainties": [
+                "vocals are both excluded and requested"
+              ],
+              "vocal_preferences": "unspecified"
+            },
+            "no_match_reasons": [],
+            "outcome": "needs_clarification",
+            "query_id": "qry_example_1",
+            "results": [],
+            "session_id": "ses_example_1",
+            "warnings": []
+          },
+          {
+            "capabilities": {
+              "llm_interpreter": "disabled",
+              "map": "available",
+              "semantic": "unavailable"
+            },
+            "change_summary": [],
+            "interpreted_query": {
+              "diversity": 0.5,
+              "energy_preferences": [],
+              "era_preferences": [],
+              "excluded_track_ids": [],
+              "genre_preferences": [],
+              "hard_constraints": [],
+              "instrument_preferences": [
+                {
+                  "source_span": "flute",
+                  "value": "flute",
+                  "weight": 1.0
+                }
+              ],
+              "interpreter": "deterministic",
+              "mood_preferences": [
+                {
+                  "source_span": "chill",
+                  "value": "chill",
+                  "weight": 0.7
+                }
+              ],
+              "negative_preferences": [],
+              "negative_reference_track_ids": [],
+              "original_query": "Something chill with a flute",
+              "reference_track_ids": [],
+              "semantic_prompts": [
+                "chill music featuring flute"
+              ],
+              "spec_version": 1,
+              "tempo_preferences": [],
+              "texture_preferences": [],
+              "uncertainties": [],
+              "vocal_preferences": "unspecified"
+            },
+            "no_match_reasons": [],
+            "outcome": "ok",
+            "query_id": "qry_example_1",
+            "results": [
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_1",
+                    "name": "Example Artist 1"
+                  }
+                ],
+                "audio_available": true,
+                "constraint_status": [],
+                "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+                "evidence_status": "audio_and_metadata",
+                "genres": [
+                  "Folk"
+                ],
+                "match_reasons": [
+                  "Genre tag: Folk"
+                ],
+                "preview_url": "/api/tracks/trk_example_1/audio",
+                "rank": 1,
+                "retrieval_sources": [
+                  "metadata"
+                ],
+                "score": 0.65,
+                "score_breakdown": {
+                  "final": 0.65,
+                  "metadata": 0.65
+                },
+                "spatial": {
+                  "projection_version": "umap-example",
+                  "x": -0.5,
+                  "y": 0.25
+                },
+                "styles": [],
+                "title": "Example Track 1",
+                "track_id": "trk_example_1",
+                "uncertainty_flags": []
+              },
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_2",
+                    "name": "Example Artist 2"
+                  }
+                ],
+                "audio_available": true,
+                "constraint_status": [],
+                "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+                "evidence_status": "audio_and_metadata",
+                "genres": [
+                  "Folk"
+                ],
+                "match_reasons": [
+                  "Genre tag: Folk"
+                ],
+                "preview_url": "/api/tracks/trk_example_2/audio",
+                "rank": 2,
+                "retrieval_sources": [
+                  "metadata"
+                ],
+                "score": 0.55,
+                "score_breakdown": {
+                  "final": 0.55,
+                  "metadata": 0.55
+                },
+                "spatial": {
+                  "projection_version": "umap-example",
+                  "x": -0.4,
+                  "y": 0.25
+                },
+                "styles": [],
+                "title": "Example Track 2",
+                "track_id": "trk_example_2",
+                "uncertainty_flags": []
+              }
+            ],
+            "session_id": "ses_example_1",
+            "warnings": [
+              {
+                "code": "semantic_unavailable",
+                "message": "Audio-semantic search is unavailable; results are ranked on metadata only."
+              }
+            ]
+          },
+          {
+            "capabilities": {
+              "llm_interpreter": "fallback",
+              "map": "available",
+              "semantic": "available"
+            },
+            "change_summary": [],
+            "interpreted_query": {
+              "diversity": 0.5,
+              "energy_preferences": [],
+              "era_preferences": [],
+              "excluded_track_ids": [],
+              "genre_preferences": [],
+              "hard_constraints": [],
+              "instrument_preferences": [
+                {
+                  "source_span": "flute",
+                  "value": "flute",
+                  "weight": 1.0
+                }
+              ],
+              "interpreter": "deterministic",
+              "mood_preferences": [
+                {
+                  "source_span": "chill",
+                  "value": "chill",
+                  "weight": 0.7
+                }
+              ],
+              "negative_preferences": [],
+              "negative_reference_track_ids": [],
+              "original_query": "Something chill with a flute",
+              "reference_track_ids": [],
+              "semantic_prompts": [
+                "chill music featuring flute"
+              ],
+              "spec_version": 1,
+              "tempo_preferences": [],
+              "texture_preferences": [],
+              "uncertainties": [],
+              "vocal_preferences": "unspecified"
+            },
+            "no_match_reasons": [],
+            "outcome": "ok",
+            "query_id": "qry_example_1",
+            "results": [
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_1",
+                    "name": "Example Artist 1"
+                  }
+                ],
+                "audio_available": true,
+                "constraint_status": [],
+                "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+                "evidence_status": "audio_and_metadata",
+                "genres": [
+                  "Folk"
+                ],
+                "match_reasons": [
+                  "Strong semantic match",
+                  "Genre tag: Folk"
+                ],
+                "preview_url": "/api/tracks/trk_example_1/audio",
+                "rank": 1,
+                "retrieval_sources": [
+                  "semantic",
+                  "metadata"
+                ],
+                "score": 0.82,
+                "score_breakdown": {
+                  "final": 0.82,
+                  "metadata": 0.65,
+                  "semantic": 0.82
+                },
+                "spatial": {
+                  "projection_version": "umap-example",
+                  "x": -0.5,
+                  "y": 0.25
+                },
+                "styles": [],
+                "title": "Example Track 1",
+                "track_id": "trk_example_1",
+                "uncertainty_flags": []
+              },
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_2",
+                    "name": "Example Artist 2"
+                  }
+                ],
+                "audio_available": true,
+                "constraint_status": [],
+                "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+                "evidence_status": "audio_and_metadata",
+                "genres": [
+                  "Folk"
+                ],
+                "match_reasons": [
+                  "Strong semantic match",
+                  "Genre tag: Folk"
+                ],
+                "preview_url": "/api/tracks/trk_example_2/audio",
+                "rank": 2,
+                "retrieval_sources": [
+                  "semantic",
+                  "metadata"
+                ],
+                "score": 0.74,
+                "score_breakdown": {
+                  "final": 0.74,
+                  "metadata": 0.55,
+                  "semantic": 0.74
+                },
+                "spatial": {
+                  "projection_version": "umap-example",
+                  "x": -0.4,
+                  "y": 0.25
+                },
+                "styles": [],
+                "title": "Example Track 2",
+                "track_id": "trk_example_2",
+                "uncertainty_flags": []
+              },
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_3",
+                    "name": "Example Artist 3"
+                  }
+                ],
+                "audio_available": false,
+                "constraint_status": [],
+                "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+                "evidence_status": "metadata_only",
+                "genres": [
+                  "Folk"
+                ],
+                "match_reasons": [
+                  "Genre tag: Folk"
+                ],
+                "rank": 3,
+                "retrieval_sources": [
+                  "metadata"
+                ],
+                "score": 0.05,
+                "score_breakdown": {
+                  "final": 0.05,
+                  "metadata": 0.3
+                },
+                "styles": [],
+                "title": "Example Track 3",
+                "track_id": "trk_example_3",
+                "uncertainty_flags": [
+                  "no_audio"
+                ]
+              }
+            ],
+            "session_id": "ses_example_1",
+            "warnings": [
+              {
+                "code": "llm_fallback",
+                "message": "The language model did not answer; the query was read by the deterministic parser."
+              }
+            ]
+          },
+          {
+            "capabilities": {
+              "llm_interpreter": "disabled",
+              "map": "available",
+              "semantic": "available"
+            },
+            "change_summary": [],
+            "interpreted_query": {
+              "diversity": 0.5,
+              "energy_preferences": [],
+              "era_preferences": [],
+              "excluded_track_ids": [],
+              "genre_preferences": [],
+              "hard_constraints": [],
+              "instrument_preferences": [
+                {
+                  "source_span": "flute",
+                  "value": "flute",
+                  "weight": 1.0
+                }
+              ],
+              "interpreter": "deterministic",
+              "mood_preferences": [
+                {
+                  "source_span": "chill",
+                  "value": "chill",
+                  "weight": 0.7
+                }
+              ],
+              "negative_preferences": [],
+              "negative_reference_track_ids": [],
+              "original_query": "Something chill with a flute",
+              "reference_track_ids": [],
+              "semantic_prompts": [
+                "chill music featuring flute"
+              ],
+              "spec_version": 1,
+              "tempo_preferences": [],
+              "texture_preferences": [],
+              "uncertainties": [],
+              "vocal_preferences": "unspecified"
+            },
+            "no_match_reasons": [],
+            "outcome": "ok",
+            "query_id": "qry_example_1",
+            "results": [
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_1",
+                    "name": "Example Artist 1"
+                  }
+                ],
+                "audio_available": true,
+                "constraint_status": [
+                  {
+                    "attribute": "vocals",
+                    "operator": "excluded",
+                    "status": "unknown"
+                  }
+                ],
+                "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+                "evidence_status": "audio_and_metadata",
+                "genres": [
+                  "Folk"
+                ],
+                "match_reasons": [
+                  "Strong semantic match",
+                  "Genre tag: Folk"
+                ],
+                "preview_url": "/api/tracks/trk_example_1/audio",
+                "rank": 1,
+                "retrieval_sources": [
+                  "semantic",
+                  "metadata"
+                ],
+                "score": 0.82,
+                "score_breakdown": {
+                  "final": 0.82,
+                  "metadata": 0.65,
+                  "semantic": 0.82
+                },
+                "spatial": {
+                  "projection_version": "umap-example",
+                  "x": -0.5,
+                  "y": 0.25
+                },
+                "styles": [],
+                "title": "Example Track 1",
+                "track_id": "trk_example_1",
+                "uncertainty_flags": [
+                  "vocals_unknown"
+                ]
+              }
+            ],
+            "session_id": "ses_example_1",
+            "warnings": []
+          }
+        ],
+        "properties": {
+          "capabilities": {
+            "$ref": "#/components/schemas/Capabilities"
+          },
+          "change_summary": {
+            "description": "What changed since the previous turn.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Change Summary",
+            "type": "array"
+          },
+          "clarification_question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clarification Question"
+          },
+          "interpreted_query": {
+            "$ref": "#/components/schemas/InterpretedQuery"
+          },
+          "no_match_reasons": {
+            "description": "Why nothing was confident (outcome no_confident_match).",
+            "items": {
+              "type": "string"
+            },
+            "title": "No Match Reasons",
+            "type": "array"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/SearchOutcomeKind"
+          },
+          "query_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null only when no search ran.",
+            "title": "Query Id"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/TrackResult"
+            },
+            "title": "Results",
+            "type": "array"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/ApiWarning"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "query_id",
+          "session_id",
+          "outcome",
+          "clarification_question",
+          "no_match_reasons",
+          "interpreted_query",
+          "results",
+          "capabilities",
+          "warnings",
+          "change_summary"
+        ],
+        "title": "SearchResponse",
+        "type": "object"
+      },
+      "SearchState": {
+        "additionalProperties": false,
+        "properties": {
+          "interpreted_query": {
+            "$ref": "#/components/schemas/InterpretedQuery"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "session_version": {
+            "title": "Session Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session_id",
+          "session_version",
+          "interpreted_query"
+        ],
+        "title": "SearchState",
+        "type": "object"
+      },
+      "SessionResponse": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "created_at": "2026-01-01T12:00:00Z",
+            "feedback": [
+              {
+                "event_id": "evt_example_1",
+                "event_type": "NOT_RELEVANT",
+                "query_id": "qry_example_1",
+                "timestamp": "2026-01-01T12:00:00Z",
+                "track_id": "trk_example_1"
+              }
+            ],
+            "original_query": "Something chill with a flute",
+            "session_id": "ses_example_1",
+            "turns": [
+              {
+                "change_summary": [],
+                "created_at": "2026-01-01T12:00:00Z",
+                "interpreted_query": {
+                  "diversity": 0.5,
+                  "energy_preferences": [],
+                  "era_preferences": [],
+                  "excluded_track_ids": [],
+                  "genre_preferences": [],
+                  "hard_constraints": [],
+                  "instrument_preferences": [
+                    {
+                      "source_span": "flute",
+                      "value": "flute",
+                      "weight": 1.0
+                    }
+                  ],
+                  "interpreter": "deterministic",
+                  "mood_preferences": [
+                    {
+                      "source_span": "chill",
+                      "value": "chill",
+                      "weight": 0.7
+                    }
+                  ],
+                  "negative_preferences": [],
+                  "negative_reference_track_ids": [],
+                  "original_query": "Something chill with a flute",
+                  "reference_track_ids": [],
+                  "semantic_prompts": [
+                    "chill music featuring flute"
+                  ],
+                  "spec_version": 1,
+                  "tempo_preferences": [],
+                  "texture_preferences": [],
+                  "uncertainties": [],
+                  "vocal_preferences": "unspecified"
+                },
+                "query_id": "qry_example_1",
+                "query_text": "Something chill with a flute",
+                "result_track_ids": [
+                  "trk_example_1",
+                  "trk_example_2",
+                  "trk_example_3"
+                ]
+              },
+              {
+                "change_summary": [
+                  "excluded trk_example_1",
+                  "added electronic"
+                ],
+                "created_at": "2026-01-01T12:00:00Z",
+                "interpreted_query": {
+                  "diversity": 0.5,
+                  "energy_preferences": [],
+                  "era_preferences": [],
+                  "excluded_track_ids": [
+                    "trk_example_1"
+                  ],
+                  "genre_preferences": [
+                    {
+                      "value": "electronic",
+                      "weight": 0.6
+                    }
+                  ],
+                  "hard_constraints": [],
+                  "instrument_preferences": [
+                    {
+                      "source_span": "flute",
+                      "value": "flute",
+                      "weight": 1.0
+                    }
+                  ],
+                  "interpreter": "deterministic",
+                  "mood_preferences": [
+                    {
+                      "source_span": "chill",
+                      "value": "chill",
+                      "weight": 0.7
+                    }
+                  ],
+                  "negative_preferences": [],
+                  "negative_reference_track_ids": [],
+                  "original_query": "Something chill with a flute",
+                  "reference_track_ids": [],
+                  "semantic_prompts": [
+                    "chill music featuring flute"
+                  ],
+                  "spec_version": 2,
+                  "tempo_preferences": [],
+                  "texture_preferences": [],
+                  "uncertainties": [],
+                  "vocal_preferences": "unspecified"
+                },
+                "query_id": "qry_example_2",
+                "query_text": "Something chill with a flute",
+                "result_track_ids": [
+                  "trk_example_1",
+                  "trk_example_2"
+                ],
+                "triggered_by_event_id": "evt_example_1"
+              }
+            ],
+            "version": 4
+          }
+        ],
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "feedback": {
+            "items": {
+              "$ref": "#/components/schemas/FeedbackEventRecord"
+            },
+            "title": "Feedback",
+            "type": "array"
+          },
+          "original_query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Query"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "turns": {
+            "items": {
+              "$ref": "#/components/schemas/SessionTurn"
+            },
+            "title": "Turns",
+            "type": "array"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session_id",
+          "created_at",
+          "version",
+          "original_query",
+          "turns",
+          "feedback"
+        ],
+        "title": "SessionResponse",
+        "type": "object"
+      },
+      "SessionTurn": {
+        "additionalProperties": false,
+        "properties": {
+          "change_summary": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Change Summary",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "interpreted_query": {
+            "$ref": "#/components/schemas/InterpretedQuery"
+          },
+          "query_id": {
+            "title": "Query Id",
+            "type": "string"
+          },
+          "query_text": {
+            "title": "Query Text",
+            "type": "string"
+          },
+          "result_track_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Result Track Ids",
+            "type": "array"
+          },
+          "triggered_by_event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Triggered By Event Id"
+          }
+        },
+        "required": [
+          "query_id",
+          "query_text",
+          "interpreted_query",
+          "result_track_ids",
+          "created_at",
+          "triggered_by_event_id",
+          "change_summary"
+        ],
+        "title": "SessionTurn",
+        "type": "object"
+      },
+      "Spatial": {
+        "additionalProperties": false,
+        "description": "UMAP visualization coordinates; not a similarity measure.",
+        "properties": {
+          "projection_version": {
+            "title": "Projection Version",
+            "type": "string"
+          },
+          "x": {
+            "title": "X",
+            "type": "number"
+          },
+          "y": {
+            "title": "Y",
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "projection_version"
+        ],
+        "title": "Spatial",
+        "type": "object"
+      },
+      "TrackDetail": {
+        "additionalProperties": false,
+        "examples": [
+          {
+            "artists": [
+              {
+                "artist_id": "art_example_1",
+                "name": "Example Artist 1"
+              }
+            ],
+            "audio": {
+              "duration_seconds": 30.0,
+              "license": "Example license"
+            },
+            "audio_available": true,
+            "duration_seconds": 212.0,
+            "evidence_status": "audio_and_metadata",
+            "genres": [
+              "Folk"
+            ],
+            "preview_url": "/api/tracks/trk_example_1/audio",
+            "related_tracks": [
+              {
+                "artists": [
+                  {
+                    "artist_id": "art_example_1",
+                    "name": "Example Artist 1"
+                  }
+                ],
+                "relationship_type": "same_artist",
+                "title": "Example Track 2",
+                "track_id": "trk_example_2"
+              }
+            ],
+            "relationship_counts": {
+              "same_artist": 1
+            },
+            "release": {
+              "release_id": "rel_example_1",
+              "title": "Example Album",
+              "year": 2012
+            },
+            "spatial": {
+              "projection_version": "umap-example",
+              "x": -0.5,
+              "y": 0.25
+            },
+            "styles": [],
+            "tags": [
+              "flute"
+            ],
+            "title": "Example Track 1",
+            "track_id": "trk_example_1",
+            "year": 2012
+          },
+          {
+            "artists": [
+              {
+                "artist_id": "art_example_3",
+                "name": "Example Artist 3"
+              }
+            ],
+            "audio_available": false,
+            "evidence_status": "metadata_only",
+            "genres": [
+              "Folk"
+            ],
+            "related_tracks": [],
+            "relationship_counts": {},
+            "styles": [],
+            "tags": [],
+            "title": "Example Track 3",
+            "track_id": "trk_example_3"
+          }
+        ],
+        "properties": {
+          "artists": {
+            "items": {
+              "$ref": "#/components/schemas/Artist"
+            },
+            "title": "Artists",
+            "type": "array"
+          },
+          "audio": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AudioInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The validated local clip, when there is one."
+          },
+          "audio_available": {
+            "title": "Audio Available",
+            "type": "boolean"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "evidence_status": {
+            "$ref": "#/components/schemas/EvidenceStatus"
+          },
+          "genres": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Genres",
+            "type": "array"
+          },
+          "preview_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Url"
+          },
+          "related_tracks": {
+            "description": "Catalog context (not audio similarity); capped per relationship type.",
+            "items": {
+              "$ref": "#/components/schemas/RelatedTrack"
+            },
+            "title": "Related Tracks",
+            "type": "array"
+          },
+          "relationship_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Relationship Counts",
+            "type": "object"
+          },
+          "release": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Release"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "spatial": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Spatial"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "styles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Styles",
+            "type": "array"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "track_id": {
+            "title": "Track Id",
+            "type": "string"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          }
+        },
+        "required": [
+          "track_id",
+          "title",
+          "artists",
+          "release",
+          "year",
+          "genres",
+          "styles",
+          "tags",
+          "duration_seconds",
+          "source_url",
+          "preview_url",
+          "audio_available",
+          "evidence_status",
+          "audio",
+          "related_tracks",
+          "relationship_counts",
+          "spatial"
+        ],
+        "title": "TrackDetail",
+        "type": "object"
+      },
+      "TrackResult": {
+        "additionalProperties": false,
+        "properties": {
+          "artists": {
+            "items": {
+              "$ref": "#/components/schemas/Artist"
+            },
+            "title": "Artists",
+            "type": "array"
+          },
+          "audio_available": {
+            "description": "An audio embedding exists (audio was analyzed).",
+            "title": "Audio Available",
+            "type": "boolean"
+          },
+          "constraint_status": {
+            "items": {
+              "$ref": "#/components/schemas/ConstraintCheck"
+            },
+            "title": "Constraint Status",
+            "type": "array"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Evidence-grounded text; null when too thin.",
+            "title": "Description"
+          },
+          "evidence_status": {
+            "$ref": "#/components/schemas/EvidenceStatus"
+          },
+          "genres": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Genres",
+            "type": "array"
+          },
+          "match_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Match Reasons",
+            "type": "array"
+          },
+          "preview_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Url"
+          },
+          "rank": {
+            "minimum": 1.0,
+            "title": "Rank",
+            "type": "integer"
+          },
+          "retrieval_sources": {
+            "items": {
+              "$ref": "#/components/schemas/RetrievalSource"
+            },
+            "title": "Retrieval Sources",
+            "type": "array"
+          },
+          "score": {
+            "description": "Relevance for ordering; not a probability.",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Score",
+            "type": "number"
+          },
+          "score_breakdown": {
+            "$ref": "#/components/schemas/ScoreBreakdown"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "spatial": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Spatial"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "styles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Styles",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "track_id": {
+            "title": "Track Id",
+            "type": "string"
+          },
+          "uncertainty_flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Uncertainty Flags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "track_id",
+          "rank",
+          "title",
+          "artists",
+          "score",
+          "score_breakdown",
+          "description",
+          "match_reasons",
+          "genres",
+          "styles",
+          "source_url",
+          "preview_url",
+          "audio_available",
+          "evidence_status",
+          "constraint_status",
+          "uncertainty_flags",
+          "retrieval_sources",
+          "spatial"
+        ],
+        "title": "TrackResult",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Natural-language music discovery over the FMA catalog. Scores order results and are not probabilities; missing values are null.",
+    "title": "Semantic Music Discovery API",
+    "version": "1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/feedback": {
+      "post": {
+        "operationId": "submitFeedback",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected error."
+          }
+        },
+        "summary": "Submit Feedback",
+        "tags": [
+          "feedback"
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected error."
+          }
+        },
+        "summary": "Get Health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/map/meta": {
+      "get": {
+        "operationId": "getMapMeta",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapMetaResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected error."
+          }
+        },
+        "summary": "Get Map Meta",
+        "tags": [
+          "map"
+        ]
+      }
+    },
+    "/api/map/points": {
+      "get": {
+        "operationId": "getMapPoints",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 500,
+              "maximum": 5000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "`next_cursor` of the previous page.",
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "genre",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Genre"
+            }
+          },
+          {
+            "in": "query",
+            "name": "style",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Style"
+            }
+          },
+          {
+            "in": "query",
+            "name": "artist_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Artist Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "has_audio",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Has Audio"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MapPointsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected error."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get Map Points",
+        "tags": [
+          "map"
+        ]
+      }
+    },
+    "/api/search": {
+      "post": {
+        "operationId": "search",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected error."
+          }
+        },
+        "summary": "Search",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}": {
+      "get": {
+        "operationId": "getSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected error."
+          }
+        },
+        "summary": "Get Session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/tracks/{track_id}": {
+      "get": {
+        "operationId": "getTrack",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "track_id",
+            "required": true,
+            "schema": {
+              "title": "Track Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected error."
+          }
+        },
+        "summary": "Get Track",
+        "tags": [
+          "tracks"
+        ]
+      }
+    },
+    "/api/tracks/{track_id}/audio": {
+      "get": {
+        "operationId": "getTrackAudio",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "track_id",
+            "required": true,
+            "schema": {
+              "title": "Track Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "audio/mpeg": {}
+            },
+            "description": "The audio clip."
+          },
+          "206": {
+            "content": {
+              "audio/mpeg": {}
+            },
+            "description": "Requested byte range."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Invalid request."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected error."
+          }
+        },
+        "summary": "Get Track Audio",
+        "tags": [
+          "tracks"
+        ]
+      }
+    },
+    "/api/tracks/{track_id}/neighbors": {
+      "get": {
+        "operationId": "getTrackNeighbors",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "track_id",
+            "required": true,
+            "schema": {
+              "title": "Track Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Number of neighbors.",
+            "in": "query",
+            "name": "k",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "description": "Number of neighbors.",
+              "maximum": 50,
+              "minimum": 1,
+              "title": "K",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NeighborsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected error."
+          }
+        },
+        "summary": "Get Neighbors",
+        "tags": [
+          "tracks"
+        ]
+      }
+    }
+  }
+}

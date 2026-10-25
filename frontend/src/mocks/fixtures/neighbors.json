@@ -1,0 +1,44 @@
+{
+  "metric": "clap_cosine",
+  "model_id": "example-clap-model",
+  "neighbors": [
+    {
+      "artists": [
+        {
+          "artist_id": "art_example_2",
+          "name": "Example Artist 2"
+        }
+      ],
+      "audio_available": true,
+      "relationship_types": [],
+      "score": 0.85,
+      "spatial": {
+        "projection_version": "umap-example",
+        "x": -0.4,
+        "y": 0.3
+      },
+      "title": "Example Track 2",
+      "track_id": "trk_example_2"
+    },
+    {
+      "artists": [
+        {
+          "artist_id": "art_example_4",
+          "name": "Example Artist 4"
+        }
+      ],
+      "audio_available": true,
+      "relationship_types": [],
+      "score": 0.75,
+      "spatial": {
+        "projection_version": "umap-example",
+        "x": -0.3,
+        "y": 0.3
+      },
+      "title": "Example Track 4",
+      "track_id": "trk_example_4"
+    }
+  ],
+  "reason": null,
+  "track_id": "trk_example_1"
+}

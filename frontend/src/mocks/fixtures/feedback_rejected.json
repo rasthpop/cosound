@@ -1,0 +1,47 @@
+{
+  "accepted": false,
+  "change_summary": [],
+  "next_action": "NONE",
+  "reason": "nothing in the feedback text maps to a known attribute",
+  "refreshed": null,
+  "updated_search_state": {
+    "interpreted_query": {
+      "diversity": 0.5,
+      "energy_preferences": [],
+      "era_preferences": [],
+      "excluded_track_ids": [],
+      "genre_preferences": [],
+      "hard_constraints": [],
+      "instrument_preferences": [
+        {
+          "source_span": "flute",
+          "value": "flute",
+          "weight": 1.0
+        }
+      ],
+      "interpreter": "deterministic",
+      "interpreter_model": null,
+      "mood_preferences": [
+        {
+          "source_span": "chill",
+          "value": "chill",
+          "weight": 0.7
+        }
+      ],
+      "negative_preferences": [],
+      "negative_reference_track_ids": [],
+      "original_query": "Something chill with a flute",
+      "reference_track_ids": [],
+      "semantic_prompts": [
+        "chill music featuring flute"
+      ],
+      "spec_version": 1,
+      "tempo_preferences": [],
+      "texture_preferences": [],
+      "uncertainties": [],
+      "vocal_preferences": "unspecified"
+    },
+    "session_id": "ses_example_1",
+    "session_version": 2
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "error": {
+    "code": "validation_error",
+    "details": {
+      "errors": [
+        {
+          "loc": "body.query",
+          "msg": "too short"
+        }
+      ]
+    },
+    "message": "Request is invalid."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "api_version": "1",
+  "capabilities": {
+    "llm_interpreter": "disabled",
+    "map": "unavailable",
+    "semantic": "unavailable"
+  },
+  "map_reason": "projection_unavailable",
+  "semantic_reason": "clap_checkpoint_missing",
+  "status": "ok"
+}

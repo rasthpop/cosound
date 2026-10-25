@@ -82,7 +82,8 @@
   - Deterministic OpenAPI JSON (sorted keys, stable operation ids); fixtures for every scenario listed in `ui-isolated-development`; test validating each fixture against its DTO; changelog started at `API_VERSION=1`.
 - **Done when:**
   - Re-running both scripts produces no git diff; fixture test green.
-- **Status:** [ ]
+- **Notes:** `build_app(settings)` (routes without services) feeds `scripts/export_openapi.py`; explicit settings make the output independent of `.env`. Fixtures come from `api/examples.py` plus `index.json` (fixture → DTO name); `--check` modes and `make contract` / `make contract-check` added. Every router declares the error envelope for 422/500, so FastAPI's `HTTPValidationError` is not in the schema. Responses carry `X-API-Version`. Also moved the neighbor `k` bound behind `application.track_service.MAX_NEIGHBORS` (api must not import spatial).
+- **Status:** [x]
 
 ### P08.T08 — API robustness suite
 - **Skills:** api-contracts

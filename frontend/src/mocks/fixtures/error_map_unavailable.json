@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "projection_unavailable",
+    "details": {},
+    "message": "The track map is not available."
+  }
+}

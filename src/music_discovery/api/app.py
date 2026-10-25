@@ -2,7 +2,8 @@
 
     uv run uvicorn music_discovery.api.app:create_app --factory      # make serve
 
-`create_app(settings, services=...)` lets tests inject services built over fakes.
+`create_app(settings, services=...)` lets tests inject services built over fakes;
+`build_app(settings)` has every route but no services (used by scripts/export_openapi.py).
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ import logging
 import time
 import uuid
 from collections.abc import Awaitable, Callable
+from typing import Any
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,16 +21,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from music_discovery.api.dependencies import Services, build_services
 from music_discovery.api.errors import install_error_handlers
 from music_discovery.api.routes import audio, feedback, health, map, search, sessions, tracks
-from music_discovery.api.schemas import API_VERSION
+from music_discovery.api.schemas import API_VERSION, ErrorResponse
 from music_discovery.infrastructure.settings import Settings, get_settings
 
 access_log = logging.getLogger("music_discovery.api.access")
 
 REQUEST_ID_HEADER = "X-Request-ID"
+API_VERSION_HEADER = "X-API-Version"
 
 
 def create_app(settings: Settings | None = None, *, services: Services | None = None) -> FastAPI:
     settings = settings or get_settings()
+    app = build_app(settings)
+    app.state.services = services if services is not None else build_services(settings)
+    return app
+
+
+def build_app(settings: Settings) -> FastAPI:
+    """Routes, middleware and error handlers without services (enough for the OpenAPI export)."""
     app = FastAPI(
         title="Semantic Music Discovery API",
         version=API_VERSION,
@@ -37,18 +47,28 @@ def create_app(settings: Settings | None = None, *, services: Services | None = 
             "are not probabilities; missing values are null."
         ),
     )
-    app.state.services = services if services is not None else build_services(settings)
     install_error_handlers(app)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.api_cors_origins,
         allow_methods=["GET", "POST"],
         allow_headers=["Content-Type", "Range", REQUEST_ID_HEADER],
-        expose_headers=[REQUEST_ID_HEADER, "Content-Range", "Accept-Ranges", "X-Audio-License"],
+        expose_headers=[
+            REQUEST_ID_HEADER,
+            API_VERSION_HEADER,
+            "Content-Range",
+            "Accept-Ranges",
+            "X-Audio-License",
+        ],
     )
     app.middleware("http")(_request_context)
+    # every route answers errors with the envelope (FastAPI's default 422 body is replaced)
+    errors: dict[int | str, dict[str, Any]] = {
+        422: {"model": ErrorResponse, "description": "Invalid request."},
+        500: {"model": ErrorResponse, "description": "Unexpected error."},
+    }
     for module in (health, search, tracks, audio, feedback, sessions, map):
-        app.include_router(module.router, prefix="/api")
+        app.include_router(module.router, prefix="/api", responses=errors)
     return app
 
 
@@ -64,6 +84,7 @@ async def _request_context(
     started = time.perf_counter()
     response = await call_next(request)
     response.headers[REQUEST_ID_HEADER] = request_id
+    response.headers[API_VERSION_HEADER] = API_VERSION
     access_log.info(
         json.dumps(
             {

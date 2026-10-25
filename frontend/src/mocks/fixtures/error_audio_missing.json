@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "audio_missing",
+    "details": {
+      "track_id": "trk_example_3"
+    },
+    "message": "Track trk_example_3 has no validated audio."
+  }
+}

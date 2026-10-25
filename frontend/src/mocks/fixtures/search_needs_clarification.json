@@ -1,0 +1,39 @@
+{
+  "capabilities": {
+    "llm_interpreter": "disabled",
+    "map": "available",
+    "semantic": "available"
+  },
+  "change_summary": [],
+  "clarification_question": "Should the music have vocals or not?",
+  "interpreted_query": {
+    "diversity": 0.5,
+    "energy_preferences": [],
+    "era_preferences": [],
+    "excluded_track_ids": [],
+    "genre_preferences": [],
+    "hard_constraints": [],
+    "instrument_preferences": [],
+    "interpreter": "deterministic",
+    "interpreter_model": null,
+    "mood_preferences": [],
+    "negative_preferences": [],
+    "negative_reference_track_ids": [],
+    "original_query": "no vocals with female vocals",
+    "reference_track_ids": [],
+    "semantic_prompts": [],
+    "spec_version": 1,
+    "tempo_preferences": [],
+    "texture_preferences": [],
+    "uncertainties": [
+      "vocals are both excluded and requested"
+    ],
+    "vocal_preferences": "unspecified"
+  },
+  "no_match_reasons": [],
+  "outcome": "needs_clarification",
+  "query_id": "qry_example_1",
+  "results": [],
+  "session_id": "ses_example_1",
+  "warnings": []
+}

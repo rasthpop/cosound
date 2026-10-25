@@ -1,0 +1,179 @@
+{
+  "capabilities": {
+    "llm_interpreter": "fallback",
+    "map": "available",
+    "semantic": "available"
+  },
+  "change_summary": [],
+  "clarification_question": null,
+  "interpreted_query": {
+    "diversity": 0.5,
+    "energy_preferences": [],
+    "era_preferences": [],
+    "excluded_track_ids": [],
+    "genre_preferences": [],
+    "hard_constraints": [],
+    "instrument_preferences": [
+      {
+        "source_span": "flute",
+        "value": "flute",
+        "weight": 1.0
+      }
+    ],
+    "interpreter": "deterministic",
+    "interpreter_model": null,
+    "mood_preferences": [
+      {
+        "source_span": "chill",
+        "value": "chill",
+        "weight": 0.7
+      }
+    ],
+    "negative_preferences": [],
+    "negative_reference_track_ids": [],
+    "original_query": "Something chill with a flute",
+    "reference_track_ids": [],
+    "semantic_prompts": [
+      "chill music featuring flute"
+    ],
+    "spec_version": 1,
+    "tempo_preferences": [],
+    "texture_preferences": [],
+    "uncertainties": [],
+    "vocal_preferences": "unspecified"
+  },
+  "no_match_reasons": [],
+  "outcome": "ok",
+  "query_id": "qry_example_1",
+  "results": [
+    {
+      "artists": [
+        {
+          "artist_id": "art_example_1",
+          "name": "Example Artist 1"
+        }
+      ],
+      "audio_available": true,
+      "constraint_status": [],
+      "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+      "evidence_status": "audio_and_metadata",
+      "genres": [
+        "Folk"
+      ],
+      "match_reasons": [
+        "Strong semantic match",
+        "Genre tag: Folk"
+      ],
+      "preview_url": "/api/tracks/trk_example_1/audio",
+      "rank": 1,
+      "retrieval_sources": [
+        "semantic",
+        "metadata"
+      ],
+      "score": 0.82,
+      "score_breakdown": {
+        "final": 0.82,
+        "metadata": 0.65,
+        "relationship": null,
+        "semantic": 0.82
+      },
+      "source_url": null,
+      "spatial": {
+        "projection_version": "umap-example",
+        "x": -0.5,
+        "y": 0.25
+      },
+      "styles": [],
+      "title": "Example Track 1",
+      "track_id": "trk_example_1",
+      "uncertainty_flags": []
+    },
+    {
+      "artists": [
+        {
+          "artist_id": "art_example_2",
+          "name": "Example Artist 2"
+        }
+      ],
+      "audio_available": true,
+      "constraint_status": [],
+      "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+      "evidence_status": "audio_and_metadata",
+      "genres": [
+        "Folk"
+      ],
+      "match_reasons": [
+        "Strong semantic match",
+        "Genre tag: Folk"
+      ],
+      "preview_url": "/api/tracks/trk_example_2/audio",
+      "rank": 2,
+      "retrieval_sources": [
+        "semantic",
+        "metadata"
+      ],
+      "score": 0.74,
+      "score_breakdown": {
+        "final": 0.74,
+        "metadata": 0.55,
+        "relationship": null,
+        "semantic": 0.74
+      },
+      "source_url": null,
+      "spatial": {
+        "projection_version": "umap-example",
+        "x": -0.4,
+        "y": 0.25
+      },
+      "styles": [],
+      "title": "Example Track 2",
+      "track_id": "trk_example_2",
+      "uncertainty_flags": []
+    },
+    {
+      "artists": [
+        {
+          "artist_id": "art_example_3",
+          "name": "Example Artist 3"
+        }
+      ],
+      "audio_available": false,
+      "constraint_status": [],
+      "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+      "evidence_status": "metadata_only",
+      "genres": [
+        "Folk"
+      ],
+      "match_reasons": [
+        "Genre tag: Folk"
+      ],
+      "preview_url": null,
+      "rank": 3,
+      "retrieval_sources": [
+        "metadata"
+      ],
+      "score": 0.05,
+      "score_breakdown": {
+        "final": 0.05,
+        "metadata": 0.3,
+        "relationship": null,
+        "semantic": null
+      },
+      "source_url": null,
+      "spatial": null,
+      "styles": [],
+      "title": "Example Track 3",
+      "track_id": "trk_example_3",
+      "uncertainty_flags": [
+        "no_audio"
+      ]
+    }
+  ],
+  "session_id": "ses_example_1",
+  "warnings": [
+    {
+      "code": "llm_fallback",
+      "message": "The language model did not answer; the query was read by the deterministic parser."
+    }
+  ]
+}

@@ -27,6 +27,9 @@ from music_discovery.spatial.neighbor_service import (
     NoNeighborReason,
 )
 
+MAX_NEIGHBORS = MAX_K
+"""Upper bound for `k` in `neighbors()` (re-exported for the API layer)."""
+
 MAX_RELATED_PER_TYPE = 20
 """Track details list at most this many related tracks per relationship type (with counts)."""
 
@@ -114,9 +117,10 @@ class TrackService:
         return TrackDetail(view, release, related, dict(counts))
 
     def neighbors(self, track_id: str, k: int) -> NeighborsResult:
-        if not 1 <= k <= MAX_K:
+        if not 1 <= k <= MAX_NEIGHBORS:
             raise InvalidRequest(
-                f"k must be between 1 and {MAX_K}", details={"field": "k", "max": MAX_K}
+                f"k must be between 1 and {MAX_NEIGHBORS}",
+                details={"field": "k", "max": MAX_NEIGHBORS},
             )
         self._view(track_id)
         result = self._neighbors.neighbors(track_id, k)

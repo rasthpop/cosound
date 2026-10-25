@@ -9,8 +9,7 @@ from fastapi import APIRouter, Depends, Query
 from music_discovery.api import mapping
 from music_discovery.api.dependencies import get_track_service
 from music_discovery.api.schemas import ErrorResponse, NeighborsResponse, TrackDetail
-from music_discovery.application.track_service import TrackService
-from music_discovery.spatial.neighbor_service import MAX_K
+from music_discovery.application.track_service import MAX_NEIGHBORS, TrackService
 
 router = APIRouter(tags=["tracks"])
 
@@ -32,6 +31,6 @@ def get_track(
 def get_neighbors(
     track_id: str,
     service: Annotated[TrackService, Depends(get_track_service)],
-    k: Annotated[int, Query(ge=1, le=MAX_K, description="Number of neighbors.")] = 10,
+    k: Annotated[int, Query(ge=1, le=MAX_NEIGHBORS, description="Number of neighbors.")] = 10,
 ) -> NeighborsResponse:
     return mapping.neighbors_response(service.neighbors(track_id, k))
