@@ -69,7 +69,8 @@
   - Fetch details (+ optional neighbors) by id; in-memory cache keyed by id with invalidation on `projection_version` change; loading/error states; abort on id change.
 - **Done when:**
   - Tests: cache hit avoids request, id switch aborts previous, 404 surfaces typed error.
-- **Status:** [ ]
+- **Notes:** Cache is per hook instance, held in state (no setState-in-effect, no ref reads during render, as React Hooks v7 requires); loading is derived from "no entry yet". `projectionVersion` (from useMusicMap) scopes the cache. A failed neighbors call keeps the details (`neighborsError`); `reload()` drops the entry and refetches.
+- **Status:** [x]
 
 ### P09.T07 — `useMusicMap`
 - **Skills:** ui-architecture, deckgl-track-map
