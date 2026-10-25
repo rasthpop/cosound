@@ -15,7 +15,8 @@
   - Services return domain results; no HTTP concepts.
 - **Done when:**
   - Unit tests with fakes for each service, including degraded capabilities and invalid feedback references.
-- **Status:** [ ]
+- **Notes:** Added `application/results.py` (`TrackView` = track + validated audio + coordinates) shared by all services, and a domain `InvalidRequest` error (code `validation_error`). Follow-up queries go through `SearchService.search(session_id=…)` (Agent A decides refinement); feedback-driven re-search lives in `FeedbackService`. Accepted spec-changing feedback always records the new turn; `refresh` only decides whether the plate is returned. Capabilities are cached 5 s; `llm_interpreter` reads `OpenRouterLLM.status` (circuit breaker). Test world in `tests/support/world.py` (real agents, in-memory fakes).
+- **Status:** [x]
 
 ### P08.T02 — Public DTOs, mapping & examples
 - **Skills:** api-contracts, domain-modeling

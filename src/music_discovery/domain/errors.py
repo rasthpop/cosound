@@ -172,6 +172,15 @@ class StaleSessionVersion(SessionError):
     code = "stale_session_version"
 
 
+# --- Requests ----------------------------------------------------------------------------
+
+
+class InvalidRequest(MusicDiscoveryError):
+    """Well-formed input that asks for something invalid (bad limit, empty query)."""
+
+    code = "validation_error"
+
+
 # --- Lookups ---------------------------------------------------------------------------
 
 
