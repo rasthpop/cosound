@@ -154,6 +154,7 @@ SEARCH_PATH_MODULES = [
     "music_discovery.agents.orchestrator",
     "music_discovery.spatial.spatial_repository",
     "music_discovery.spatial.neighbor_service",
+    "music_discovery.application.map_service",
     "music_discovery.infrastructure.spatial_store",
 ]
 

@@ -57,7 +57,8 @@
   - `list_points(filters, limit, cursor)` with keyset pagination; filters genre/style/artist_id/has_audio; `meta()` with projection_version, bounds, counts, availability; unavailable projection ⇒ explicit status (not exception leak).
 - **Done when:**
   - Tests: pagination stable & complete, filters, bounded limit, no embeddings in output, unavailable path.
-- **Status:** [ ]
+- **Notes:** `MapService.from_loader` turns `ProjectionMissing`/`ProjectionMismatch` into `status="unavailable"` + the error code. Points are built once and cached (catalog and projection are static while the app runs). Every point is in the audio projection, so `has_audio` is always true and `has_audio=false` returns no points. `limit` default 500, max 5000. Points carry `source_url` (ADR-0005), not `discogs_url`. Smoke-tested on the real catalog: 7,993 points, loaded in ~0.8 s.
+- **Status:** [x]
 
 ### P07.T06 — Neighbor service (original space)
 - **Skills:** umap-spatial-projection, clap-embeddings
