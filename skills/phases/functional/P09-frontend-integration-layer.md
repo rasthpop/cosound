@@ -36,7 +36,8 @@
   - Base URL from env; typed functions per endpoint; `AbortSignal` support; JSON (de)serialization; error normalization to `ApiError {code, message, status, details, kind: "http"|"network"|"aborted"|"parse"}`; no business rules.
 - **Done when:**
   - Tests via MSW: success, envelope error, network error, abort, malformed JSON.
-- **Status:** [ ]
+- **Notes:** `createApiClient({baseUrl, fetch})` + default `apiClient`; failures throw `ApiClientError` (implements `ApiError`, with `toJSON()`); `resolveUrl()` turns `preview_url` paths into absolute URLs. Generation now uses `defaultNonNullable: false`: openapi-typescript otherwise marks request fields with server defaults (`limit`, `refresh`) as required.
+- **Status:** [x]
 
 ### P09.T04 — `useMusicSearch`
 - **Skills:** ui-architecture, ui-isolated-development

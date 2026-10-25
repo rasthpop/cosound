@@ -230,7 +230,7 @@ export interface components {
              * Details
              * @default {}
              */
-            details: {
+            details?: {
                 [key: string]: components["schemas"]["JsonValue"];
             };
             /** Message */
@@ -346,7 +346,7 @@ export interface components {
              * Limit
              * @default 10
              */
-            limit: number;
+            limit?: number;
             /** Query Id */
             query_id: string;
             /**
@@ -354,7 +354,7 @@ export interface components {
              * @description Return the refreshed plate.
              * @default false
              */
-            refresh: boolean;
+            refresh?: boolean;
             /** Session Id */
             session_id: string;
             /** Track Id */
@@ -1061,7 +1061,7 @@ export interface components {
              * Limit
              * @default 10
              */
-            limit: number;
+            limit?: number;
             /** Query */
             query: string;
             /**

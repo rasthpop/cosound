@@ -10,7 +10,8 @@ const root = new URL("../", import.meta.url);
 const schemaUrl = new URL("openapi.json", root);
 const outputPath = fileURLToPath(new URL("src/api/generated.ts", root));
 
-const ast = await openapiTS(schemaUrl, { alphabetize: true });
+// defaultNonNullable: false keeps fields with server defaults optional in requests
+const ast = await openapiTS(schemaUrl, { alphabetize: true, defaultNonNullable: false });
 const banner =
   "/**\n * Generated from frontend/openapi.json by scripts/contract.mjs (openapi-typescript).\n" +
   " * Do not edit: change the backend DTOs, run `make contract`, then `npm run contract`.\n */\n\n";
