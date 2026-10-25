@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from music_discovery.api.dependencies import Services, build_services
 from music_discovery.api.errors import install_error_handlers
-from music_discovery.api.routes import health
+from music_discovery.api.routes import health, search, tracks
 from music_discovery.api.schemas import API_VERSION
 from music_discovery.infrastructure.settings import Settings, get_settings
 
@@ -47,7 +47,7 @@ def create_app(settings: Settings | None = None, *, services: Services | None = 
         expose_headers=[REQUEST_ID_HEADER, "Content-Range", "Accept-Ranges", "X-Audio-License"],
     )
     app.middleware("http")(_request_context)
-    for module in (health,):
+    for module in (health, search, tracks):
         app.include_router(module.router, prefix="/api")
     return app
 

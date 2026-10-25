@@ -49,7 +49,8 @@
   - `POST /api/search`, `GET /api/tracks/{id}`, `GET /api/tracks/{id}/neighbors`; limit bounds; outcome variants.
 - **Done when:**
   - API tests: schema, invalid input, empty results, metadata-only results, semantic unavailable warning, needs-clarification, no-confident-match, invalid track id 404.
-- **Status:** [ ]
+- **Notes:** `limit` 1–100 (Agent B's bound), `k` 1–50; violations are 422 envelopes, blank queries too. Stable `operation_id`s (`search`, `getTrack`, `getTrackNeighbors`) for generated client types.
+- **Status:** [x]
 
 ### P08.T05 — Feedback & session routes
 - **Skills:** api-contracts, agent-orchestration
