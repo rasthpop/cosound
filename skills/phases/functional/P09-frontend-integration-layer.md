@@ -91,7 +91,8 @@
   - Document each hook's signature, return shape, states, events, and the scenario fixtures that exercise them; single `index.ts` export surface that the UI track imports from.
 - **Done when:**
   - README matches the TS signatures (spot-checked by `api-contract-guardian`); UI track can implement containers from this document alone.
-- **Status:** [ ]
+- **Notes:** README-vs-signature agreement is enforced by `src/hooks/readme.test.tsx` (every field each hook returns must appear in its README section, and the README covers exactly the hooks exported from `index.ts`) rather than a one-off `api-contract-guardian` review.
+- **Status:** [x]
 
 ### P09.T09 — Contract harness (dev-only, unstyled) — M6 acceptance
 - **Skills:** ui-architecture, ui-isolated-development
