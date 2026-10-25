@@ -508,3 +508,35 @@ class LLMResult(FrozenModel, Generic[T]):
         if (self.parsed is None) == (self.error_code is None):
             raise ValueError("exactly one of parsed and error_code is set")
         return self
+
+
+# --- Spatial projection artifact (base.md §11.3) ------------------------------------------
+
+
+class ProjectionMeta(FrozenModel):
+    """Everything needed to tell which embeddings and parameters produced a map."""
+
+    projection_version: NonEmptyStr
+    embedding_version: NonEmptyStr
+    model_id: NonEmptyStr
+    embedding_preprocessing: dict[str, JsonValue] | None = None
+    umap_requested: dict[str, JsonValue]
+    umap_effective: dict[str, JsonValue]
+    """Parameters actually used (small-n clamping, init fallback)."""
+    random_state: int
+    package_versions: dict[str, str]
+    created_at: AwareDatetime
+    n_points: int = Field(ge=0)
+    excluded_tracks: int = Field(ge=0)
+    """Catalog tracks without an audio embedding, left off this projection."""
+    coordinate_transform: dict[str, JsonValue] | None = None
+    coordinates_sha256: NonEmptyStr
+    notes: list[str] = []
+
+
+class ProjectionArtifact(FrozenModel):
+    """A loaded projection: `coordinates[i]` belongs to `track_ids[i]`."""
+
+    meta: ProjectionMeta
+    track_ids: list[NonEmptyStr]
+    coordinates: list[tuple[float, float]]

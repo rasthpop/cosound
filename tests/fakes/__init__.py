@@ -8,6 +8,7 @@ from tests.fakes.adapters import (
     FakeAudioProbe,
     FakeLexicalIndex,
     FakeStructuredLLM,
+    InMemoryProjectionStore,
     InMemorySpatialRepository,
 )
 from tests.fakes.clock import FrozenClock
@@ -45,6 +46,7 @@ __all__ = [
     "InMemoryImportRunRepository",
     "InMemoryLabelRepository",
     "InMemoryMatchRepository",
+    "InMemoryProjectionStore",
     "InMemoryRelationshipRepository",
     "InMemoryReleaseRepository",
     "InMemorySessionRepository",

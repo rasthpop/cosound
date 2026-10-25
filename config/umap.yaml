@@ -1,0 +1,16 @@
+# UMAP projection for the track map (base.md §11.2). Starting values, not tuned settings.
+# random_state and n_components come from settings (UMAP_RANDOM_STATE, UMAP_N_COMPONENTS).
+# Changing anything here yields a new projection_version; rebuild with scripts/build_map.py.
+umap:
+  n_neighbors: 15   # clamped to n - 1 for tiny corpora (recorded in meta.json)
+  min_dist: 0.1
+  metric: cosine    # CLAP embeddings are L2-normalized; cosine is the retrieval metric
+  init: spectral    # falls back to random if spectral init fails (recorded)
+
+# Center and scale coordinates into [-1, 1] so renderers get stable bounds.
+normalize: true
+
+quality:
+  k: 10               # trustworthiness@k and kNN overlap@k
+  probe_tracks: 3     # manual check: original vs 2D neighbors for a few tracks
+  probe_neighbors: 3

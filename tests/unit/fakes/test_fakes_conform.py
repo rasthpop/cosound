@@ -46,6 +46,7 @@ lexical: p.LexicalIndex = fakes.FakeLexicalIndex({"trk_a": "flute"})
 probe: p.AudioProbe = fakes.FakeAudioProbe()
 llm: p.StructuredLLM = fakes.FakeStructuredLLM()
 spatial: p.SpatialRepository = fakes.InMemorySpatialRepository({"trk_a": (0.0, 1.0)})
+projections: p.ProjectionStore = fakes.InMemoryProjectionStore()
 
 CONFORMING: list[tuple[Any, object]] = [
     (p.Clock, clock),
@@ -69,6 +70,7 @@ CONFORMING: list[tuple[Any, object]] = [
     (p.AudioProbe, probe),
     (p.StructuredLLM, llm),
     (p.SpatialRepository, spatial),
+    (p.ProjectionStore, projections),
 ]
 
 

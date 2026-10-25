@@ -28,7 +28,13 @@ from music_discovery.domain.models import (
     TrackAudio,
     TrackRelationship,
 )
-from music_discovery.domain.schemas import AudioProbeResult, FeedbackEvent, LLMResult
+from music_discovery.domain.schemas import (
+    AudioProbeResult,
+    FeedbackEvent,
+    LLMResult,
+    ProjectionArtifact,
+    ProjectionMeta,
+)
 
 Vector = npt.NDArray[np.float32]
 """A single embedding, shape (d,)."""
@@ -243,3 +249,32 @@ class SpatialRepository(Protocol):
     def projection_version(self) -> str: ...
     def coordinates(self, track_id: str) -> tuple[float, float] | None: ...
     def all_coordinates(self) -> Mapping[str, tuple[float, float]]: ...
+
+
+@runtime_checkable
+class ProjectionStore(Protocol):
+    """Persisted map projections, one directory (or record) per projection version."""
+
+    def write(
+        self,
+        meta: ProjectionMeta,
+        track_ids: Sequence[str],
+        coordinates: Sequence[tuple[float, float]],
+        quality: Mapping[str, object],
+    ) -> None:
+        """Persist one version; `meta.coordinates_sha256` must match what is written."""
+        ...
+
+    def read(self, projection_version: str) -> ProjectionArtifact:
+        """Raises `ProjectionMissing` if absent, `ProjectionMismatch` if unreadable/corrupted."""
+        ...
+
+    def resolve(self, active: str | None) -> str:
+        """The configured version, else the newest complete one. Raises `ProjectionMissing`."""
+        ...
+
+    def coordinates_sha256(
+        self, track_ids: Sequence[str], coordinates: Sequence[tuple[float, float]]
+    ) -> str:
+        """Content hash of the coordinates exactly as this store serializes them."""
+        ...

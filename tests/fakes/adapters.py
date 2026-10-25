@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,7 +11,13 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 
-from music_discovery.domain.schemas import AudioProbeResult, LLMResult
+from music_discovery.domain.errors import ProjectionMissing
+from music_discovery.domain.schemas import (
+    AudioProbeResult,
+    LLMResult,
+    ProjectionArtifact,
+    ProjectionMeta,
+)
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -111,3 +119,43 @@ class InMemorySpatialRepository:
 
     def all_coordinates(self) -> Mapping[str, tuple[float, float]]:
         return dict(self._coordinates)
+
+
+class InMemoryProjectionStore:
+    def __init__(self) -> None:
+        self.artifacts: dict[str, ProjectionArtifact] = {}
+        self.quality: dict[str, Mapping[str, object]] = {}
+        self.writes = 0
+
+    def coordinates_sha256(
+        self, track_ids: Sequence[str], coordinates: Sequence[tuple[float, float]]
+    ) -> str:
+        payload = json.dumps([list(track_ids), [list(c) for c in coordinates]])
+        return hashlib.sha256(payload.encode()).hexdigest()
+
+    def write(
+        self,
+        meta: ProjectionMeta,
+        track_ids: Sequence[str],
+        coordinates: Sequence[tuple[float, float]],
+        quality: Mapping[str, object],
+    ) -> None:
+        assert meta.coordinates_sha256 == self.coordinates_sha256(track_ids, coordinates)
+        self.artifacts[meta.projection_version] = ProjectionArtifact(
+            meta=meta, track_ids=list(track_ids), coordinates=list(coordinates)
+        )
+        self.quality[meta.projection_version] = quality
+        self.writes += 1
+
+    def read(self, projection_version: str) -> ProjectionArtifact:
+        if projection_version not in self.artifacts:
+            raise ProjectionMissing(f"no projection {projection_version}")
+        return self.artifacts[projection_version]
+
+    def resolve(self, active: str | None) -> str:
+        if active is not None:
+            self.read(active)
+            return active
+        if not self.artifacts:
+            raise ProjectionMissing("no projections")
+        return max(self.artifacts.values(), key=lambda a: a.meta.created_at).meta.projection_version

@@ -24,7 +24,8 @@
 - **Done when:**
   - Slow test: two runs ⇒ allclose coordinates; 20-point corpus works with clamped params recorded in meta.
   - Unit test with a fake projector covers the script flow.
-- **Status:** [ ]
+- **Notes:** Orchestration lives in `spatial/map_builder.py` (collaborators injected) so the script is a thin composition root and the fake-projector test runs the real flow. Coordinates are normalized into [-1, 1] (transform in meta). Real run on fma_small (2026-10-25): 7,993 points, 7 tracks without audio excluded, ~45 s, trustworthiness@10 0.955, kNN overlap@10 0.267.
+- **Status:** [x]
 
 ### P07.T03 — Projection persistence & loader validation
 - **Skills:** umap-spatial-projection
@@ -34,7 +35,8 @@
   - Write `coordinates.parquet` (or CSV), `meta.json` (all base §11.3 fields + effective params + hashes); loader checks embedding version, id set, counts ⇒ `ProjectionMismatch` / `ProjectionMissing`; optional copy into `Track.spatial_x/y`.
 - **Done when:**
   - Tests: valid load; mismatched embedding version, missing ids, corrupted file each produce the right error; search code path does not import `umap` (boundary check).
-- **Status:** [ ]
+- **Notes:** CSV instead of parquet (no pyarrow dependency); floats via `repr` so the sha256 round-trips. `ProjectionMeta`/`ProjectionArtifact` in `domain/schemas.py` and a new `ProjectionStore` protocol (fake: `InMemoryProjectionStore`) so `spatial/` validates without importing infrastructure. Loader also rejects projections whose id set differs from the embedding store. Copy into `Track.spatial_x/y` not done: the artifact stays the only source.
+- **Status:** [x]
 
 ### P07.T04 — Projection quality metrics
 - **Skills:** umap-spatial-projection, retrieval-evaluation
@@ -44,7 +46,8 @@
   - Trustworthiness@k, kNN overlap@k, manual neighbor table (3 probe tracks) into `quality.json`.
 - **Done when:**
   - Tests on a synthetic dataset where the expected overlap is known; `quality.json` produced by `build_map.py`.
-- **Status:** [ ]
+- **Notes:** Trustworthiness is computed in row blocks (own implementation, checked against `sklearn.manifold.trustworthiness` in tests) so 8k tracks need no n-by-n matrices; k is reduced to < n/2 for tiny corpora and the reduction noted. Probe table entries carry `title — artist` labels.
+- **Status:** [x]
 
 ### P07.T05 — Map service
 - **Skills:** umap-spatial-projection, api-contracts
