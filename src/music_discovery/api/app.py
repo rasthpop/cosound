@@ -13,15 +13,14 @@ import logging
 import time
 import uuid
 from collections.abc import Awaitable, Callable
-from typing import Any
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from music_discovery.api.dependencies import Services, build_services
-from music_discovery.api.errors import install_error_handlers
+from music_discovery.api.errors import error_responses, install_error_handlers
 from music_discovery.api.routes import audio, feedback, health, map, search, sessions, tracks
-from music_discovery.api.schemas import API_VERSION, ErrorResponse
+from music_discovery.api.schemas import API_VERSION
 from music_discovery.infrastructure.settings import Settings, get_settings
 
 access_log = logging.getLogger("music_discovery.api.access")
@@ -63,10 +62,7 @@ def build_app(settings: Settings) -> FastAPI:
     )
     app.middleware("http")(_request_context)
     # every route answers errors with the envelope (FastAPI's default 422 body is replaced)
-    errors: dict[int | str, dict[str, Any]] = {
-        422: {"model": ErrorResponse, "description": "Invalid request."},
-        500: {"model": ErrorResponse, "description": "Unexpected error."},
-    }
+    errors = error_responses(422, 500)
     for module in (health, search, tracks, audio, feedback, sessions, map):
         app.include_router(module.router, prefix="/api", responses=errors)
     return app

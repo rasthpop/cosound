@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends
 
 from music_discovery.api import mapping
 from music_discovery.api.dependencies import get_search_service
-from music_discovery.api.schemas import ErrorResponse, SearchRequest, SearchResponse
+from music_discovery.api.errors import error_responses
+from music_discovery.api.schemas import SearchRequest, SearchResponse
 from music_discovery.application.search_service import SearchService
 
 router = APIRouter(tags=["search"])
@@ -17,7 +18,7 @@ router = APIRouter(tags=["search"])
 @router.post(
     "/search",
     operation_id="search",
-    responses={404: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
+    responses=error_responses(404, 422),
 )
 def search(
     request: SearchRequest,

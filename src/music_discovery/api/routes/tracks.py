@@ -2,21 +2,20 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
 from music_discovery.api import mapping
 from music_discovery.api.dependencies import get_track_service
-from music_discovery.api.schemas import ErrorResponse, NeighborsResponse, TrackDetail
+from music_discovery.api.errors import error_responses
+from music_discovery.api.schemas import NeighborsResponse, TrackDetail
 from music_discovery.application.track_service import MAX_NEIGHBORS, TrackService
 
 router = APIRouter(tags=["tracks"])
 
-NOT_FOUND: dict[int | str, dict[str, Any]] = {404: {"model": ErrorResponse}}
 
-
-@router.get("/tracks/{track_id}", operation_id="getTrack", responses=NOT_FOUND)
+@router.get("/tracks/{track_id}", operation_id="getTrack", responses=error_responses(404))
 def get_track(
     track_id: str, service: Annotated[TrackService, Depends(get_track_service)]
 ) -> TrackDetail:
@@ -26,7 +25,7 @@ def get_track(
 @router.get(
     "/tracks/{track_id}/neighbors",
     operation_id="getTrackNeighbors",
-    responses={**NOT_FOUND, 422: {"model": ErrorResponse}},
+    responses=error_responses(404, 422),
 )
 def get_neighbors(
     track_id: str,

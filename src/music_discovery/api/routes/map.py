@@ -12,7 +12,8 @@ from fastapi import APIRouter, Depends, Query
 
 from music_discovery.api import mapping
 from music_discovery.api.dependencies import get_map_service
-from music_discovery.api.schemas import ErrorResponse, MapMetaResponse, MapPointsResponse
+from music_discovery.api.errors import error_responses
+from music_discovery.api.schemas import MapMetaResponse, MapPointsResponse
 from music_discovery.application.map_service import DEFAULT_LIMIT, MAX_LIMIT, MapFilters, MapService
 from music_discovery.domain.errors import ProjectionMissing
 
@@ -22,7 +23,7 @@ router = APIRouter(tags=["map"])
 @router.get(
     "/map/points",
     operation_id="getMapPoints",
-    responses={422: {"model": ErrorResponse}, 503: {"model": ErrorResponse}},
+    responses=error_responses(422, 503),
 )
 def get_map_points(
     service: Annotated[MapService, Depends(get_map_service)],

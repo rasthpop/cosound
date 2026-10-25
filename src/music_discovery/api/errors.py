@@ -37,6 +37,23 @@ STATUS_BY_CODE: dict[str, int] = {
 }
 HTTP_CODES = {404: "not_found", 405: "method_not_allowed", 413: "payload_too_large"}
 
+ERROR_DESCRIPTIONS = {
+    404: "Not found.",
+    409: "Conflicts with the session state.",
+    422: "Invalid request.",
+    500: "Unexpected error.",
+    503: "A required capability is unavailable.",
+}
+"""Explicit, so the OpenAPI document does not depend on the Python version's status phrases."""
+
+
+def error_responses(*statuses: int) -> dict[int | str, dict[str, Any]]:
+    """OpenAPI `responses` entries for error statuses, all using the envelope."""
+    return {
+        status: {"model": ErrorResponse, "description": ERROR_DESCRIPTIONS[status]}
+        for status in statuses
+    }
+
 
 def status_for(code: str) -> int:
     if code in STATUS_BY_CODE:

@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends
 
 from music_discovery.api import mapping
 from music_discovery.api.dependencies import get_feedback_service
-from music_discovery.api.schemas import ErrorResponse, FeedbackRequest, FeedbackResponse
+from music_discovery.api.errors import error_responses
+from music_discovery.api.schemas import FeedbackRequest, FeedbackResponse
 from music_discovery.application.feedback_service import FeedbackCommand, FeedbackService
 
 router = APIRouter(tags=["feedback"])
@@ -17,11 +18,7 @@ router = APIRouter(tags=["feedback"])
 @router.post(
     "/feedback",
     operation_id="submitFeedback",
-    responses={
-        404: {"model": ErrorResponse},
-        409: {"model": ErrorResponse},
-        422: {"model": ErrorResponse},
-    },
+    responses=error_responses(404, 409, 422),
 )
 def submit_feedback(
     request: FeedbackRequest,

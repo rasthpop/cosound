@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from http import HTTPStatus
 from pathlib import Path
 
 import pytest
@@ -59,3 +60,14 @@ def test_openapi_is_deterministic() -> None:
         op["operationId"] for path in json.loads(first)["paths"].values() for op in path.values()
     ]
     assert len(operation_ids) == len(set(operation_ids))
+
+
+def test_openapi_has_no_python_version_dependent_text() -> None:
+    """Status phrases vary across Python versions (e.g. 422 "Unprocessable Entity" vs
+    "Content"), so every documented response needs an explicit description."""
+    document = export_openapi.openapi_document()
+    for path, operations in document["paths"].items():
+        for method, operation in operations.items():
+            for status, response in operation["responses"].items():
+                phrase = HTTPStatus(int(status)).phrase
+                assert response["description"] != phrase, f"{method} {path} {status}"

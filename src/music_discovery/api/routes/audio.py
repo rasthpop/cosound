@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 
 from music_discovery.api.dependencies import get_track_service
-from music_discovery.api.schemas import ErrorResponse
+from music_discovery.api.errors import error_responses
 from music_discovery.application.track_service import TrackService
 
 router = APIRouter(tags=["tracks"])
@@ -29,7 +29,7 @@ LICENSE_HEADER = "X-Audio-License"
     responses={
         200: {"content": {"audio/mpeg": {}}, "description": "The audio clip."},
         206: {"content": {"audio/mpeg": {}}, "description": "Requested byte range."},
-        404: {"model": ErrorResponse},
+        **error_responses(404),
     },
 )
 def get_track_audio(

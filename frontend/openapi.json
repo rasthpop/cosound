@@ -3333,7 +3333,7 @@
                 }
               }
             },
-            "description": "Not Found"
+            "description": "Not found."
           },
           "409": {
             "content": {
@@ -3343,7 +3343,7 @@
                 }
               }
             },
-            "description": "Conflict"
+            "description": "Conflicts with the session state."
           },
           "422": {
             "content": {
@@ -3353,7 +3353,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Invalid request."
           },
           "500": {
             "content": {
@@ -3572,7 +3572,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Invalid request."
           },
           "500": {
             "content": {
@@ -3592,7 +3592,7 @@
                 }
               }
             },
-            "description": "Service Unavailable"
+            "description": "A required capability is unavailable."
           }
         },
         "summary": "Get Map Points",
@@ -3633,7 +3633,7 @@
                 }
               }
             },
-            "description": "Not Found"
+            "description": "Not found."
           },
           "422": {
             "content": {
@@ -3643,7 +3643,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Invalid request."
           },
           "500": {
             "content": {
@@ -3695,7 +3695,7 @@
                 }
               }
             },
-            "description": "Not Found"
+            "description": "Not found."
           },
           "422": {
             "content": {
@@ -3757,7 +3757,7 @@
                 }
               }
             },
-            "description": "Not Found"
+            "description": "Not found."
           },
           "422": {
             "content": {
@@ -3821,7 +3821,7 @@
                 }
               }
             },
-            "description": "Not Found"
+            "description": "Not found."
           },
           "422": {
             "content": {
@@ -3897,7 +3897,7 @@
                 }
               }
             },
-            "description": "Not Found"
+            "description": "Not found."
           },
           "422": {
             "content": {
@@ -3907,7 +3907,7 @@
                 }
               }
             },
-            "description": "Unprocessable Content"
+            "description": "Invalid request."
           },
           "500": {
             "content": {

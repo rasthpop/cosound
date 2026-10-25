@@ -8,15 +8,14 @@ from fastapi import APIRouter, Depends
 
 from music_discovery.api import mapping
 from music_discovery.api.dependencies import get_search_service
-from music_discovery.api.schemas import ErrorResponse, SessionResponse
+from music_discovery.api.errors import error_responses
+from music_discovery.api.schemas import SessionResponse
 from music_discovery.application.search_service import SearchService
 
 router = APIRouter(tags=["sessions"])
 
 
-@router.get(
-    "/sessions/{session_id}", operation_id="getSession", responses={404: {"model": ErrorResponse}}
-)
+@router.get("/sessions/{session_id}", operation_id="getSession", responses=error_responses(404))
 def get_session(
     session_id: str, service: Annotated[SearchService, Depends(get_search_service)]
 ) -> SessionResponse:
