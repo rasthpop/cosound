@@ -60,7 +60,8 @@
   - `POST /api/feedback` (typed events + optional free text; optional `refresh=true` returns refreshed plate), `GET /api/sessions/{id}`.
 - **Done when:**
   - API tests: unknown session/query/track, track not in results (409), SELECT_TRACK from map, refresh changes results, history visible in session.
-- **Status:** [ ]
+- **Notes:** Typed event or `free_text` alone (normalized by the lexicon/optional LLM, else `accepted=false` with a reason). Status codes: unknown session/track 404, query not in session / track not in results / stale session version 409, malformed event 422 (`invalid_feedback_event` or `validation_error`).
+- **Status:** [x]
 
 ### P08.T06 — Map routes
 - **Skills:** api-contracts, umap-spatial-projection
