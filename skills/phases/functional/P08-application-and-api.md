@@ -93,7 +93,8 @@
   - Agent failure (LLM invalid output) ⇒ 200 with fallback; CLAP load failure ⇒ metadata-only with warning; stale/duplicate feedback; large limit rejected; end-to-end against the real small index.
 - **Done when:**
   - All base §17 "API tests" bullets have at least one test; end-to-end test green under `integration`.
-- **Status:** [ ]
+- **Notes:** `tests/api/test_degraded_modes.py` maps each base §17 API-test bullet to its tests (docstring table). End-to-end test runs the real composition root (SQLite, NumPy index, file projection, audio files) with only CLAP swapped for the fake encoder. Manual smoke on the real fma_small install (2026-10-25): startup 6.3 s, first search 5.5 s (lazy CLAP load) then ~0.5 s; audio 206 with license; map 7,993 points.
+- **Status:** [x]
 
 ### P08.T09 — Licensed audio preview endpoint
 - **Skills:** api-contracts, fma-audio-corpus
@@ -108,6 +109,6 @@
 - **Status:** [x]
 
 ## Exit criteria (Milestone 6, backend)
-- [ ] Search, track details, neighbors, feedback, sessions, map points/meta exposed with validated schemas.
-- [ ] Error envelope everywhere; degraded modes visible in responses.
-- [ ] `frontend/openapi.json` + fixtures generated, deterministic, validated.
+- [x] Search, track details, neighbors, feedback, sessions, map points/meta exposed with validated schemas.
+- [x] Error envelope everywhere; degraded modes visible in responses.
+- [x] `frontend/openapi.json` + fixtures generated, deterministic, validated.

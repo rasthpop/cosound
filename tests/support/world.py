@@ -32,7 +32,7 @@ from music_discovery.descriptions.claim_validator import DescriptionConfig
 from music_discovery.descriptions.description_service import DescriptionService
 from music_discovery.descriptions.evidence_builder import EvidenceBuilder
 from music_discovery.domain.enums import DataSource, RelationshipType
-from music_discovery.domain.errors import ProjectionMissing
+from music_discovery.domain.errors import ModelLoadError, ProjectionMissing
 from music_discovery.domain.models import (
     ArtistReference,
     Provenance,
@@ -135,6 +135,13 @@ AUDIO_BYTES = b"ID3" + bytes(range(256)) * 8
 """Stand-in clip content (2 KB); the API only streams it, nothing decodes it."""
 
 
+class FailingEncoder(FakeEncoder):
+    """A CLAP encoder whose model cannot be loaded (corrupt checkpoint, OOM, ...)."""
+
+    def encode_texts(self, texts: Sequence[str]) -> np.ndarray:
+        raise ModelLoadError("CLAP checkpoint could not be loaded")
+
+
 @dataclass
 class LLMStatus:
     status: str = "available"
@@ -172,6 +179,7 @@ class World:
         projection_available: bool = True,
         llm_responses: Sequence[BaseModel | str] | None = None,
         llm_status: str = "available",
+        encoder_fails: bool = False,
     ) -> None:
         self.data_dir = data_dir or Path("/nonexistent-data-dir")
         self.clock = FrozenClock(NOW)
@@ -210,6 +218,7 @@ class World:
                 )
             )
 
+        encoder = FailingEncoder(dim=DIM) if encoder_fails else FakeEncoder(dim=DIM)
         self.index = NumpyCosineIndex(
             list(VECTORS), np.stack(list(VECTORS.values())), model_id="fake-clap-v1"
         )
@@ -222,7 +231,7 @@ class World:
         retriever = HybridRetriever(
             RetrievalConfig.load(REPO / "config" / "retrieval.yaml"),
             metadata=metadata,
-            semantic=SemanticRetriever(FakeEncoder(dim=DIM), self.index) if semantic else None,
+            semantic=SemanticRetriever(encoder, self.index) if semantic else None,
             tracks=self.tracks,
             index=self.index if semantic else None,
             relationships=RelationshipRetriever(self.relationships),

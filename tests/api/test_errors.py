@@ -3,25 +3,18 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import UTC, datetime
 from pathlib import Path
 
-import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
 from music_discovery.api.app import REQUEST_ID_HEADER, create_app
 from music_discovery.api.errors import STATUS_BY_CODE, status_for
-from music_discovery.audio.embedding_store import EmbeddingMeta, write_embeddings
 from music_discovery.domain import errors as domain_errors
 from music_discovery.domain.errors import MusicDiscoveryError
-from music_discovery.domain.schemas import ProjectionMeta
-from music_discovery.infrastructure.database import Database
-from music_discovery.infrastructure.repositories import SqlTrackRepository
 from music_discovery.infrastructure.settings import Settings
-from music_discovery.infrastructure.spatial_store import FileProjectionStore
-from tests.fakes import hashed_unit_vector
-from tests.support.world import CATALOG, REPO
+from tests.support.seed import MODEL, seed
+from tests.support.world import REPO
 
 ERROR_CLASSES = sorted(
     (
@@ -135,51 +128,6 @@ def test_health_reports_capabilities(client: TestClient) -> None:
 
 
 # --- Real composition root -------------------------------------------------------------
-
-MODEL = "fake-clap-v1"
-
-
-def seed(settings: Settings, *, projection: bool) -> None:
-    """A tiny catalog, one embedding version and optionally a matching projection."""
-    repo = SqlTrackRepository(Database(settings.database_url))
-    Database(settings.database_url).init_schema()
-    for track in CATALOG:
-        repo.upsert(track)
-    ids = sorted(t.id for t in CATALOG if t.audio_embedding_id is not None)
-    meta = EmbeddingMeta(
-        embedding_version="ev-test",
-        model_id=MODEL,
-        preprocessing={},
-        package_versions={},
-        created_at=datetime(2026, 10, 1, tzinfo=UTC),
-        n=len(ids),
-        dim=8,
-        failures=0,
-    )
-    write_embeddings(
-        settings.embeddings_dir, meta, ids, np.stack([hashed_unit_vector(i, 8) for i in ids])
-    )
-    if projection:
-        store = FileProjectionStore(settings.umap_dir)
-        coords = [(float(i), float(-i)) for i in range(len(ids))]
-        store.write(
-            ProjectionMeta(
-                projection_version="umap-seeded",
-                embedding_version="ev-test",
-                model_id=MODEL,
-                umap_requested={},
-                umap_effective={},
-                random_state=42,
-                package_versions={},
-                created_at=datetime(2026, 10, 2, tzinfo=UTC),
-                n_points=len(ids),
-                excluded_tracks=1,
-                coordinates_sha256=store.coordinates_sha256(ids, coords),
-            ),
-            ids,
-            coords,
-            {},
-        )
 
 
 def real_app(settings: Settings) -> TestClient:
