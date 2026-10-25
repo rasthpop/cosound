@@ -103,7 +103,8 @@
   - Paths are resolved only from `TrackAudio.file_path` under `DATA_DIR` (no user-supplied paths; refuse anything that escapes it). The response carries the track's license.
 - **Done when:**
   - API tests: valid track streams, range request returns 206, track without audio returns 404 envelope, path traversal impossible, license header present.
-- **Status:** [ ]
+- **Notes:** Starlette `FileResponse` handles Range (206, `Content-Range`, `Accept-Ranges`). Path resolution and the DATA_DIR containment check live in `TrackService.audio_file` (done in T01); a record whose path escapes DATA_DIR, a missing file or an unknown suffix is `audio_missing` (404). License in `X-Audio-License` (percent-encoded if needed; `unknown` when not recorded).
+- **Status:** [x]
 
 ## Exit criteria (Milestone 6, backend)
 - [ ] Search, track details, neighbors, feedback, sessions, map points/meta exposed with validated schemas.
