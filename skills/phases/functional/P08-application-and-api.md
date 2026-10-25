@@ -71,7 +71,8 @@
   - `GET /api/map/points` (limit/cursor/genre/style/artist_id/has_audio), `GET /api/map/meta`.
 - **Done when:**
   - API tests: pagination walk returns every point once, filters, limit cap, projection unavailable ⇒ 503 envelope while `/api/search` still 200.
-- **Status:** [ ]
+- **Notes:** `limit` default 500, above 5000 rejected (422). `/api/map/points` without a projection is a 503 `projection_unavailable` envelope (`details.reason` carries the loader's code); `/api/map/meta` always answers 200 with `status`.
+- **Status:** [x]
 
 ### P08.T07 — OpenAPI & fixture export
 - **Skills:** api-contracts, ui-isolated-development

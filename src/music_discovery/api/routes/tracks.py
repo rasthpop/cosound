@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query
 
@@ -14,7 +14,7 @@ from music_discovery.spatial.neighbor_service import MAX_K
 
 router = APIRouter(tags=["tracks"])
 
-NOT_FOUND = {404: {"model": ErrorResponse}}
+NOT_FOUND: dict[int | str, dict[str, Any]] = {404: {"model": ErrorResponse}}
 
 
 @router.get("/tracks/{track_id}", operation_id="getTrack", responses=NOT_FOUND)
