@@ -12,11 +12,13 @@ dependencies = [
     "pydantic>=2.7",
     "pydantic-settings>=2.7",
     "pyyaml>=6.0.3",
+    "scikit-learn>=1.5",
     "scipy>=1.17.1",
     "soundfile>=0.14.0",
     "sqlalchemy>=2.0",
     "torch>=2.14.1",
     "transformers>=5.20.2",
+    "umap-learn>=0.5",
 ]
 
 [dependency-groups]
@@ -68,8 +70,8 @@ plugins = ["pydantic.mypy"]
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
-# soundfile ships without type information.
-module = ["soundfile"]
+# soundfile, umap-learn and scikit-learn ship without type information.
+module = ["soundfile", "umap", "sklearn", "sklearn.*"]
 ignore_missing_imports = true
 
 [tool.pydantic-mypy]
