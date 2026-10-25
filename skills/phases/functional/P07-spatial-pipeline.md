@@ -67,7 +67,8 @@
   - k nearest via `VectorIndex` with `metric="clap_cosine"`; no-embedding track ⇒ empty + reason, or labeled relationship fallback (`metric="catalog_relationship"`).
 - **Done when:**
   - Test asserts 2D coordinates are never read (fake spatial repo raises if accessed).
-- **Status:** [ ]
+- **Notes:** The service takes no spatial repository at all; the test checks its signature rejects one and that the module never refers to coordinates/projections. Fallback neighbors are ordered same_release > same_master > same_artist > same_label > shared_style; unknown relationship weights stay `None`. `k` capped at 50.
+- **Status:** [x]
 
 ### P07.T07 — `transform()` for new points (experiment, optional)
 - **Skills:** umap-spatial-projection
