@@ -80,7 +80,8 @@
   - Fetch meta + paginated points (auto or `loadMore`), filters (genre/style/artist_id/has_audio) with reset, `projectionVersion`, availability state, `selectedTrackIds` + `select/deselect/clear` callbacks; **no deck.gl import, no coordinate or similarity computation**.
 - **Done when:**
   - Tests: full pagination walk, filter change resets, version change resets, map-down scenario exposes `unavailable`, selection callbacks.
-- **Status:** [ ]
+- **Notes:** The auto-pagination loop runs inside the effect's async task (state is set only after awaits, as React Hooks v7 requires); manual `loadMore()` otherwise. Extras: `maxPoints`, `enabled`, `toggle`, `reload()`. `availability` is `unavailable` for meta status unavailable or `projection_unavailable`/`projection_mismatch` errors, and `error` for anything else. Selection survives filter and version changes (track ids stay valid).
+- **Status:** [x]
 
 ### P09.T08 — Hook contract documentation (the UI seam)
 - **Skills:** ui-architecture, implementation-roadmap
