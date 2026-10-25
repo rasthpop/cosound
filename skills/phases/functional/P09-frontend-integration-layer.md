@@ -13,7 +13,8 @@
   - `npm run contract:check` regenerates and fails on diff; added to CI.
 - **Done when:**
   - Typecheck passes; editing a backend DTO without regenerating fails CI.
-- **Status:** [ ]
+- **Notes:** Generation via `frontend/scripts/contract.mjs` (openapi-typescript API, alphabetized, banner) instead of the CLI, so `--check` compares in-memory output with the committed file. openapi-typescript 7.13 declares a TypeScript ^5 peer; an npm `overrides` entry lets it use the project's TS 6 (it only uses the printer). Chain: backend test fails if `openapi.json` is stale; frontend CI `contract:check` fails if `generated.ts` is stale. `make contract`/`contract-check` now cover all three artifacts. `types.ts` holds aliases plus the client-only `ApiError`.
+- **Status:** [x]
 
 ### P09.T02 — Contract mocks (MSW) & mock dev mode
 - **Skills:** ui-isolated-development, api-contracts
