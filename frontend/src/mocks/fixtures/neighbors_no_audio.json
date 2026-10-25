@@ -1,0 +1,24 @@
+{
+  "metric": "catalog_relationship",
+  "model_id": null,
+  "neighbors": [
+    {
+      "artists": [
+        {
+          "artist_id": "art_example_3",
+          "name": "Example Artist 3"
+        }
+      ],
+      "audio_available": false,
+      "relationship_types": [
+        "same_artist"
+      ],
+      "score": null,
+      "spatial": null,
+      "title": "Example Track 5",
+      "track_id": "trk_example_5"
+    }
+  ],
+  "reason": "no_audio_embedding",
+  "track_id": "trk_example_3"
+}

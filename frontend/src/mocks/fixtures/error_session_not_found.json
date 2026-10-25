@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "session_not_found",
+    "details": {
+      "session_id": "ses_example_9"
+    },
+    "message": "Session ses_example_9 does not exist."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "artists": [
+    {
+      "artist_id": "art_example_3",
+      "name": "Example Artist 3"
+    }
+  ],
+  "audio": null,
+  "audio_available": false,
+  "duration_seconds": null,
+  "evidence_status": "metadata_only",
+  "genres": [
+    "Folk"
+  ],
+  "preview_url": null,
+  "related_tracks": [],
+  "relationship_counts": {},
+  "release": null,
+  "source_url": null,
+  "spatial": null,
+  "styles": [],
+  "tags": [],
+  "title": "Example Track 3",
+  "track_id": "trk_example_3",
+  "year": null
+}

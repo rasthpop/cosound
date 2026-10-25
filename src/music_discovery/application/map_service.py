@@ -137,6 +137,11 @@ class MapService:
     def available(self) -> bool:
         return self._spatial is not None
 
+    @property
+    def spatial(self) -> ProjectionSpatialRepository | None:
+        """The validated projection, shared with services that attach coordinates."""
+        return self._spatial
+
     def list_points(
         self,
         filters: MapFilters | None = None,

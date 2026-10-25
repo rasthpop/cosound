@@ -1,0 +1,28 @@
+{
+  "next_cursor": null,
+  "points": [
+    {
+      "artist": "Example Artist 4",
+      "genre": "Electronic",
+      "has_audio": true,
+      "source_url": null,
+      "style": null,
+      "title": "Example Track 4",
+      "track_id": "trk_example_4",
+      "x": 0.6,
+      "y": -0.6
+    },
+    {
+      "artist": "Example Artist 5",
+      "genre": "Folk",
+      "has_audio": true,
+      "source_url": null,
+      "style": null,
+      "title": "Example Track 5",
+      "track_id": "trk_example_5",
+      "x": 1.0,
+      "y": -0.9
+    }
+  ],
+  "projection_version": "umap-example"
+}

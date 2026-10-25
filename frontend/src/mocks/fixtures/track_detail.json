@@ -1,0 +1,53 @@
+{
+  "artists": [
+    {
+      "artist_id": "art_example_1",
+      "name": "Example Artist 1"
+    }
+  ],
+  "audio": {
+    "duration_seconds": 30.0,
+    "license": "Example license"
+  },
+  "audio_available": true,
+  "duration_seconds": 212.0,
+  "evidence_status": "audio_and_metadata",
+  "genres": [
+    "Folk"
+  ],
+  "preview_url": "/api/tracks/trk_example_1/audio",
+  "related_tracks": [
+    {
+      "artists": [
+        {
+          "artist_id": "art_example_1",
+          "name": "Example Artist 1"
+        }
+      ],
+      "relationship_type": "same_artist",
+      "title": "Example Track 2",
+      "track_id": "trk_example_2"
+    }
+  ],
+  "relationship_counts": {
+    "same_artist": 1
+  },
+  "release": {
+    "release_id": "rel_example_1",
+    "title": "Example Album",
+    "year": 2012
+  },
+  "source_url": null,
+  "spatial": {
+    "projection_version": "umap-example",
+    "x": -0.5,
+    "y": 0.25
+  },
+  "styles": [],
+  "tags": [
+    "flute"
+  ],
+  "title": "Example Track 1",
+  "track_id": "trk_example_1",
+  "year": 2012
+}

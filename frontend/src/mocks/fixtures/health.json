@@ -1,0 +1,11 @@
+{
+  "api_version": "1",
+  "capabilities": {
+    "llm_interpreter": "disabled",
+    "map": "available",
+    "semantic": "available"
+  },
+  "map_reason": null,
+  "semantic_reason": null,
+  "status": "ok"
+}

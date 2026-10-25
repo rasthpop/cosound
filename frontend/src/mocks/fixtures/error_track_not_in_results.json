@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "track_not_in_results",
+    "details": {
+      "query_id": "qry_example_1",
+      "track_id": "trk_example_9"
+    },
+    "message": "Track trk_example_9 was not returned for query qry_example_1."
+  }
+}

@@ -15,7 +15,8 @@
   - Services return domain results; no HTTP concepts.
 - **Done when:**
   - Unit tests with fakes for each service, including degraded capabilities and invalid feedback references.
-- **Status:** [ ]
+- **Notes:** Added `application/results.py` (`TrackView` = track + validated audio + coordinates) shared by all services, and a domain `InvalidRequest` error (code `validation_error`). Follow-up queries go through `SearchService.search(session_id=…)` (Agent A decides refinement); feedback-driven re-search lives in `FeedbackService`. Accepted spec-changing feedback always records the new turn; `refresh` only decides whether the plate is returned. Capabilities are cached 5 s; `llm_interpreter` reads `OpenRouterLLM.status` (circuit breaker). Test world in `tests/support/world.py` (real agents, in-memory fakes).
+- **Status:** [x]
 
 ### P08.T02 — Public DTOs, mapping & examples
 - **Skills:** api-contracts, domain-modeling
@@ -25,7 +26,8 @@
   - DTOs per the api-contracts skill (base §13 shapes + outcome, capabilities, warnings, constraint_status, uncertainty_flags, spatial, change_summary). ADR-0005: expose `source_url` (FMA track page) instead of `discogs_url`; mapping functions domain → DTO; `json_schema_extra` examples covering every outcome/degraded variant.
 - **Done when:**
   - Mapping tests: nulls preserved, enums correct, no domain/ORM object leaks; every example validates.
-- **Status:** [ ]
+- **Notes:** `artists` are `{artist_id, name}` objects (not bare names as in the base §13.1 sketch) so the UI can filter the map by artist. Search adds `no_match_reasons`; track details expose `related_tracks` (capped per type) + `relationship_counts`. Examples live in `api/examples.py` (fictional `trk_example_*` placeholders, no real links), keyed by the fixture names T07 exports, and are attached to each DTO's JSON schema.
+- **Status:** [x]
 
 ### P08.T03 — App factory, composition root & error envelope
 - **Skills:** api-contracts, music-discovery-architecture
@@ -36,7 +38,8 @@
   - `make serve` → `uvicorn music_discovery.api.app:create_app --factory`.
 - **Done when:**
   - Tests: each error code → expected status/envelope; app starts with CLAP checkpoint missing (semantic unavailable) and with projection missing (map unavailable).
-- **Status:** [ ]
+- **Notes:** `create_app(settings, services=…)` lets tests inject services built over fakes (`tests/support/world.py`); routes read them via `api/dependencies.get_*`. Startup degrades instead of failing: no embeddings → `embeddings_unavailable`, embeddings but no checkpoint → `clap_checkpoint_missing` (neighbors still use the index), bad/missing projection → map unavailable. Unmapped domain codes and unexpected exceptions return a generic 500 envelope. Added `infrastructure/ids.py` (`RandomIdGenerator`).
+- **Status:** [x]
 
 ### P08.T04 — Search, track & neighbor routes
 - **Skills:** api-contracts
@@ -46,7 +49,8 @@
   - `POST /api/search`, `GET /api/tracks/{id}`, `GET /api/tracks/{id}/neighbors`; limit bounds; outcome variants.
 - **Done when:**
   - API tests: schema, invalid input, empty results, metadata-only results, semantic unavailable warning, needs-clarification, no-confident-match, invalid track id 404.
-- **Status:** [ ]
+- **Notes:** `limit` 1–100 (Agent B's bound), `k` 1–50; violations are 422 envelopes, blank queries too. Stable `operation_id`s (`search`, `getTrack`, `getTrackNeighbors`) for generated client types.
+- **Status:** [x]
 
 ### P08.T05 — Feedback & session routes
 - **Skills:** api-contracts, agent-orchestration
@@ -56,7 +60,8 @@
   - `POST /api/feedback` (typed events + optional free text; optional `refresh=true` returns refreshed plate), `GET /api/sessions/{id}`.
 - **Done when:**
   - API tests: unknown session/query/track, track not in results (409), SELECT_TRACK from map, refresh changes results, history visible in session.
-- **Status:** [ ]
+- **Notes:** Typed event or `free_text` alone (normalized by the lexicon/optional LLM, else `accepted=false` with a reason). Status codes: unknown session/track 404, query not in session / track not in results / stale session version 409, malformed event 422 (`invalid_feedback_event` or `validation_error`).
+- **Status:** [x]
 
 ### P08.T06 — Map routes
 - **Skills:** api-contracts, umap-spatial-projection
@@ -66,7 +71,8 @@
   - `GET /api/map/points` (limit/cursor/genre/style/artist_id/has_audio), `GET /api/map/meta`.
 - **Done when:**
   - API tests: pagination walk returns every point once, filters, limit cap, projection unavailable ⇒ 503 envelope while `/api/search` still 200.
-- **Status:** [ ]
+- **Notes:** `limit` default 500, above 5000 rejected (422). `/api/map/points` without a projection is a 503 `projection_unavailable` envelope (`details.reason` carries the loader's code); `/api/map/meta` always answers 200 with `status`.
+- **Status:** [x]
 
 ### P08.T07 — OpenAPI & fixture export
 - **Skills:** api-contracts, ui-isolated-development
@@ -76,7 +82,8 @@
   - Deterministic OpenAPI JSON (sorted keys, stable operation ids); fixtures for every scenario listed in `ui-isolated-development`; test validating each fixture against its DTO; changelog started at `API_VERSION=1`.
 - **Done when:**
   - Re-running both scripts produces no git diff; fixture test green.
-- **Status:** [ ]
+- **Notes:** `build_app(settings)` (routes without services) feeds `scripts/export_openapi.py`; explicit settings make the output independent of `.env`. Fixtures come from `api/examples.py` plus `index.json` (fixture → DTO name); `--check` modes and `make contract` / `make contract-check` added. Every router declares the error envelope for 422/500, so FastAPI's `HTTPValidationError` is not in the schema. Responses carry `X-API-Version`. Also moved the neighbor `k` bound behind `application.track_service.MAX_NEIGHBORS` (api must not import spatial).
+- **Status:** [x]
 
 ### P08.T08 — API robustness suite
 - **Skills:** api-contracts
@@ -86,7 +93,8 @@
   - Agent failure (LLM invalid output) ⇒ 200 with fallback; CLAP load failure ⇒ metadata-only with warning; stale/duplicate feedback; large limit rejected; end-to-end against the real small index.
 - **Done when:**
   - All base §17 "API tests" bullets have at least one test; end-to-end test green under `integration`.
-- **Status:** [ ]
+- **Notes:** `tests/api/test_degraded_modes.py` maps each base §17 API-test bullet to its tests (docstring table). End-to-end test runs the real composition root (SQLite, NumPy index, file projection, audio files) with only CLAP swapped for the fake encoder. Manual smoke on the real fma_small install (2026-10-25): startup 6.3 s, first search 5.5 s (lazy CLAP load) then ~0.5 s; audio 206 with license; map 7,993 points.
+- **Status:** [x]
 
 ### P08.T09 — Licensed audio preview endpoint
 - **Skills:** api-contracts, fma-audio-corpus
@@ -97,9 +105,10 @@
   - Paths are resolved only from `TrackAudio.file_path` under `DATA_DIR` (no user-supplied paths; refuse anything that escapes it). The response carries the track's license.
 - **Done when:**
   - API tests: valid track streams, range request returns 206, track without audio returns 404 envelope, path traversal impossible, license header present.
-- **Status:** [ ]
+- **Notes:** Starlette `FileResponse` handles Range (206, `Content-Range`, `Accept-Ranges`). Path resolution and the DATA_DIR containment check live in `TrackService.audio_file` (done in T01); a record whose path escapes DATA_DIR, a missing file or an unknown suffix is `audio_missing` (404). License in `X-Audio-License` (percent-encoded if needed; `unknown` when not recorded).
+- **Status:** [x]
 
 ## Exit criteria (Milestone 6, backend)
-- [ ] Search, track details, neighbors, feedback, sessions, map points/meta exposed with validated schemas.
-- [ ] Error envelope everywhere; degraded modes visible in responses.
-- [ ] `frontend/openapi.json` + fixtures generated, deterministic, validated.
+- [x] Search, track details, neighbors, feedback, sessions, map points/meta exposed with validated schemas.
+- [x] Error envelope everywhere; degraded modes visible in responses.
+- [x] `frontend/openapi.json` + fixtures generated, deterministic, validated.

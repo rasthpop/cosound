@@ -1,0 +1,39 @@
+{
+  "next_cursor": "trk_example_3",
+  "points": [
+    {
+      "artist": "Example Artist 1",
+      "genre": "Folk",
+      "has_audio": true,
+      "source_url": null,
+      "style": null,
+      "title": "Example Track 1",
+      "track_id": "trk_example_1",
+      "x": -0.6,
+      "y": 0.3
+    },
+    {
+      "artist": "Example Artist 2",
+      "genre": "Electronic",
+      "has_audio": true,
+      "source_url": null,
+      "style": null,
+      "title": "Example Track 2",
+      "track_id": "trk_example_2",
+      "x": -0.2,
+      "y": 0.0
+    },
+    {
+      "artist": "Example Artist 3",
+      "genre": "Folk",
+      "has_audio": true,
+      "source_url": null,
+      "style": null,
+      "title": "Example Track 3",
+      "track_id": "trk_example_3",
+      "x": 0.2,
+      "y": -0.3
+    }
+  ],
+  "projection_version": "umap-example"
+}

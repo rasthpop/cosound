@@ -1,0 +1,12 @@
+{
+  "bounds": null,
+  "coordinate_transform": null,
+  "created_at": null,
+  "embedding_version": null,
+  "excluded_tracks": null,
+  "model_id": null,
+  "n_points": 0,
+  "projection_version": null,
+  "reason": "projection_unavailable",
+  "status": "unavailable"
+}

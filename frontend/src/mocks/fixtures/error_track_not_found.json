@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "track_not_found",
+    "details": {
+      "track_id": "trk_example_9"
+    },
+    "message": "Track trk_example_9 does not exist."
+  }
+}
