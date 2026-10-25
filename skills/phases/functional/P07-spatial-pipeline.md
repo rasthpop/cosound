@@ -12,7 +12,8 @@
   - Load embedding store for the active version; align rows with track ids; validate shape/finite/unit-norm/unique ids/catalog existence; exclude tracks without audio (logged count).
 - **Done when:**
   - Tests: shuffled ids, duplicates, NaN rows, unknown ids each raise; exclusion count reported.
-- **Status:** [ ]
+- **Notes:** Alignment errors raise the new `FeatureAlignmentError` (code `feature_alignment_error`); matrix content errors raise `InvalidEmbedding`.
+- **Status:** [x]
 
 ### P07.T02 — UMAP projector & build script
 - **Skills:** umap-spatial-projection

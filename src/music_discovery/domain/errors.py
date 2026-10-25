@@ -137,6 +137,12 @@ class ProjectionMismatch(SpatialArtifactError):
     code = "projection_mismatch"
 
 
+class FeatureAlignmentError(SpatialArtifactError):
+    """Embedding rows and track ids cannot be aligned for a projection."""
+
+    code = "feature_alignment_error"
+
+
 # --- Sessions & feedback -----------------------------------------------------------
 
 
