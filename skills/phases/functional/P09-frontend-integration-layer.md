@@ -58,7 +58,8 @@
   - `submit({trackId, eventType, attribute?, value?, freeText?}, {refresh})` using current session/query ids from `useMusicSearch` (passed in, not global); per-track submission state; returns `FeedbackResponse`; pushes refreshed plate into `useMusicSearch`.
 - **Done when:**
   - Tests: accepted/rejected flows, per-track pending state, refresh propagates, invalid event surfaces `ApiError`.
-- **Status:** [ ]
+- **Notes:** Takes `{sessionId, queryId, applyRefreshed}` from `useMusicSearch`. State per track id, or `PLATE_KEY` for track-less free text; `isPending(trackId)`, `lastResponse`. `accepted: false` is a successful response, not an error. Submitting before any search records a client-side `no_active_search` error (no request is sent). Pending requests abort on unmount.
+- **Status:** [x]
 
 ### P09.T06 — `useTrackDetails`
 - **Skills:** ui-architecture
