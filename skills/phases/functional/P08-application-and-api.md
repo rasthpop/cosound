@@ -26,7 +26,8 @@
   - DTOs per the api-contracts skill (base §13 shapes + outcome, capabilities, warnings, constraint_status, uncertainty_flags, spatial, change_summary). ADR-0005: expose `source_url` (FMA track page) instead of `discogs_url`; mapping functions domain → DTO; `json_schema_extra` examples covering every outcome/degraded variant.
 - **Done when:**
   - Mapping tests: nulls preserved, enums correct, no domain/ORM object leaks; every example validates.
-- **Status:** [ ]
+- **Notes:** `artists` are `{artist_id, name}` objects (not bare names as in the base §13.1 sketch) so the UI can filter the map by artist. Search adds `no_match_reasons`; track details expose `related_tracks` (capped per type) + `relationship_counts`. Examples live in `api/examples.py` (fictional `trk_example_*` placeholders, no real links), keyed by the fixture names T07 exports, and are attached to each DTO's JSON schema.
+- **Status:** [x]
 
 ### P08.T03 — App factory, composition root & error envelope
 - **Skills:** api-contracts, music-discovery-architecture

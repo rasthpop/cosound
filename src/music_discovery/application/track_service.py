@@ -19,7 +19,13 @@ from music_discovery.domain.protocols import (
     ReleaseRepository,
     TrackAudioRepository,
 )
-from music_discovery.spatial.neighbor_service import MAX_K, Neighbor, NeighborService
+from music_discovery.spatial.neighbor_service import (
+    MAX_K,
+    Neighbor,
+    NeighborMetric,
+    NeighborService,
+    NoNeighborReason,
+)
 
 MAX_RELATED_PER_TYPE = 20
 """Track details list at most this many related tracks per relationship type (with counts)."""
@@ -56,9 +62,9 @@ class NeighborItem:
 @dataclass(frozen=True)
 class NeighborsResult:
     track_id: str
-    metric: str
+    metric: NeighborMetric
     model_id: str | None
-    reason: str | None
+    reason: NoNeighborReason | None
     items: list[NeighborItem]
 
 
