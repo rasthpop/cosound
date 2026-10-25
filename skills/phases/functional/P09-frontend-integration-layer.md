@@ -47,7 +47,8 @@
   - `search(query, {limit})`, `refresh()`, `applyRefreshed(response)`; exposes `status` (`idle|loading|success|error`), `data` (full `SearchResponse` incl. outcome/capabilities/warnings), `error`, `sessionId`, `queryId`; cancels in-flight request on new search; stale-response protection via request sequence; keeps previous data during refinement (`isRefreshing`).
 - **Done when:**
   - Tests: out-of-order responses never overwrite newer; abort on unmount; session id retained across searches; refresh after feedback.
-- **Status:** [ ]
+- **Notes:** `search()` resolves to the response or `null` (failed/superseded) so callers can chain. `refresh()` re-sends the last query text in the same session; the backend reads it as a follow-up with nothing new, so the plate reflects the session's current (feedback-updated) spec. Also `reset()` and `search(q, {newSession: true})`. Errors keep the last good plate; aborts never surface as errors. Shared `RequestStatus` in `hooks/status.ts`.
+- **Status:** [x]
 
 ### P09.T05 — `useTrackFeedback`
 - **Skills:** ui-architecture
