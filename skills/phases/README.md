@@ -1,6 +1,6 @@
 # Implementation Phases — Semantic Music Discovery
 
-Decomposition of `base.md` (functional plan) into executable phases and tasks, plus a provisional UI/UX track to be finalized when the separate UI/UX plan arrives.
+Decomposition of `base.md` (functional plan) and `ui/ui.md` (UI/UX plan) into executable phases and tasks.
 
 - **How to execute:** load the `implementation-roadmap` skill; run `python skills/implementation-roadmap/scripts/phase_status.py`.
 - **Task format & statuses:** see `skills/implementation-roadmap/SKILL.md`.
@@ -20,14 +20,14 @@ Decomposition of `base.md` (functional plan) into executable phases and tasks, p
 | [P08](functional/P08-application-and-api.md) | Application services & FastAPI | §13, §16 | M6 (backend) | functional |
 | [P09](functional/P09-frontend-integration-layer.md) | Frontend data layer: types, client, mocks, hooks | §14 | **M6** | functional ⇄ UI seam |
 | [P10](functional/P10-final-evaluation-and-docs.md) | Final evaluation, hardening, documentation | §12, §17, §20 | **M7** | functional |
-| [U00](ui/U00-ui-plan-intake.md) | UI/UX plan intake | UI plan | — | UI (blocked on plan) |
-| [U01](ui/U01-design-foundation.md) | Design foundation: tokens, theme, workbench | UI plan | — | UI |
-| [U02](ui/U02-presentational-components.md) | Presentational views & state variants | UI plan, §14.4 | — | UI |
-| [U03](ui/U03-track-map-view.md) | deck.gl track map view | UI plan, §14.4 | — | UI |
-| [U04](ui/U04-screen-composition.md) | Containers & screen composition | UI plan | — | UI |
-| [U05](ui/U05-ux-quality-and-isolation.md) | UX quality, accessibility, isolation proof | UI plan, §1 req.10 | — | UI |
+| [U00](ui/U00-ui-plan-intake.md) | UI/UX plan intake: mapping, contract requests, stack ADR | ui.md | — | UI |
+| [U01](ui/U01-design-foundation.md) | Design foundation: tokens, Tailwind theme, shadcn, Storybook | ui.md §2, §8 | — | UI |
+| [U02](ui/U02-presentational-components.md) | Search bar, chips, results, feedback, details drawer, states | ui.md §4, §6; base §14.4 | — | UI |
+| [U03](ui/U03-track-map-view.md) | deck.gl map canvas, controls, legend, fallbacks | ui.md §4.3; base §14.4 | — | UI |
+| [U04](ui/U04-screen-composition.md) | Containers & the Discover screen | ui.md §3, §5 | — | UI |
+| [U05](ui/U05-ux-quality-and-isolation.md) | UX quality, accessibility, isolation proof | ui.md §6–7; base §1 req.10 | — | UI |
 
-U-phases are **provisional**: their tasks describe the structure any UI plan will need. The `ui-plan-intake` skill rewrites them when the plan arrives.
+U-phases were rewritten from `ui/ui.md` by U00 (2026-10-26). The intake mapping is in [`docs/ui/intake.md`](../../docs/ui/intake.md), and the stack is in [ADR-0003](../../docs/adr/0003-ui-stack.md). UI contract requests are appended to the functional track as **P08.T10–T12** (match bands, map genre summary, structured "what changed") and **P09.T10–T12** (types/fixtures/scenarios, `useSystemStatus`, `useMediaUrl`).
 
 ## MVP scope (ADR-0005)
 
@@ -40,14 +40,17 @@ P00 ─► P01 ─► P02 ─► P03 ─┬─► P04 ─► P05 ─► P06 ─�
                           │                          ▲      │
                           └─► P07 (spatial) ─────────┘      │ (P09.T02 fixtures)
                                                             ▼
-                         U00 (needs UI plan) ─► U01 ─► U02 ─┬─► U04 ─► U05
-                                                    └► U03 ─┘    ▲
-                                                                 └─ needs P09 hooks
+                         U00 (intake, done) ─► U01 ─► U02 ─┬─► U04 ─► U05
+                                                   └► U03 ─┘    ▲
+                                                                └─ needs P09 hooks + P09.T11/T12
+
+  UI contract requests:  P08.T10/T11/T12 ─► P09.T10 ─► U02.T07, U03.T04
+                         P09.T11 (useSystemStatus), P09.T12 (useMediaUrl) ─► U04
 ```
 
 Parallel tracks:
 - **Spatial (P07)** only needs P03 (embeddings). It can proceed alongside P04–P06.
-- **UI (U01–U03)** needs U00 (the UI plan) and the P09 contract fixtures (P09.T02) — **not** the running backend. P09.T01/T02 can be done early from the DTOs in P08.T02 to unblock UI work.
+- **UI (U01–U03)** needs U00 and the P09 contract fixtures (P09.T02), **not** the running backend. Only U02.T07 and U03.T04 wait for the contract additions (P09.T10); U04 also needs P09.T11/T12.
 - **P10** waits for everything functional; U05 isn't required for the functional Definition of Done.
 
 ## Isolation rule between tracks
