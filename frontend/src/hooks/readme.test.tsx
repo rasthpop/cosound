@@ -27,7 +27,10 @@ const rendered: Record<string, () => object> = {
     ).result.current,
   useTrackDetails: () => renderHook(() => hooks.useTrackDetails(null, { client })).result.current,
   useMusicMap: () => renderHook(() => hooks.useMusicMap({ client, enabled: false })).result.current,
+  useSystemStatus: () => renderHook(() => hooks.useSystemStatus({ client })).result.current,
 };
+// hooks that return a single value, not an object of fields: their section must exist
+const scalar = ["useMediaUrl"];
 
 describe("hooks README", () => {
   it.each(Object.keys(rendered))("documents every field %s returns", (name) => {
@@ -39,6 +42,10 @@ describe("hooks README", () => {
 
   it("covers exactly the hooks exported from index.ts", () => {
     const exported = Object.keys(hooks).filter((k) => k.startsWith("use"));
-    expect(exported.sort()).toEqual(Object.keys(rendered).sort());
+    expect(exported.sort()).toEqual([...Object.keys(rendered), ...scalar].sort());
+  });
+
+  it.each(scalar)("documents %s", (name) => {
+    expect(section(name)).toContain("→");
   });
 });
