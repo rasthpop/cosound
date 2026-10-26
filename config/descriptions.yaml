@@ -1,6 +1,6 @@
 # Track descriptions and match reasons (descriptions/, grounded-explanations skill).
 # Every sentence shown to a user must map to an evidence item; this file holds the knobs.
-version: d1-dev-2026-10-23
+version: d2-dev-2026-10-26
 
 # Semantic (CLAP) strength bands, from the track's rank and normalized semantic score within
 # one query. Raw cosines are never shown. tau_* were chosen on dev-split queries only, see
@@ -9,6 +9,16 @@ semantic_bands:
   strong_max_rank: 3
   tau_strong: 0.8
   tau_partial: 0.6
+
+# Bands for the normalized metadata (max_scale) and relationship scores, shown in the API as
+# `score_bands` and never as numbers. Every metadata match on the dev split scored >= 0.3, so
+# partial = "some catalog match" and strong = the best matches; see docs/calibration.md
+# ("Score bands"). relationship is off (weight 0, P04.T08), so it has no bands: always null.
+score_bands:
+  metadata:
+    tau_strong: 0.8
+    tau_partial: 0.3
+  relationship: null
 
 max_sentences: 2
 max_reasons: 4

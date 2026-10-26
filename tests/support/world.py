@@ -248,7 +248,7 @@ class World:
             FeedbackAgent(
                 LEXICON,
                 self.tracks,
-                EvidenceBuilder(DESCRIPTIONS.semantic_bands),
+                EvidenceBuilder(DESCRIPTIONS.semantic_bands, DESCRIPTIONS.score_bands),
                 DescriptionService(DESCRIPTIONS),
             ),
             self.sessions,

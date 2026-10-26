@@ -136,7 +136,8 @@ Appended by the `ui-plan-intake` skill (see `docs/ui/intake.md` §3–4). The ho
   - A network failure gives `error.kind === "network"` (offline), never a guessed capability.
 - **Done when:**
   - Tests: healthy, degraded (`health_degraded`), offline; README section (enforced by `readme.test.tsx`).
-- **Status:** [ ]
+- **Notes:** Returns the last answer while `reload()` runs (no flicker on retry). `reasons` mirrors `semantic_reason`/`map_reason` from the health response. The README test now also covers the hooks beyond the original four.
+- **Status:** [x]
 
 ### P09.T12 — Media URL resolution for audio previews (G6)
 - **Skills:** api-contracts, ui-architecture
@@ -146,4 +147,5 @@ Appended by the `ui-plan-intake` skill (see `docs/ui/intake.md` §3–4). The ho
   - `useMediaUrl(path: string | null, options?) → string | null` turns an API path such as `preview_url` into a playable URL through the client's `resolveUrl`. `null` in gives `null` out. `pages/` never imports `api/client`.
 - **Done when:**
   - Tests: null passthrough, base-URL handling, the resolved URL plays against the MSW audio handler; README section.
-- **Status:** [ ]
+- **Notes:** `useMediaUrl` memoizes `client.resolveUrl(path)`. It is a single-value hook, so `readme.test.tsx` checks that its section exists instead of checking fields.
+- **Status:** [x]

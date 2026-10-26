@@ -7,6 +7,8 @@ from music_discovery.descriptions.claim_validator import (
     Claim,
     ClaimKind,
     DescriptionConfig,
+    ScoreBandConfig,
+    SignalBands,
     split_sentences,
     validate,
 )
@@ -14,6 +16,7 @@ from music_discovery.descriptions.description_service import DescriptionService
 from music_discovery.descriptions.evidence_builder import (
     EvidenceBuilder,
     SemanticSignal,
+    signal_strength,
     strength,
 )
 from music_discovery.domain.enums import (
@@ -104,6 +107,46 @@ def test_strength_bands() -> None:
     assert strength(1, BANDS.tau_partial, BANDS) is MatchStrength.PARTIAL
     assert strength(1, BANDS.tau_partial - 0.01, BANDS) is MatchStrength.WEAK
     assert strength(1, None, BANDS) is MatchStrength.WEAK
+
+
+def test_signal_bands_are_thresholds_and_null_without_a_signal() -> None:
+    bands = SignalBands(tau_strong=0.8, tau_partial=0.3)
+    assert signal_strength(0.8, bands) is MatchStrength.STRONG
+    assert signal_strength(0.3, bands) is MatchStrength.PARTIAL
+    assert signal_strength(0.0, bands) is MatchStrength.WEAK  # evaluated, nothing matched
+    assert signal_strength(None, bands) is None  # missing is not weak
+    assert signal_strength(0.9, None) is None  # no calibrated bands
+    with pytest.raises(ValueError, match="tau_partial"):
+        SignalBands(tau_strong=0.3, tau_partial=0.8)
+
+
+def test_evidence_records_a_band_per_signal() -> None:
+    builder = EvidenceBuilder(BANDS, CONFIG.score_bands)
+    strong = builder.build(candidate(semantic=0.95, metadata=0.0), track(), semantic=HIT)
+    assert strong.score_bands.semantic is MatchStrength.STRONG
+    assert strong.score_bands.metadata is MatchStrength.WEAK
+    assert strong.score_bands.relationship is None
+    no_audio = builder.build(candidate(semantic=None, metadata=0.85), track())
+    assert no_audio.score_bands.semantic is None
+    assert no_audio.score_bands.metadata is MatchStrength.STRONG
+    # without score-band config only the semantic band is set
+    plain = EvidenceBuilder(BANDS).build(candidate(metadata=0.85), track(), semantic=HIT)
+    assert plain.score_bands.semantic is MatchStrength.STRONG
+    assert plain.score_bands.metadata is None
+
+
+def test_relationship_has_no_bands_while_the_signal_is_off() -> None:
+    assert CONFIG.score_bands.relationship is None
+    builder = EvidenceBuilder(
+        BANDS, ScoreBandConfig(relationship=SignalBands(tau_strong=0.9, tau_partial=0.5))
+    )
+    cand = RankedCandidate(
+        track_id="trk_1",
+        rank=1,
+        score=ScoreBreakdown(relationship=0.6, final=0.6),
+        retrieval_sources=[RetrievalSource.RELATIONSHIP],
+    )
+    assert builder.build(cand, track()).score_bands.relationship is MatchStrength.PARTIAL
 
 
 def test_evidence_keeps_raw_cosine_and_matched_tags_as_cataloged() -> None:
@@ -320,5 +363,5 @@ def test_semantic_claim_needs_audio_evidence(strong: tuple[TrackEvidence, list[C
 
 
 def test_config_is_versioned() -> None:
-    assert CONFIG.version.startswith("d1")
+    assert CONFIG.version.startswith("d2")
     assert 0 < BANDS.tau_partial < BANDS.tau_strong <= 1

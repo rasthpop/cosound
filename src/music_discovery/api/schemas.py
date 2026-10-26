@@ -25,6 +25,7 @@ from music_discovery.domain.enums import (
     EvidenceStatus,
     FeedbackType,
     InterpreterStatus,
+    MatchStrength,
     NextAction,
     RelationshipType,
     RetrievalSource,
@@ -150,6 +151,15 @@ class ScoreBreakdown(ApiModel):
     final: float
 
 
+class ScoreBands(ApiModel):
+    """Strength band per signal within this query; `null` = the signal is missing for this track
+    (or has no calibrated bands). Show these, never the numbers."""
+
+    semantic: MatchStrength | None
+    metadata: MatchStrength | None
+    relationship: MatchStrength | None
+
+
 class ConstraintCheck(ApiModel):
     attribute: ConstraintAttribute
     operator: ConstraintOperator
@@ -164,6 +174,13 @@ class TrackResult(ApiModel):
     artists: list[Artist]
     score: float = Field(ge=0, le=1, description="Relevance for ordering; not a probability.")
     score_breakdown: ScoreBreakdown
+    match_strength: MatchStrength | None = Field(
+        description=(
+            "Band of the audio (CLAP) match within this query, the one match_reasons describe; "
+            "null when the track has no semantic score."
+        )
+    )
+    score_bands: ScoreBands
     description: str | None = Field(description="Evidence-grounded text; null when too thin.")
     match_reasons: list[str]
     genres: list[str]

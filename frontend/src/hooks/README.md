@@ -1,12 +1,13 @@
 # hooks/: the seam between the functional system and any interface
 
 Four hooks give a visual layer everything it needs to search, show a plate, send feedback,
-open track details and draw the map. They hold **no** ranking, retrieval, ML or coordinate
+open track details and draw the map. Two small ones complete it: `useSystemStatus` (what the
+backend can do before any search) and `useMediaUrl` (a playable URL for an audio preview). They hold **no** ranking, retrieval, ML or coordinate
 logic: the backend decides relevance and positions, and the hooks only fetch, cancel, cache
 and expose state.
 
 ```ts
-import { useMusicSearch, useTrackFeedback, useTrackDetails, useMusicMap } from "@/hooks";
+import { useMusicSearch, useTrackFeedback, useTrackDetails, useMusicMap, useSystemStatus, useMediaUrl } from "@/hooks";
 import type { TrackResult, MapPoint, FeedbackType } from "@/api/types";
 ```
 
@@ -162,3 +163,38 @@ Behavior:
 
 Fixtures: `map_meta`, `map_points_page1`, `map_points_page2`, `map_unavailable`,
 `error_map_unavailable`.
+
+## `useSystemStatus(options?) → SystemStatus`
+
+What the backend can do right now, before any search runs (`GET /api/health`). Use it for the
+degraded-status UI in the idle state. After a search, the plate's own `data.capabilities` is the
+fresher source for that plate. Options: `{ client? }`.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `status` | `RequestStatus` | `loading` until the first answer (and while `reload` runs), then `success` or `error` |
+| `capabilities` | `Capabilities \| null` | `semantic`, `llm_interpreter`, `map`; `null` before the first answer and after a failure |
+| `reasons` | `{semantic: string \| null, map: string \| null}` | why a capability is off (e.g. `clap_checkpoint_missing`, `projection_unavailable`) |
+| `error` | `ApiError \| null` | why the request failed; `kind: "network"` means offline |
+| `reload` | `() => void` | ask again (e.g. a retry button); the last answer stays visible meanwhile |
+
+Behavior:
+- Fetched once on mount, with no polling.
+- A failed request never guesses a capability: offline means `capabilities: null` and
+  `error.kind === "network"`.
+
+Fixtures: `health`, `health_degraded`.
+
+## `useMediaUrl(path, options?) → string | null`
+
+A playable URL for an API media path such as `TrackResult.preview_url` or
+`TrackDetail.preview_url`, resolved by the API client, so containers never import it.
+`null` in gives `null` out (no clip, no URL). The result is memoized per path. Options:
+`{ client? }`.
+
+```tsx
+const src = useMediaUrl(result.preview_url);
+return src ? <audio src={src} controls /> : <p>No audio preview available.</p>;
+```
+
+The mock serves `/api/tracks/*/audio` (`audio/mpeg`), except for the no-audio example track.

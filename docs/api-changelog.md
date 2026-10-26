@@ -9,6 +9,17 @@ Rules (api-contracts §5): adding optional fields or new endpoints keeps the ver
 renaming a field, changing its type or an enum value bumps `API_VERSION` and gets an entry here,
 and the UI track is told, because hook return types change.
 
+## API_VERSION 1 — additions
+
+Additive changes. Existing fields keep their meaning, so the version stays 1.
+
+- 2026-10-26 (P08.T10): `TrackResult.match_strength` (`strong` | `partial` | `weak` | `null`) is
+  the band of the audio (CLAP) match within the query, the one `match_reasons` describe.
+  `TrackResult.score_bands` (`semantic`, `metadata`, `relationship`) has one band per signal,
+  `null` when the signal is missing (or has no calibrated bands; `relationship` for now).
+  Thresholds: `config/descriptions.yaml`, `docs/calibration.md`. The UI shows bands, never
+  `score` numbers.
+
 ## API_VERSION 1 — 2026-10-25
 
 First version (P08).

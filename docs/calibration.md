@@ -115,3 +115,32 @@ Decision: `tau_strong: 0.8` (same precision as 0.85 with more coverage; higher t
 differ by one or two tracks, which is noise at this size) and `tau_partial: 0.6` (the clearest
 split: 0.44 above vs 0.13 below, against a 0.26 base rate). Version `d1-dev-2026-10-23`. With
 eight queries these are coarse settings; re-check them when more dev queries are judged.
+
+## Score bands (P08.T10)
+
+`config/descriptions.yaml` (`score_bands`) bands the normalized metadata and relationship
+scores for the API's `TrackResult.score_bands`. The interface shows these bands instead of
+numbers. The semantic band is the one above (`semantic_bands`), and is exposed again as
+`match_strength`. Metadata scores are `max_scale` normalized (best match in the pool = 1.0), so
+there is no rank rule: **strong** = normalized ≥ `tau_strong`, **partial** ≥ `tau_partial`,
+otherwise **weak**. A missing signal has no band (`null`), never `weak`.
+
+Procedure (2026-10-26, dev split only, same 8 judged dev queries and settings as the semantic
+bands: Agent A deterministic specs, hybrid `w1-dev-2026-10-22`, whole 20-track corpus;
+`scripts/experiments/score_band_check.py`). 147 judged pairs, all with a metadata score, base
+rate 0.26 relevant. The test split was not used.
+
+| Band rule | Precision (relevant) | n |
+|---|---|---|
+| metadata ≥ 1.0 | 0.75 | 8 |
+| metadata ≥ 0.8 | 0.78 | 9 |
+| metadata ≥ 0.6 | 0.64 | 14 |
+| metadata ≥ 0.3 | 0.59 | 17 |
+| 0.3 ≤ metadata < 0.8 | 0.38 | 8 |
+| metadata = 0 | 0.22 | 130 |
+
+No metadata score fell strictly between 0 and 0.3. Decision: `tau_partial: 0.3`, which makes
+"partial" mean "some catalog match" (0.59 above vs 0.22 without a match, against a 0.26 base
+rate), and `tau_strong: 0.8`, the best precision in the table. Version `d2-dev-2026-10-26`.
+`relationship` has no bands (`null`) because the signal is off (weight 0, P04.T08). It must
+be calibrated the same way before it is enabled. With 8 queries these are coarse settings.

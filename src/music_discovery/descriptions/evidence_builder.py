@@ -7,7 +7,9 @@ similarity, and a missing signal is a flag, not a zero.
 
 Strength bands come from the track's semantic rank and normalized score within the query
 (`strong` = rank <= strong_max_rank and normalized >= tau_strong; `partial` = normalized >=
-tau_partial; otherwise `weak`). The raw cosine is recorded but never shown.
+tau_partial; otherwise `weak`). The raw cosine is recorded but never shown. The same bands, plus
+threshold-only bands for the normalized metadata and relationship scores (`score_bands` in the
+config), are recorded per signal in `TrackEvidence.score_bands`; a missing signal has no band.
 """
 
 from __future__ import annotations
@@ -16,12 +18,13 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Literal
 
-from music_discovery.descriptions.claim_validator import SemanticBands
+from music_discovery.descriptions.claim_validator import ScoreBandConfig, SemanticBands, SignalBands
 from music_discovery.domain.enums import ConstraintStatus, MatchStrength
 from music_discovery.domain.models import Track
 from music_discovery.domain.schemas import (
     FieldMatch,
     RankedCandidate,
+    ScoreBands,
     SemanticEvidence,
     TagMatch,
     TrackEvidence,
@@ -51,9 +54,20 @@ def strength(rank: int, normalized: float | None, bands: SemanticBands) -> Match
     return MatchStrength.WEAK
 
 
+def signal_strength(normalized: float | None, bands: SignalBands | None) -> MatchStrength | None:
+    if normalized is None or bands is None:
+        return None
+    if normalized >= bands.tau_strong:
+        return MatchStrength.STRONG
+    if normalized >= bands.tau_partial:
+        return MatchStrength.PARTIAL
+    return MatchStrength.WEAK
+
+
 class EvidenceBuilder:
-    def __init__(self, bands: SemanticBands) -> None:
+    def __init__(self, bands: SemanticBands, score_bands: ScoreBandConfig | None = None) -> None:
         self._bands = bands
+        self._score_bands = score_bands or ScoreBandConfig()
 
     def build(
         self,
@@ -92,6 +106,13 @@ class EvidenceBuilder:
             retrieval_sources=candidate.retrieval_sources,
             constraint_results=candidate.constraint_results,
             uncertainty_flags=list(dict.fromkeys(flags)),
+            score_bands=ScoreBands(
+                semantic=None if evidence_semantic is None else evidence_semantic.strength,
+                metadata=signal_strength(candidate.score.metadata, self._score_bands.metadata),
+                relationship=signal_strength(
+                    candidate.score.relationship, self._score_bands.relationship
+                ),
+            ),
         )
 
 
