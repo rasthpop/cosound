@@ -18,9 +18,10 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
+from typing import Self
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from music_discovery.domain.schemas import TrackEvidence
 
@@ -79,10 +80,33 @@ class SemanticBands(BaseModel):
     tau_partial: float = Field(ge=0.0, le=1.0)
 
 
+class SignalBands(BaseModel):
+    """Bands for a signal without a rank rule: strong >= tau_strong, partial >= tau_partial."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    tau_strong: float = Field(ge=0.0, le=1.0)
+    tau_partial: float = Field(ge=0.0, le=1.0)
+
+    @model_validator(mode="after")
+    def _ordered(self) -> Self:
+        if self.tau_partial > self.tau_strong:
+            raise ValueError("tau_partial must not exceed tau_strong")
+        return self
+
+
+class ScoreBandConfig(BaseModel):
+    """Bands for the non-semantic signals; `None` leaves that signal unbanded (always null)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    metadata: SignalBands | None = None
+    relationship: SignalBands | None = None
+
+
 class DescriptionConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     version: str
     semantic_bands: SemanticBands
+    score_bands: ScoreBandConfig = ScoreBandConfig()
     max_sentences: int = Field(default=2, ge=1)
     max_reasons: int = Field(default=4, ge=1)
     forbidden: frozenset[str]

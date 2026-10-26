@@ -21,6 +21,7 @@ from music_discovery.domain.enums import (
     EvidenceStatus,
     FeedbackType,
     InterpreterStatus,
+    MatchStrength,
     NextAction,
     RelationshipType,
     RetrievalSource,
@@ -72,6 +73,15 @@ def _query(**overrides: Any) -> s.InterpretedQuery:
     return s.InterpretedQuery(**values)
 
 
+def _band(value: float | None, strong: float, partial: float) -> MatchStrength | None:
+    """Example bands, with the thresholds of config/descriptions.yaml (checked in tests)."""
+    if value is None:
+        return None
+    if value >= strong:
+        return MatchStrength.STRONG
+    return MatchStrength.PARTIAL if value >= partial else MatchStrength.WEAK
+
+
 def _result(n: int, *, semantic: bool = True, audio: bool = True) -> s.TrackResult:
     sem = round(0.9 - n * 0.08, 2) if semantic and audio else None
     meta = round(0.75 - n * 0.1, 2) if n < 3 else None
@@ -80,6 +90,11 @@ def _result(n: int, *, semantic: bool = True, audio: bool = True) -> s.TrackResu
     if meta is not None or not sources:
         sources.append(RetrievalSource.METADATA)
         meta = meta if meta is not None else 0.3
+    strength = _band(sem, 0.8, 0.6)  # example ranks are <= strong_max_rank
+    audio_reason = {
+        MatchStrength.STRONG: "Strong audio match",
+        MatchStrength.PARTIAL: "Partial audio match",
+    }.get(strength or MatchStrength.WEAK)
     return s.TrackResult(
         track_id=f"trk_example_{n}",
         rank=n,
@@ -89,12 +104,18 @@ def _result(n: int, *, semantic: bool = True, audio: bool = True) -> s.TrackResu
         score_breakdown=s.ScoreBreakdown(
             semantic=sem, metadata=meta, relationship=None, final=final
         ),
+        match_strength=strength,
+        score_bands=s.ScoreBands(
+            semantic=strength, metadata=_band(meta, 0.8, 0.3), relationship=None
+        ),
         description=(
-            "Strong audio match for “chill music featuring flute”. Tagged Folk."
-            if sem is not None
+            "Its audio is a strong match for “chill music featuring flute”. Tagged Folk."
+            if strength is MatchStrength.STRONG
+            else "Its audio is a partial match for the requested sound. Tagged Folk."
+            if strength is MatchStrength.PARTIAL
             else "Matched on metadata: Tagged Folk. Audio analysis unavailable."
         ),
-        match_reasons=["Strong semantic match", "Genre tag: Folk"] if sem else ["Genre tag: Folk"],
+        match_reasons=[r for r in (audio_reason, "Genre tag: Folk") if r is not None],
         genres=["Folk"],
         styles=[],
         source_url=None,

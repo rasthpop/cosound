@@ -88,6 +88,12 @@ def track_result(item: ResultItem) -> s.TrackResult:
             relationship=candidate.score.relationship,
             final=candidate.score.final,
         ),
+        match_strength=None if evidence is None else evidence.score_bands.semantic,
+        score_bands=s.ScoreBands(
+            semantic=None if evidence is None else evidence.score_bands.semantic,
+            metadata=None if evidence is None else evidence.score_bands.metadata,
+            relationship=None if evidence is None else evidence.score_bands.relationship,
+        ),
         description=None if item.explanation is None else item.explanation.description,
         match_reasons=[] if item.explanation is None else list(item.explanation.match_reasons),
         genres=list(track.genres),

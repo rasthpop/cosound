@@ -62,15 +62,16 @@
           "value": null
         }
       ],
-      "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+      "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
       "evidence_status": "audio_and_metadata",
       "genres": [
         "Folk"
       ],
       "match_reasons": [
-        "Strong semantic match",
+        "Strong audio match",
         "Genre tag: Folk"
       ],
+      "match_strength": "strong",
       "preview_url": "/api/tracks/trk_example_1/audio",
       "rank": 1,
       "retrieval_sources": [
@@ -78,6 +79,11 @@
         "metadata"
       ],
       "score": 0.82,
+      "score_bands": {
+        "metadata": "partial",
+        "relationship": null,
+        "semantic": "strong"
+      },
       "score_breakdown": {
         "final": 0.82,
         "metadata": 0.65,

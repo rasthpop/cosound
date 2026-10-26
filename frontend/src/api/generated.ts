@@ -436,15 +436,16 @@ export interface components {
          *             ],
          *             "audio_available": true,
          *             "constraint_status": [],
-         *             "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+         *             "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
          *             "evidence_status": "audio_and_metadata",
          *             "genres": [
          *               "Folk"
          *             ],
          *             "match_reasons": [
-         *               "Strong semantic match",
+         *               "Strong audio match",
          *               "Genre tag: Folk"
          *             ],
+         *             "match_strength": "strong",
          *             "preview_url": "/api/tracks/trk_example_1/audio",
          *             "rank": 1,
          *             "retrieval_sources": [
@@ -452,6 +453,10 @@ export interface components {
          *               "metadata"
          *             ],
          *             "score": 0.82,
+         *             "score_bands": {
+         *               "metadata": "partial",
+         *               "semantic": "strong"
+         *             },
          *             "score_breakdown": {
          *               "final": 0.82,
          *               "metadata": 0.65,
@@ -476,15 +481,16 @@ export interface components {
          *             ],
          *             "audio_available": true,
          *             "constraint_status": [],
-         *             "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+         *             "description": "Its audio is a partial match for the requested sound. Tagged Folk.",
          *             "evidence_status": "audio_and_metadata",
          *             "genres": [
          *               "Folk"
          *             ],
          *             "match_reasons": [
-         *               "Strong semantic match",
+         *               "Partial audio match",
          *               "Genre tag: Folk"
          *             ],
+         *             "match_strength": "partial",
          *             "preview_url": "/api/tracks/trk_example_2/audio",
          *             "rank": 2,
          *             "retrieval_sources": [
@@ -492,6 +498,10 @@ export interface components {
          *               "metadata"
          *             ],
          *             "score": 0.74,
+         *             "score_bands": {
+         *               "metadata": "partial",
+         *               "semantic": "partial"
+         *             },
          *             "score_breakdown": {
          *               "final": 0.74,
          *               "metadata": 0.55,
@@ -889,6 +899,11 @@ export interface components {
             /** Projection Version */
             projection_version: string;
         };
+        /**
+         * MatchStrength
+         * @enum {string}
+         */
+        MatchStrength: "strong" | "partial" | "weak";
         /** Neighbor */
         Neighbor: {
             /** Artists */
@@ -1037,6 +1052,16 @@ export interface components {
          */
         RetrievalSource: "metadata" | "semantic" | "relationship";
         /**
+         * ScoreBands
+         * @description Strength band per signal within this query; `null` = the signal is missing for this track
+         *     (or has no calibrated bands). Show these, never the numbers.
+         */
+        ScoreBands: {
+            metadata: components["schemas"]["MatchStrength"] | null;
+            relationship: components["schemas"]["MatchStrength"] | null;
+            semantic: components["schemas"]["MatchStrength"] | null;
+        };
+        /**
          * ScoreBreakdown
          * @description Normalized signals; `null` means the signal was not computed for this track.
          */
@@ -1127,15 +1152,16 @@ export interface components {
          *           ],
          *           "audio_available": true,
          *           "constraint_status": [],
-         *           "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+         *           "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
-         *             "Strong semantic match",
+         *             "Strong audio match",
          *             "Genre tag: Folk"
          *           ],
+         *           "match_strength": "strong",
          *           "preview_url": "/api/tracks/trk_example_1/audio",
          *           "rank": 1,
          *           "retrieval_sources": [
@@ -1143,6 +1169,10 @@ export interface components {
          *             "metadata"
          *           ],
          *           "score": 0.82,
+         *           "score_bands": {
+         *             "metadata": "partial",
+         *             "semantic": "strong"
+         *           },
          *           "score_breakdown": {
          *             "final": 0.82,
          *             "metadata": 0.65,
@@ -1167,15 +1197,16 @@ export interface components {
          *           ],
          *           "audio_available": true,
          *           "constraint_status": [],
-         *           "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+         *           "description": "Its audio is a partial match for the requested sound. Tagged Folk.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
-         *             "Strong semantic match",
+         *             "Partial audio match",
          *             "Genre tag: Folk"
          *           ],
+         *           "match_strength": "partial",
          *           "preview_url": "/api/tracks/trk_example_2/audio",
          *           "rank": 2,
          *           "retrieval_sources": [
@@ -1183,6 +1214,10 @@ export interface components {
          *             "metadata"
          *           ],
          *           "score": 0.74,
+         *           "score_bands": {
+         *             "metadata": "partial",
+         *             "semantic": "partial"
+         *           },
          *           "score_breakdown": {
          *             "final": 0.74,
          *             "metadata": 0.55,
@@ -1220,6 +1255,9 @@ export interface components {
          *             "metadata"
          *           ],
          *           "score": 0.05,
+         *           "score_bands": {
+         *             "metadata": "partial"
+         *           },
          *           "score_breakdown": {
          *             "final": 0.05,
          *             "metadata": 0.3
@@ -1447,6 +1485,9 @@ export interface components {
          *             "metadata"
          *           ],
          *           "score": 0.65,
+         *           "score_bands": {
+         *             "metadata": "partial"
+         *           },
          *           "score_breakdown": {
          *             "final": 0.65,
          *             "metadata": 0.65
@@ -1484,6 +1525,9 @@ export interface components {
          *             "metadata"
          *           ],
          *           "score": 0.55,
+         *           "score_bands": {
+         *             "metadata": "partial"
+         *           },
          *           "score_breakdown": {
          *             "final": 0.55,
          *             "metadata": 0.55
@@ -1562,15 +1606,16 @@ export interface components {
          *           ],
          *           "audio_available": true,
          *           "constraint_status": [],
-         *           "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+         *           "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
-         *             "Strong semantic match",
+         *             "Strong audio match",
          *             "Genre tag: Folk"
          *           ],
+         *           "match_strength": "strong",
          *           "preview_url": "/api/tracks/trk_example_1/audio",
          *           "rank": 1,
          *           "retrieval_sources": [
@@ -1578,6 +1623,10 @@ export interface components {
          *             "metadata"
          *           ],
          *           "score": 0.82,
+         *           "score_bands": {
+         *             "metadata": "partial",
+         *             "semantic": "strong"
+         *           },
          *           "score_breakdown": {
          *             "final": 0.82,
          *             "metadata": 0.65,
@@ -1602,15 +1651,16 @@ export interface components {
          *           ],
          *           "audio_available": true,
          *           "constraint_status": [],
-         *           "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+         *           "description": "Its audio is a partial match for the requested sound. Tagged Folk.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
-         *             "Strong semantic match",
+         *             "Partial audio match",
          *             "Genre tag: Folk"
          *           ],
+         *           "match_strength": "partial",
          *           "preview_url": "/api/tracks/trk_example_2/audio",
          *           "rank": 2,
          *           "retrieval_sources": [
@@ -1618,6 +1668,10 @@ export interface components {
          *             "metadata"
          *           ],
          *           "score": 0.74,
+         *           "score_bands": {
+         *             "metadata": "partial",
+         *             "semantic": "partial"
+         *           },
          *           "score_breakdown": {
          *             "final": 0.74,
          *             "metadata": 0.55,
@@ -1655,6 +1709,9 @@ export interface components {
          *             "metadata"
          *           ],
          *           "score": 0.05,
+         *           "score_bands": {
+         *             "metadata": "partial"
+         *           },
          *           "score_breakdown": {
          *             "final": 0.05,
          *             "metadata": 0.3
@@ -1736,15 +1793,16 @@ export interface components {
          *               "status": "unknown"
          *             }
          *           ],
-         *           "description": "Strong audio match for “chill music featuring flute”. Tagged Folk.",
+         *           "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
-         *             "Strong semantic match",
+         *             "Strong audio match",
          *             "Genre tag: Folk"
          *           ],
+         *           "match_strength": "strong",
          *           "preview_url": "/api/tracks/trk_example_1/audio",
          *           "rank": 1,
          *           "retrieval_sources": [
@@ -1752,6 +1810,10 @@ export interface components {
          *             "metadata"
          *           ],
          *           "score": 0.82,
+         *           "score_bands": {
+         *             "metadata": "partial",
+         *             "semantic": "strong"
+         *           },
          *           "score_breakdown": {
          *             "final": 0.82,
          *             "metadata": 0.65,
@@ -2113,6 +2175,8 @@ export interface components {
             genres: string[];
             /** Match Reasons */
             match_reasons: string[];
+            /** @description Band of the audio (CLAP) match within this query, the one match_reasons describe; null when the track has no semantic score. */
+            match_strength: components["schemas"]["MatchStrength"] | null;
             /** Preview Url */
             preview_url: string | null;
             /** Rank */
@@ -2124,6 +2188,7 @@ export interface components {
              * @description Relevance for ordering; not a probability.
              */
             score: number;
+            score_bands: components["schemas"]["ScoreBands"];
             score_breakdown: components["schemas"]["ScoreBreakdown"];
             /** Source Url */
             source_url: string | null;

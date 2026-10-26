@@ -63,12 +63,18 @@
       "match_reasons": [
         "Genre tag: Folk"
       ],
+      "match_strength": null,
       "preview_url": "/api/tracks/trk_example_1/audio",
       "rank": 1,
       "retrieval_sources": [
         "metadata"
       ],
       "score": 0.65,
+      "score_bands": {
+        "metadata": "partial",
+        "relationship": null,
+        "semantic": null
+      },
       "score_breakdown": {
         "final": 0.65,
         "metadata": 0.65,
@@ -103,12 +109,18 @@
       "match_reasons": [
         "Genre tag: Folk"
       ],
+      "match_strength": null,
       "preview_url": "/api/tracks/trk_example_2/audio",
       "rank": 2,
       "retrieval_sources": [
         "metadata"
       ],
       "score": 0.55,
+      "score_bands": {
+        "metadata": "partial",
+        "relationship": null,
+        "semantic": null
+      },
       "score_breakdown": {
         "final": 0.55,
         "metadata": 0.55,

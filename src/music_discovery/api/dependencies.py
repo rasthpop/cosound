@@ -133,7 +133,7 @@ def build_services(settings: Settings) -> Services:
         FeedbackAgent(
             lexicon,
             track_repo,
-            EvidenceBuilder(descriptions_config.semantic_bands),
+            EvidenceBuilder(descriptions_config.semantic_bands, descriptions_config.score_bands),
             DescriptionService(descriptions_config, phrasing),
         ),
         SqlSessionRepository(database),

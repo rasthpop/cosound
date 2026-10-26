@@ -127,7 +127,8 @@ Appended by the `ui-plan-intake` skill (see `docs/ui/intake.md` §4). These task
   - Raw `score` / `score_breakdown` stay as they are (they still order the plate). The UI shows only bands, never buckets numbers itself, and never parses `match_reasons`.
 - **Done when:**
   - API tests: bands present and consistent with `match_reasons` on `search_ok`; `null` (not `weak`) for a metadata-only result and in the semantic-unavailable mode; OpenAPI and fixtures regenerated; changelog entry.
-- **Status:** [ ]
+- **Notes:** The bands are computed once in `EvidenceBuilder` (`TrackEvidence.score_bands`) and copied by the mapping. `match_strength` = `score_bands.semantic`, so it always agrees with the "Strong/Partial/Weak audio match" reason. Metadata thresholds 0.8 / 0.3 were set on the dev split with `scripts/experiments/score_band_check.py` (`docs/calibration.md` "Score bands"). Relationship has no bands while its weight is 0. The descriptions config is now `d2-dev-2026-10-26`. Example fixtures now use the real reason strings ("Strong audio match", not "Strong semantic match").
+- **Status:** [x]
 
 ### P08.T11 — Genre summary in map meta (G2)
 - **Skills:** api-contracts, umap-spatial-projection

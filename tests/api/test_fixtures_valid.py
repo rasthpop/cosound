@@ -71,3 +71,26 @@ def test_openapi_has_no_python_version_dependent_text() -> None:
             for status, response in operation["responses"].items():
                 phrase = HTTPStatus(int(status)).phrase
                 assert response["description"] != phrase, f"{method} {path} {status}"
+
+
+def test_fixture_bands_follow_the_description_config() -> None:
+    """Example bands mirror config/descriptions.yaml, so the UI sees realistic combinations."""
+    from music_discovery.descriptions.claim_validator import DescriptionConfig
+    from music_discovery.descriptions.evidence_builder import signal_strength, strength
+
+    config = DescriptionConfig.load()
+    for name in sorted(INDEX):
+        data = json.loads((FIXTURES / f"{name}.json").read_text(encoding="utf-8"))
+        plates = [data, data.get("refreshed")] if isinstance(data, dict) else []
+        for plate in plates:
+            for r in (plate or {}).get("results", []):
+                scores, bands = r["score_breakdown"], r["score_bands"]
+                semantic = (
+                    None
+                    if scores["semantic"] is None
+                    else strength(r["rank"], scores["semantic"], config.semantic_bands).value
+                )
+                assert bands["semantic"] == r["match_strength"] == semantic, name
+                metadata = signal_strength(scores["metadata"], config.score_bands.metadata)
+                assert bands["metadata"] == (None if metadata is None else metadata.value), name
+                assert bands["relationship"] is None, name

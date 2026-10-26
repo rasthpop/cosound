@@ -87,6 +87,36 @@ def test_semantic_unavailable_still_answers_with_a_warning(make_client: ClientFa
     assert all(r["score_breakdown"]["semantic"] is None for r in body["results"])
 
 
+def test_match_bands_agree_with_match_reasons(client: TestClient) -> None:
+    results = post(client, limit=10)["results"]
+    assert any(r["match_strength"] is not None for r in results)
+    for r in results:
+        assert r["match_strength"] == r["score_bands"]["semantic"]
+        audio_reasons = [m for m in r["match_reasons"] if m.endswith("audio match")]
+        expected = (
+            [f"{r['match_strength'].capitalize()} audio match"] if r["match_strength"] else []
+        )
+        assert audio_reasons == expected
+        for signal in ("semantic", "metadata", "relationship"):
+            if r["score_breakdown"][signal] is None:
+                assert r["score_bands"][signal] is None
+        assert r["score_bands"]["relationship"] is None
+
+
+def test_metadata_only_result_has_no_semantic_band(client: TestClient) -> None:
+    tape = {r["track_id"]: r for r in post(client, limit=10)["results"]}["trk_tape"]
+    assert tape["match_strength"] is None
+    assert tape["score_bands"]["semantic"] is None
+    assert tape["score_bands"]["metadata"] in ("strong", "partial", "weak")
+
+
+def test_semantic_unavailable_has_null_semantic_bands(make_client: ClientFactory) -> None:
+    results = post(make_client(semantic=False))["results"]
+    assert results
+    assert all(r["match_strength"] is None for r in results)
+    assert all(r["score_bands"]["semantic"] is None for r in results)
+
+
 def test_needs_clarification(client: TestClient) -> None:
     body = post(client, query="no vocals with female vocals")
     assert body["status"] == 200

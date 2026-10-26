@@ -370,6 +370,15 @@ class ConstraintResult(FrozenModel):
     """What the decision was based on; empty when the status is unknown."""
 
 
+class ScoreBands(FrozenModel):
+    """Strength band per ranking signal within one query. `None`: the signal is missing for the
+    track (or has no calibrated bands), never "weak"."""
+
+    semantic: MatchStrength | None = None
+    metadata: MatchStrength | None = None
+    relationship: MatchStrength | None = None
+
+
 class TrackEvidence(FrozenModel):
     """Everything known about why a track matched (base.md §8). Explanations use only this."""
 
@@ -383,6 +392,7 @@ class TrackEvidence(FrozenModel):
     human_labels: list[HumanLabel] = []
     constraint_results: list[ConstraintResult] = []
     uncertainty_flags: list[NonEmptyStr] = []
+    score_bands: ScoreBands = ScoreBands()
 
 
 # --- Ranking ------------------------------------------------------------------------
