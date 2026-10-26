@@ -112,3 +112,41 @@
 - [x] Search, track details, neighbors, feedback, sessions, map points/meta exposed with validated schemas.
 - [x] Error envelope everywhere; degraded modes visible in responses.
 - [x] `frontend/openapi.json` + fixtures generated, deterministic, validated.
+
+## Contract requests from UI intake (U00.T02)
+
+Appended by the `ui-plan-intake` skill (see `docs/ui/intake.md` §4). These tasks are additive: existing fields keep their meaning, and each change follows the contract-change procedure in `api-contracts` (DTO → OpenAPI export → fixtures → `docs/api-changelog.md`).
+
+### P08.T10 — Structured match-strength bands on results (G1)
+- **Skills:** api-contracts, grounded-explanations, hybrid-retrieval
+- **Depends on:** P08.T02, P06.T05
+- **Files:** src/music_discovery/api/schemas.py, src/music_discovery/api/mapping.py, src/music_discovery/application/results.py, src/music_discovery/descriptions/evidence_builder.py, config/descriptions.yaml, tests/api/test_search.py, tests/unit/descriptions/test_descriptions.py, docs/api-changelog.md
+- **Do:**
+  - Add `TrackResult.match_strength: "strong" | "partial" | "weak" | null`. It is the semantic band the evidence builder already computes (`SemanticBands`), and `null` when the track has no semantic score (CLAP unavailable or the track has no embedding).
+  - Add `TrackResult.score_bands: {semantic, metadata, relationship}`, each a band or `null` when that signal is missing. Metadata and relationship thresholds live in `config/descriptions.yaml` next to the semantic ones, are calibrated on the dev split, and are recorded in `docs/calibration.md`.
+  - Raw `score` / `score_breakdown` stay as they are (they still order the plate). The UI shows only bands, never buckets numbers itself, and never parses `match_reasons`.
+- **Done when:**
+  - API tests: bands present and consistent with `match_reasons` on `search_ok`; `null` (not `weak`) for a metadata-only result and in the semantic-unavailable mode; OpenAPI and fixtures regenerated; changelog entry.
+- **Status:** [ ]
+
+### P08.T11 — Genre summary in map meta (G2)
+- **Skills:** api-contracts, umap-spatial-projection
+- **Depends on:** P08.T06, P07.T05
+- **Files:** src/music_discovery/api/schemas.py, src/music_discovery/api/mapping.py, src/music_discovery/application/map_service.py, tests/api/test_map.py, docs/api-changelog.md
+- **Do:**
+  - Add `MapMetaResponse.genres: [{genre: string | null, count: int}]` for every projected point in the current projection, sorted by count and then name. `null` counts points without a genre. It doesn't depend on filters or pagination, so the legend and the categorical color assignment stay stable.
+  - Empty list when the projection is unavailable.
+- **Done when:**
+  - API tests: counts sum to `n_points`; the `null` bucket is present when such points exist; the unavailable meta has `genres: []`; fixtures regenerated; changelog entry.
+- **Status:** [ ]
+
+### P08.T12 — Structured "what changed" entries (G3)
+- **Skills:** api-contracts, agent-orchestration
+- **Depends on:** P08.T05, P06.T10
+- **Files:** src/music_discovery/agents/feedback_rules.py, src/music_discovery/agents/orchestrator.py, src/music_discovery/application/feedback_service.py, src/music_discovery/application/results.py, src/music_discovery/api/schemas.py, src/music_discovery/api/mapping.py, tests/unit/agents/test_feedback_rules.py, tests/api/test_feedback.py, docs/api-changelog.md
+- **Do:**
+  - Add `changes: [{kind, track_id?, title?, attribute?, value?}]` to `FeedbackResponse` and `SearchResponse`. `kind` is one of `reference_added`, `negative_reference_added`, `excluded`, `preference_raised`, `preference_added`, `preference_lowered`, `negative_added`, `rejected`, `needs_clarification`. Track titles are resolved server-side from the catalog, and `title` is `null` if unknown (never invented).
+  - `change_summary` strings stay for compatibility.
+- **Done when:**
+  - Unit tests: every feedback rule emits its structured change. API tests: a `NOT_RELEVANT` refinement returns `{kind: "excluded", track_id, title}`. Fixtures regenerated; changelog entry.
+- **Status:** [ ]

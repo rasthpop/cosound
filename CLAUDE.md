@@ -3,7 +3,7 @@
 Natural-language music discovery (FMA metadata + CLAP audio semantics + hybrid ranking + 3 agents + UMAP map).
 **MVP scope:** FMA-only (`fma_small`, 8,000 tracks); Discogs is deferred, see `docs/adr/0005-fma-only-mvp.md`.
 
-- Functional spec: `base.md`. UI/UX spec: arrives separately (save as `ui.md`, then run the `ui-plan-intake` skill).
+- Functional spec: `base.md`. UI/UX spec: `skills/phases/ui/ui.md` (intake: `docs/ui/intake.md`, stack: `docs/adr/0003-ui-stack.md`).
 - Agent LLMs (optional): OpenRouter free models — https://openrouter.ai/collections/free-models (skill `openrouter-llm`). Model IDs only in config.
 - Executable plan: `skills/phases/` — check progress with `python skills/implementation-roadmap/scripts/phase_status.py`.
 - Always load `implementation-roadmap` + `music-discovery-architecture` before implementing a task; load the skills listed on the task.

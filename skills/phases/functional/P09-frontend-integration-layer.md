@@ -110,3 +110,40 @@
 - [x] The interface layer can search, display a plate, submit feedback, and retrieve map points without implementing ML or retrieval logic (P09.T09).
 - [x] Loading, error, empty, degraded, and stale-response states exposed by hooks and tested.
 - [x] `contract:check` and boundary check green.
+
+## Contract requests from UI intake (U00.T02)
+
+Appended by the `ui-plan-intake` skill (see `docs/ui/intake.md` §3–4). The hooks stay free of styling, deck.gl and domain logic.
+
+### P09.T10 — Types, fixtures & scenarios for the UI contract additions (G4)
+- **Skills:** api-contracts, ui-isolated-development
+- **Depends on:** P08.T10, P08.T11, P08.T12, P09.T02
+- **Files:** frontend/openapi.json, frontend/src/api/generated.ts, frontend/src/api/types.ts, frontend/src/mocks/fixtures/*.json, frontend/src/mocks/scenarios.ts, frontend/src/mocks/handlers.ts, frontend/src/mocks/handlers.test.ts, frontend/src/hooks/README.md
+- **Do:**
+  - Regenerate types (`npm run contract`) and export aliases `MatchStrength`, `ScoreBands`, `GenreCount`, `ChangeEntry`.
+  - Add the mock scenarios `empty` (`search_empty`), `llm-fallback` (`search_llm_fallback`) and `offline` (every request fails as a network error, so the client gives `kind: "network"`).
+  - The mock's refreshed plate carries `changes` the way the API's does.
+- **Done when:**
+  - `contract:check` green; handler tests cover the three new scenarios; hooks README lists them.
+- **Status:** [ ]
+
+### P09.T11 — `useSystemStatus` (capabilities before the first search) (G5)
+- **Skills:** api-contracts, ui-architecture
+- **Depends on:** P09.T03, P09.T08
+- **Files:** frontend/src/hooks/useSystemStatus.ts, frontend/src/hooks/useSystemStatus.test.tsx, frontend/src/hooks/index.ts, frontend/src/hooks/README.md
+- **Do:**
+  - `useSystemStatus(options?) → {status, capabilities, reasons: {semantic, map}, error, reload}` over `client.health()`. The result is fetched once, with no polling. `reload()` is for the status pill's retry.
+  - A network failure gives `error.kind === "network"` (offline), never a guessed capability.
+- **Done when:**
+  - Tests: healthy, degraded (`health_degraded`), offline; README section (enforced by `readme.test.tsx`).
+- **Status:** [ ]
+
+### P09.T12 — Media URL resolution for audio previews (G6)
+- **Skills:** api-contracts, ui-architecture
+- **Depends on:** P09.T03, P09.T08
+- **Files:** frontend/src/hooks/useMediaUrl.ts, frontend/src/hooks/useMediaUrl.test.tsx, frontend/src/hooks/index.ts, frontend/src/hooks/README.md
+- **Do:**
+  - `useMediaUrl(path: string | null, options?) → string | null` turns an API path such as `preview_url` into a playable URL through the client's `resolveUrl`. `null` in gives `null` out. `pages/` never imports `api/client`.
+- **Done when:**
+  - Tests: null passthrough, base-URL handling, the resolved URL plays against the MSW audio handler; README section.
+- **Status:** [ ]
