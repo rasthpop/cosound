@@ -13,7 +13,8 @@
   - `npm run contract:check` regenerates and fails on diff; added to CI.
 - **Done when:**
   - Typecheck passes; editing a backend DTO without regenerating fails CI.
-- **Status:** [ ]
+- **Notes:** Generation via `frontend/scripts/contract.mjs` (openapi-typescript API, alphabetized, banner) instead of the CLI, so `--check` compares in-memory output with the committed file. openapi-typescript 7.13 declares a TypeScript ^5 peer; an npm `overrides` entry lets it use the project's TS 6 (it only uses the printer). Chain: backend test fails if `openapi.json` is stale; frontend CI `contract:check` fails if `generated.ts` is stale. `make contract`/`contract-check` now cover all three artifacts. `types.ts` holds aliases plus the client-only `ApiError`.
+- **Status:** [x]
 
 ### P09.T02 — Contract mocks (MSW) & mock dev mode
 - **Skills:** ui-isolated-development, api-contracts
@@ -24,7 +25,8 @@
 - **Done when:**
   - Every handler response type-checks against `types.ts`; vitest server setup with `onUnhandledRequest: "error"`.
   - **Unblocks UI track** (U02, U03).
-- **Status:** [ ]
+- **Notes:** Fixtures are typed through `mocks/fixtures.ts` (JSON imports widen enum strings, so each fixture is bound to its DTO alias; a test checks the binding equals the backend's `fixtures/index.json`). Handlers type-check derived bodies via a `json<T>()` helper. Happy handlers echo session ids, issue `qry_mock_N` ids, paginate a fixed point list (or `?mapPoints=N` synthetic points); free-text-only feedback answers `feedback_rejected`; `artist_id` is ignored by the mock (map points carry no artist id). `main.tsx` starts the worker only when `VITE_API_MODE=mock`; the production bundle contains no MSW code (only the inert `mockServiceWorker.js` is copied from `public/`).
+- **Status:** [x]
 
 ### P09.T03 — API client
 - **Skills:** api-contracts, ui-architecture
@@ -34,7 +36,8 @@
   - Base URL from env; typed functions per endpoint; `AbortSignal` support; JSON (de)serialization; error normalization to `ApiError {code, message, status, details, kind: "http"|"network"|"aborted"|"parse"}`; no business rules.
 - **Done when:**
   - Tests via MSW: success, envelope error, network error, abort, malformed JSON.
-- **Status:** [ ]
+- **Notes:** `createApiClient({baseUrl, fetch})` + default `apiClient`; failures throw `ApiClientError` (implements `ApiError`, with `toJSON()`); `resolveUrl()` turns `preview_url` paths into absolute URLs. Generation now uses `defaultNonNullable: false`: openapi-typescript otherwise marks request fields with server defaults (`limit`, `refresh`) as required.
+- **Status:** [x]
 
 ### P09.T04 — `useMusicSearch`
 - **Skills:** ui-architecture, ui-isolated-development
@@ -44,7 +47,8 @@
   - `search(query, {limit})`, `refresh()`, `applyRefreshed(response)`; exposes `status` (`idle|loading|success|error`), `data` (full `SearchResponse` incl. outcome/capabilities/warnings), `error`, `sessionId`, `queryId`; cancels in-flight request on new search; stale-response protection via request sequence; keeps previous data during refinement (`isRefreshing`).
 - **Done when:**
   - Tests: out-of-order responses never overwrite newer; abort on unmount; session id retained across searches; refresh after feedback.
-- **Status:** [ ]
+- **Notes:** `search()` resolves to the response or `null` (failed/superseded) so callers can chain. `refresh()` re-sends the last query text in the same session; the backend reads it as a follow-up with nothing new, so the plate reflects the session's current (feedback-updated) spec. Also `reset()` and `search(q, {newSession: true})`. Errors keep the last good plate; aborts never surface as errors. Shared `RequestStatus` in `hooks/status.ts`.
+- **Status:** [x]
 
 ### P09.T05 — `useTrackFeedback`
 - **Skills:** ui-architecture
@@ -54,7 +58,8 @@
   - `submit({trackId, eventType, attribute?, value?, freeText?}, {refresh})` using current session/query ids from `useMusicSearch` (passed in, not global); per-track submission state; returns `FeedbackResponse`; pushes refreshed plate into `useMusicSearch`.
 - **Done when:**
   - Tests: accepted/rejected flows, per-track pending state, refresh propagates, invalid event surfaces `ApiError`.
-- **Status:** [ ]
+- **Notes:** Takes `{sessionId, queryId, applyRefreshed}` from `useMusicSearch`. State per track id, or `PLATE_KEY` for track-less free text; `isPending(trackId)`, `lastResponse`. `accepted: false` is a successful response, not an error. Submitting before any search records a client-side `no_active_search` error (no request is sent). Pending requests abort on unmount.
+- **Status:** [x]
 
 ### P09.T06 — `useTrackDetails`
 - **Skills:** ui-architecture
@@ -64,7 +69,8 @@
   - Fetch details (+ optional neighbors) by id; in-memory cache keyed by id with invalidation on `projection_version` change; loading/error states; abort on id change.
 - **Done when:**
   - Tests: cache hit avoids request, id switch aborts previous, 404 surfaces typed error.
-- **Status:** [ ]
+- **Notes:** Cache is per hook instance, held in state (no setState-in-effect, no ref reads during render, as React Hooks v7 requires); loading is derived from "no entry yet". `projectionVersion` (from useMusicMap) scopes the cache. A failed neighbors call keeps the details (`neighborsError`); `reload()` drops the entry and refetches.
+- **Status:** [x]
 
 ### P09.T07 — `useMusicMap`
 - **Skills:** ui-architecture, deckgl-track-map
@@ -74,7 +80,8 @@
   - Fetch meta + paginated points (auto or `loadMore`), filters (genre/style/artist_id/has_audio) with reset, `projectionVersion`, availability state, `selectedTrackIds` + `select/deselect/clear` callbacks; **no deck.gl import, no coordinate or similarity computation**.
 - **Done when:**
   - Tests: full pagination walk, filter change resets, version change resets, map-down scenario exposes `unavailable`, selection callbacks.
-- **Status:** [ ]
+- **Notes:** The auto-pagination loop runs inside the effect's async task (state is set only after awaits, as React Hooks v7 requires); manual `loadMore()` otherwise. Extras: `maxPoints`, `enabled`, `toggle`, `reload()`. `availability` is `unavailable` for meta status unavailable or `projection_unavailable`/`projection_mismatch` errors, and `error` for anything else. Selection survives filter and version changes (track ids stay valid).
+- **Status:** [x]
 
 ### P09.T08 — Hook contract documentation (the UI seam)
 - **Skills:** ui-architecture, implementation-roadmap
@@ -84,7 +91,8 @@
   - Document each hook's signature, return shape, states, events, and the scenario fixtures that exercise them; single `index.ts` export surface that the UI track imports from.
 - **Done when:**
   - README matches the TS signatures (spot-checked by `api-contract-guardian`); UI track can implement containers from this document alone.
-- **Status:** [ ]
+- **Notes:** README-vs-signature agreement is enforced by `src/hooks/readme.test.tsx` (every field each hook returns must appear in its README section, and the README covers exactly the hooks exported from `index.ts`) rather than a one-off `api-contract-guardian` review.
+- **Status:** [x]
 
 ### P09.T09 — Contract harness (dev-only, unstyled) — M6 acceptance
 - **Skills:** ui-architecture, ui-isolated-development
@@ -95,9 +103,10 @@
   - Playwright test runs it in mock mode, and (optionally, `slow`) against the real backend.
 - **Done when:**
   - E2E test proves search → plate → feedback → refreshed plate → map points with zero ML/retrieval logic in the frontend.
-- **Status:** [ ]
+- **Notes:** Served by `App.tsx` only when `import.meta.env.DEV` and the path is `/__dev/harness`; the production bundle contains neither the harness nor MSW (checked on build). Playwright runs the dev server in mock mode (3 tests: full flow, map-down, degraded semantic) and is now a CI step. `E2E_REAL_BACKEND=1 API_PROXY_TARGET=…` runs the real-backend test through a new Vite `/api` proxy; it passed against the fma_small install on 2026-10-25. The mock's refreshed plate now carries the feedback's `change_summary`, as the API's does.
+- **Status:** [x]
 
 ## Exit criteria (Milestone 6)
-- [ ] The interface layer can search, display a plate, submit feedback, and retrieve map points without implementing ML or retrieval logic (P09.T09).
-- [ ] Loading, error, empty, degraded, and stale-response states exposed by hooks and tested.
-- [ ] `contract:check` and boundary check green.
+- [x] The interface layer can search, display a plate, submit feedback, and retrieve map points without implementing ML or retrieval logic (P09.T09).
+- [x] Loading, error, empty, degraded, and stale-response states exposed by hooks and tested.
+- [x] `contract:check` and boundary check green.

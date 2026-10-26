@@ -8,7 +8,7 @@ help:
 	@echo "make test-all    include slow tests"
 	@echo "make format      apply ruff formatting and safe fixes"
 	@echo "make serve       run the API (uvicorn, reload) on http://127.0.0.1:8000"
-	@echo "make contract    regenerate frontend/openapi.json and the mock fixtures"
+	@echo "make contract    regenerate openapi.json, mock fixtures and frontend/src/api/generated.ts"
 
 lint:
 	uv run ruff check $(PY_SOURCES)
@@ -47,7 +47,9 @@ serve:
 contract:
 	uv run python scripts/export_openapi.py
 	uv run python scripts/export_fixtures.py
+	cd frontend && npm run contract
 
 contract-check:
 	uv run python scripts/export_openapi.py --check
 	uv run python scripts/export_fixtures.py --check
+	cd frontend && npm run contract:check
