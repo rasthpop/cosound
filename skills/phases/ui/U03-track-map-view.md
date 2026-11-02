@@ -37,7 +37,8 @@
   - Results highlighted (larger + ring) with the rest dimmed; selected = accent ring + slow pulse (none under reduced motion); never color alone.
 - **Done when:**
   - Stories: idle field, hover, one selected, results highlighted + others dimmed, reduced motion, 10k points.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The pulse is a separate non-pickable `selection-pulse` ScatterplotLayer whose ring grows ×1.5 and fades over `motion.duration.pulse` (driven by requestAnimationFrame). It is not created under reduced motion or without a selection. `ThemeProvider` gained a `reducedMotion` override for stories and tests. Story tests run in headless Chromium with real WebGL: every map story, the 10k-point one included, renders a canvas with no WebGL error, and axe passes. This also covers T02's workbench condition. Smoothness (frame rate) is not measured here; that is U05.T04.
 
 ### U03.T04 — Controls, genre legend, caption & fallbacks
 - **Skills:** deckgl-track-map, ux-states-and-evidence

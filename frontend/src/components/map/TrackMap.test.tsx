@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ThemeProvider } from "@/theme/ThemeProvider";
 
+import { MapTooltip } from "./MapTooltip";
 import { TrackMap, type TrackMapPoint, type TrackMapProps } from "./TrackMap";
 
 // deck.gl needs WebGL, which jsdom lacks: the DeckGL component is replaced by a stub that records
@@ -35,10 +36,10 @@ const GENRES = [
 const layer = () => deck.props!.layers[0]!.props;
 const triggers = () => layer().updateTriggers as Record<string, string>;
 
-function renderMap(props: Partial<TrackMapProps> = {}) {
+function renderMap(props: Partial<TrackMapProps> = {}, reducedMotion = false) {
   const all: TrackMapProps = { points: POINTS, genres: GENRES, onTrackSelect: () => {}, ariaLabel: "Track map", ...props };
   const ui = (p: TrackMapProps) => (
-    <ThemeProvider storageKey={null}>
+    <ThemeProvider storageKey={null} reducedMotion={reducedMotion}>
       <TrackMap {...p} />
     </ThemeProvider>
   );
@@ -126,5 +127,36 @@ describe("TrackMap", () => {
     rerenderMap({ fitTo });
     expect(deck.props!.viewState.target.slice(0, 2)).toEqual([1, 1]);
     expect(deck.props!.viewState.transitionDuration).toBe(600);
+  });
+});
+
+describe("selection pulse", () => {
+  it("adds a non-pickable accent ring layer for the selected point", () => {
+    renderMap({ selectedTrackIds: new Set(["trk_b"]) });
+    const ids = deck.props!.layers.map((l) => l.props.id);
+    expect(ids).toEqual(["tracks", "selection-pulse"]);
+    const pulse = deck.props!.layers[1]!.props;
+    expect(pulse.pickable).toBe(false);
+    expect((pulse.data as TrackMapPoint[]).map((p) => p.track_id)).toEqual(["trk_b"]);
+  });
+
+  it("is absent without a selection and under reduced motion", () => {
+    renderMap();
+    expect(deck.props!.layers).toHaveLength(1);
+    cleanup();
+    renderMap({ selectedTrackIds: new Set(["trk_b"]) }, true);
+    expect(deck.props!.layers.map((l) => l.props.id)).toEqual(["tracks"]);
+    expect(deck.props!.viewState.transitionDuration).toBe(0);
+  });
+});
+
+describe("MapTooltip", () => {
+  it("shows title · artist · genre and leaves out absent fields", () => {
+    render(<MapTooltip point={{ title: "Night Train", artist: "Nocturne", genre: "Electronic" }} />);
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Night TrainNocturne · Electronic");
+    cleanup();
+    render(<MapTooltip point={{ title: "C", artist: null, genre: null }} variant="card" />);
+    const card = screen.getByRole("group", { name: "C" });
+    expect(card).toHaveTextContent(/^C$/);
   });
 });

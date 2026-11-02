@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, 
 
 import type { MapPoint } from "@/api/types";
 import { genreScale, type GenreCountLike } from "@/theme/scales/categorical";
+import { toRgba } from "@/theme/scales/toRgba";
 import { useTheme } from "@/theme/useTheme";
 
 import { cameraTransition } from "./camera";
@@ -49,6 +50,25 @@ export interface TrackMapProps {
 }
 
 const EMPTY: ReadonlySet<string> = new Set();
+/** How far the pulse ring grows (×radius) before it fades out. */
+const PULSE_GROWTH = 1.5;
+
+/** Pulse phase 0 → 1, repeating every `periodMs`, while `active`; 0 otherwise. */
+function usePulse(active: boolean, periodMs: number): number {
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    if (!active || periodMs <= 0) return;
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      setPhase(((now - start) % periodMs) / periodMs);
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [active, periodMs]);
+  return active ? phase : 0;
+}
 const VIEW = new OrthographicView({ id: "umap", flipY: false });
 
 /** Additive "glow" on a dark canvas; normal blending on a light one, where additive washes out. */
@@ -117,6 +137,7 @@ export function TrackMap({
   const view = camera ?? (extent && size ? fitBounds(extent, size) : null);
 
   const scale = useMemo(() => genreScale(genres ?? [], tokens), [genres, tokens]);
+  const pulse = usePulse(motion.pulse && selectedTrackIds.size > 0, motion.duration.pulse);
   const genreKey = useMemo(() => setKey((genres ?? []).map((g) => `${g.genre}`)), [genres]);
   const triggers = useMemo(
     () =>
@@ -141,6 +162,26 @@ export function TrackMap({
       motion,
     });
     const fade = motion.duration.base;
+    const selectedPoints = selectedTrackIds.size > 0 ? points.filter((p) => selectedTrackIds.has(p.track_id)) : [];
+    // the slow selection pulse: an expanding, fading accent ring (never under reduced motion)
+    const pulseLayer =
+      motion.pulse && selectedPoints.length > 0
+        ? new ScatterplotLayer<TrackMapPoint>({
+            id: "selection-pulse",
+            data: selectedPoints,
+            getPosition: (d) => [d.x, d.y],
+            getRadius: tokens.size.point.selected,
+            radiusUnits: "pixels",
+            radiusScale: 1 + PULSE_GROWTH * pulse,
+            stroked: true,
+            filled: false,
+            getLineColor: toRgba(tokens.color.map.point.selected),
+            getLineWidth: tokens.size.ring.selected,
+            lineWidthUnits: "pixels",
+            opacity: 1 - pulse,
+            pickable: false,
+          })
+        : null;
     return [
       new ScatterplotLayer<TrackMapPoint>({
         id: "tracks",
@@ -157,8 +198,9 @@ export function TrackMap({
         // points fade in as pages arrive (instant under reduced motion)
         transitions: { getFillColor: { duration: fade, enter: (c: number[]) => [c[0] ?? 0, c[1] ?? 0, c[2] ?? 0, 0] } },
       }),
+      ...(pulseLayer ? [pulseLayer] : []),
     ];
-  }, [points, selectedTrackIds, highlightedTrackIds, hoveredTrackId, dimUnhighlighted, scale, tokens, motion, theme, triggers]);
+  }, [points, selectedTrackIds, highlightedTrackIds, hoveredTrackId, dimUnhighlighted, scale, tokens, motion, theme, triggers, pulse]);
 
   const onClick = useCallback(
     (info: PickingInfo<TrackMapPoint>) => {
