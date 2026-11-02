@@ -21,4 +21,9 @@ export function announceSearch(response: Pick<SearchResponse, "outcome" | "resul
   return `${n} ${n === 1 ? "result" : "results"} for “${query}”`;
 }
 
+/** After feedback refreshed the plate: "Results refined. 2 results for “…”". */
+export function announceRefined(response: Pick<SearchResponse, "outcome" | "results" | "clarification_question">, query: string): string {
+  return `Results refined. ${announceSearch(response, query)}`;
+}
+
 export const ANNOUNCE_SEARCHING = "Searching…";

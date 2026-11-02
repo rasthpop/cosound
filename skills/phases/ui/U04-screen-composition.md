@@ -25,7 +25,8 @@
   - Per-track pending, rejected and error states. The change strip shows the response and the live region announces the refinement. The map highlight follows the refreshed plate (flow 4).
 - **Done when:**
   - E2E (mock): 👎 on a row gives a refreshed plate, a visible "what changed" and an updated highlight; a rejected feedback shows its reason; hard-constraint chips send nothing.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `App` now renders `DiscoverPage` (moved from T05, because the mock E2E needs the page at `/`). `ChangeStrip` gained `status`/`message`, so a rejected refinement shows the backend's `reason` and a failed one its error. A row's own failures stay on the row (`FeedbackActions`). Seeing the page in a browser showed the row's feedback column squeezing the title column, so `ResultRow` now puts its actions under the text (a status keeps them visible), and `InstrumentPicker` has an icon-only `compact` trigger for rows. On small screens the status pill sits under the search instead of overlapping the chips. Tests: `pages/feedback.test.tsx` (MSW) and `e2e/discover.spec.ts`. The map-highlight part of the E2E comes with T03.
 
 ### U04.T03 — Map container & selection sync
 - **Skills:** ui-architecture, deckgl-track-map

@@ -60,6 +60,17 @@ describe("ChangeStrip", () => {
     expect(onDismiss).toHaveBeenCalledOnce();
   });
 
+  it("shows a rejection's reason instead of its 'not applied' entry, and a failed request's message", () => {
+    const rejected = fixture("feedback_rejected");
+    const { rerender } = render(
+      <ChangeStrip changeSummary={rejected.change_summary} changes={rejected.changes} status="rejected" message={rejected.reason} originalQuery="x" onDismiss={() => {}} />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(`Not applied: ${rejected.reason}`);
+    expect(screen.queryByText("That feedback was not applied")).toBeNull();
+    rerender(<ChangeStrip changeSummary={[]} status="error" message="Something went wrong. Retry." originalQuery="x" onDismiss={() => {}} />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Couldn't send the refinement: Something went wrong. Retry.");
+  });
+
   it("renders nothing without changes", () => {
     const { container } = render(<ChangeStrip changeSummary={[]} originalQuery="x" onDismiss={() => {}} />);
     expect(container).toBeEmptyDOMElement();

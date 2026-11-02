@@ -4,7 +4,8 @@
 // - ≥ 1024 px (Tailwind `lg`): search top-centre, results panel on the left above the map
 //   controls, status pill bottom-right, details drawer on the right (rendered by its own Sheet).
 // - < 1024 px: search pinned at the top; results become a bottom sheet (rendered by
-//   ResultsPanel itself, outside these zones), the controls sit above the sheet's peek height.
+//   ResultsPanel itself, outside these zones), the status pill sits under the search, and the
+//   controls sit above the sheet's peek height.
 import { useMemo, useSyncExternalStore, type ReactNode } from "react";
 
 /** Same width as Tailwind's `lg` breakpoint (64rem = 1024 px), used by the `lg:` classes below. */
@@ -52,14 +53,17 @@ export function DiscoverLayout({ map, search, results, controls, status, overlay
       <div className="fixed inset-0">{map}</div>
 
       <main aria-label="Discover music" className="pointer-events-none fixed inset-0 flex flex-col gap-2 p-2 lg:p-3">
-        <div className="pointer-events-auto mx-auto flex w-full max-w-80 flex-col gap-1">{search}</div>
+        <div className="mx-auto flex w-full max-w-80 flex-col gap-1">
+          <div className="pointer-events-auto flex flex-col gap-1">{search}</div>
+          {/* below the search on small screens; bottom-right on desktop */}
+          {status && <div className="pointer-events-auto self-start lg:fixed lg:right-3 lg:bottom-3">{status}</div>}
+        </div>
         <div className="flex min-h-0 flex-1 flex-col items-start justify-end gap-1">
           {results && <div className="pointer-events-auto flex min-h-0 flex-1 flex-col">{results}</div>}
           {controls && <div className="pointer-events-auto mb-12 flex flex-col items-start gap-1 lg:mb-0">{controls}</div>}
         </div>
       </main>
 
-      {status && <div className="pointer-events-auto fixed top-12 right-2 lg:top-auto lg:right-3 lg:bottom-3">{status}</div>}
       {overlays}
 
       <p aria-live="polite" aria-atomic="true" className="sr-only">

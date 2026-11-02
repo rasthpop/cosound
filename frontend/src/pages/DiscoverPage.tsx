@@ -4,6 +4,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { ApiError, Capabilities, SearchResponse } from "@/api/types";
+import { ChangeStrip } from "@/components/feedback/ChangeStrip";
+import { FeedbackActions } from "@/components/feedback/FeedbackActions";
+import type { TrackFeedback as TrackFeedbackEvent, TrackFeedbackType } from "@/components/feedback/types";
 import { ResultRow, type ResultRowData } from "@/components/results/ResultRow";
 import { ResultsList, ResultsLoading, ResultsPanel } from "@/components/results/ResultsPanel";
 import { ClarificationPrompt } from "@/components/search/ClarificationPrompt";
@@ -14,9 +17,10 @@ import { ErrorState } from "@/components/states/ErrorState";
 import { NoConfidentMatch } from "@/components/states/NoConfidentMatch";
 import { OfflineState } from "@/components/states/OfflineState";
 import { StatusPill } from "@/components/states/StatusPill";
-import { useMediaUrl, useMusicMap, useMusicSearch, useSystemStatus, type MusicMap } from "@/hooks";
+import { PLATE_KEY, useMediaUrl, useMusicMap, useMusicSearch, useSystemStatus, useTrackFeedback, type FeedbackInput, type MusicMap } from "@/hooks";
 
-import { ANNOUNCE_SEARCHING, announceSearch, EXAMPLE_QUERIES } from "./copy";
+import { ANNOUNCE_SEARCHING, announceRefined, announceSearch, EXAMPLE_QUERIES } from "./copy";
+import { feedbackMessage, feedbackStatus, queryInstruments, stripFor } from "./feedback";
 import { DiscoverLayout, useIsDesktop } from "./layout";
 import { useShortcuts } from "./useShortcuts";
 
@@ -41,6 +45,7 @@ function ResultItem(props: {
   playing: boolean;
   onTrackSelect: (id: string) => void;
   onPlay: (id: string | null) => void;
+  actions: ReactNode;
 }) {
   const playUrl = useMediaUrl(props.result.preview_url);
   return (
@@ -49,6 +54,7 @@ function ResultItem(props: {
       playUrl={playUrl}
       playing={props.playing}
       selected={props.selected}
+      actions={props.actions}
       onTrackSelect={props.onTrackSelect}
       onPlay={props.onPlay}
     />
@@ -59,11 +65,15 @@ export function DiscoverPage() {
   const search = useMusicSearch();
   const system = useSystemStatus();
   const map = useMusicMap();
+  const feedback = useTrackFeedback(search);
   const desktop = useIsDesktop();
 
   const [text, setText] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  // which gesture each track's feedback status belongs to, and whose result the strip shows
+  const [lastEvent, setLastEvent] = useState<Record<string, TrackFeedbackType>>({});
+  const [stripKey, setStripKey] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const focusInput = () => inputRef.current?.focus();
@@ -79,7 +89,17 @@ export function DiscoverPage() {
 
   const runSearch = (query: string) => {
     setSelectedId(null);
+    setStripKey(null);
     void search.search(query);
+  };
+  // every gesture refreshes the plate from the server (flow 4); nothing is changed locally
+  const sendFeedback = (input: FeedbackInput) => {
+    setStripKey(input.trackId ?? PLATE_KEY);
+    void feedback.submit(input, { refresh: true });
+  };
+  const onTrackFeedback = (event: TrackFeedbackEvent) => {
+    setLastEvent((prev) => ({ ...prev, [event.trackId]: event.eventType }));
+    sendFeedback(event);
   };
   const retrySearch = () => {
     if (search.lastQuery) void search.search(search.lastQuery);
@@ -94,6 +114,23 @@ export function DiscoverPage() {
   const query = plate?.interpreted_query.original_query ?? search.lastQuery;
   const offline = isOffline(search.error) || isOffline(system.error);
   const capabilities = currentCapabilities(plate, system.capabilities, map.availability);
+  const instruments = queryInstruments(plate?.interpreted_query);
+
+  // "what changed": the latest refinement. A row's failure is already shown on the row, so the
+  // strip only reports the row's applied changes; chip and free-text feedback report everything.
+  let strip = stripKey ? stripFor(feedback.byTrack[stripKey]) : null;
+  if (strip && stripKey !== PLATE_KEY && strip.status !== "applied") strip = null;
+  const changeStrip =
+    strip && plate ? (
+      <ChangeStrip
+        changeSummary={strip.response?.change_summary ?? []}
+        changes={strip.response?.changes ?? []}
+        status={strip.status}
+        message={strip.message}
+        originalQuery={plate.interpreted_query.original_query}
+        onDismiss={() => setStripKey(null)}
+      />
+    ) : null;
 
   // ── the results panel body, by state ──
   let body: ReactNode = null;
@@ -120,6 +157,17 @@ export function DiscoverPage() {
               playing={result.track_id === playingId}
               onTrackSelect={setSelectedId}
               onPlay={setPlayingId}
+              actions={
+                <FeedbackActions
+                  trackId={result.track_id}
+                  title={result.title}
+                  status={feedbackStatus(feedback.byTrack[result.track_id])}
+                  lastEvent={lastEvent[result.track_id] ?? null}
+                  message={feedbackMessage(feedback.byTrack[result.track_id])}
+                  instruments={instruments}
+                  onFeedback={onTrackFeedback}
+                />
+              }
             />
           ))}
         </ResultsList>
@@ -130,14 +178,16 @@ export function DiscoverPage() {
 
   const results =
     body !== null ? (
-      <ResultsPanel query={query} count={count} stale={search.isRefreshing} variant={desktop ? "panel" : "sheet"}>
+      <ResultsPanel query={query} count={count} stale={search.isRefreshing} changeStrip={changeStrip} variant={desktop ? "panel" : "sheet"}>
         {body}
       </ResultsPanel>
     ) : null;
 
   let announcement = "";
   if (search.status === "loading") announcement = ANNOUNCE_SEARCHING;
-  else if (search.status === "success" && plate) announcement = announceSearch(plate, query ?? "");
+  else if (search.status === "success" && plate) {
+    announcement = strip?.status === "applied" ? announceRefined(plate, query ?? "") : announceSearch(plate, query ?? "");
+  }
 
   return (
     <DiscoverLayout
@@ -148,7 +198,10 @@ export function DiscoverPage() {
             value={text}
             onValueChange={setText}
             onQuerySubmit={runSearch}
-            loading={search.status === "loading"}
+            // D2: with results on screen, the Refine toggle sends the text as free-text feedback
+            canRefine={plate !== null && plate.query_id !== null}
+            onRefineSubmit={(freeText) => sendFeedback({ freeText })}
+            loading={search.status === "loading" || feedback.isPending(PLATE_KEY)}
             stale={search.isRefreshing}
             examples={EXAMPLE_QUERIES}
             inputRef={inputRef}
@@ -157,8 +210,8 @@ export function DiscoverPage() {
             <QueryChips
               query={plate.interpreted_query}
               interpreterFallback={plate.capabilities.llm_interpreter === "fallback"}
-              // chip feedback is wired in U04.T02
-              onAttributeFeedback={() => {}}
+              // D1: soft chips send More/Less of that attribute; hard constraints send nothing
+              onAttributeFeedback={({ eventType, attribute, value }) => sendFeedback({ eventType, attribute, value })}
               onEditQuery={editQuery}
             />
           )}

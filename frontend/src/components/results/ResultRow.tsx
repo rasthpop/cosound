@@ -102,6 +102,12 @@ export function ResultRow({ result, playUrl, playing = false, selected = false, 
           retrieval_sources={result.retrieval_sources}
         />
         {result.spatial === null && <NotOnMapMarker />}
+        {/* under the text, so the actions never narrow the title column; a feedback status (its <p>) keeps them visible */}
+        {actions && (
+          <div className="opacity-0 transition-opacity duration-(--token-motion-duration-fast) group-focus-within:opacity-100 group-hover:opacity-100 has-[p]:opacity-100">
+            {actions}
+          </div>
+        )}
       </div>
       <div className="flex shrink-0 flex-col items-end gap-0.5">
         {playUrl && onPlay && (
@@ -117,11 +123,6 @@ export function ResultRow({ result, playUrl, playing = false, selected = false, 
           >
             <ExternalLink aria-hidden="true" {...ICON} />
           </a>
-        )}
-        {actions && (
-          <div className="opacity-0 transition-opacity duration-(--token-motion-duration-fast) group-focus-within:opacity-100 group-hover:opacity-100">
-            {actions}
-          </div>
         )}
       </div>
     </li>
