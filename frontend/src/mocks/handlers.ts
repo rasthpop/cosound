@@ -6,6 +6,7 @@ import { delay, http, HttpResponse, type HttpHandler, type JsonBodyType } from "
 
 import type {
   ErrorResponse,
+  GenreCount,
   FeedbackRequest,
   FeedbackResponse,
   HealthResponse,
@@ -37,7 +38,23 @@ const SEARCH_FIXTURE: Partial<Record<Scenario, FixtureName>> = {
   "degraded-semantic": "search_semantic_unavailable",
   "no-confident-match": "search_no_confident_match",
   "needs-clarification": "search_needs_clarification",
+  empty: "search_empty",
+  "llm-fallback": "search_llm_fallback",
 };
+
+/** `MapMeta.genres` for a point set, ordered like the API: count desc, then name, `null` last. */
+function genreCounts(points: MapPoint[]): GenreCount[] {
+  const counts = new Map<string | null, number>();
+  for (const p of points) counts.set(p.genre, (counts.get(p.genre) ?? 0) + 1);
+  return [...counts]
+    .map(([genre, count]) => ({ genre, count }))
+    .sort(
+      (a, b) =>
+        b.count - a.count ||
+        Number(a.genre === null) - Number(b.genre === null) ||
+        (a.genre ?? "").localeCompare(b.genre ?? ""),
+    );
+}
 
 /** Points the map serves: both fixture pages, or a synthetic set. */
 function mapDataset(options: ScenarioOptions): MapPoint[] {
@@ -60,6 +77,10 @@ function mapDown(response: SearchResponse): SearchResponse {
 }
 
 export function handlersFor(scenario: Scenario, options: ScenarioOptions = {}): HttpHandler[] {
+  if (scenario === "offline") {
+    // no response at all: fetch rejects, as when the server is down or the network is gone
+    return [http.all(`${API}/*`, () => HttpResponse.error())];
+  }
   const latency = options.latencyMs ?? (scenario === "slow-network" ? SLOW_NETWORK_MS : 0);
   const failing = scenario === "errors";
   const points = mapDataset(options);
@@ -154,7 +175,9 @@ export function handlersFor(scenario: Scenario, options: ScenarioOptions = {}): 
         ...refined,
         updated_search_state: { ...refined.updated_search_state, session_id: body.session_id },
         // like the API, the refreshed plate reports what the feedback changed
-        refreshed: body.refresh ? { ...plate(body.session_id), change_summary: refined.change_summary } : null,
+        refreshed: body.refresh
+          ? { ...plate(body.session_id), change_summary: refined.change_summary, changes: refined.changes }
+          : null,
       });
     }),
 
@@ -170,7 +193,7 @@ export function handlersFor(scenario: Scenario, options: ScenarioOptions = {}): 
       if (failing) return error("error_internal", 500);
       if (scenario === "map-down") return json<MapMeta>(fixture("map_unavailable") as MapMeta);
       const meta = fixture("map_meta") as MapMeta;
-      return json<MapMeta>({ ...meta, n_points: points.length });
+      return json<MapMeta>({ ...meta, n_points: points.length, genres: genreCounts(points) });
     }),
 
     http.get(`${API}/map/points`, async ({ request }) => {

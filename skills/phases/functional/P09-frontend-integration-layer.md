@@ -125,7 +125,8 @@ Appended by the `ui-plan-intake` skill (see `docs/ui/intake.md` §3–4). The ho
   - The mock's refreshed plate carries `changes` the way the API's does.
 - **Done when:**
   - `contract:check` green; handler tests cover the three new scenarios; hooks README lists them.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The OpenAPI file and generated types were already regenerated in P08.T11/T12. `ChangeEntry` aliases the backend schema `Change`, and the `Change` alias added in P08.T12 is now gone. The mock map meta counts `genres` over the points it serves, so they still sum to `n_points` with `?mapPoints=N`. `offline` is a single catch-all `HttpResponse.error()` handler.
 
 ### P09.T11 — `useSystemStatus` (capabilities before the first search) (G5)
 - **Skills:** api-contracts, ui-architecture

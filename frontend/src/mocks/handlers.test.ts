@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { MapPointsResponse, SearchResponse } from "../api/types";
+import { createApiClient, isApiError } from "../api/client";
+import type { FeedbackResponse, MapMeta, MapPointsResponse, SearchResponse } from "../api/types";
 import { fixtureSchemas, fixtures } from "./fixtures";
 import index from "./fixtures/index.json";
 import { generateMapPoints } from "./generateMapPoints";
@@ -45,7 +46,8 @@ describe("scenarios", () => {
     expect(scenarioFromQuery("").scenario).toBe("happy");
   });
 
-  it.each(SCENARIOS.filter((s) => s !== "slow-network"))("%s answers every endpoint", async (s) => {
+  const answering = SCENARIOS.filter((s) => s !== "slow-network" && s !== "offline");
+  it.each(answering)("%s answers every endpoint", async (s) => {
     use(s);
     const paths = ["/health", "/tracks/trk_example_1", "/tracks/trk_example_1/neighbors", "/sessions/ses_x", "/map/meta", "/map/points"];
     for (const path of paths) {
@@ -83,6 +85,11 @@ describe("happy", () => {
       refresh: true,
     });
     expect(refreshed.body.refreshed?.session_id).toBe("ses_mine");
+    // like the API, the refreshed plate carries the structured changes of the feedback
+    const refined = fixtures.feedback_refined as FeedbackResponse;
+    expect(refined.changes.length).toBeGreaterThan(0);
+    expect(refreshed.body.refreshed?.changes).toEqual(refined.changes);
+    expect(refreshed.body.refreshed?.change_summary).toEqual(refined.change_summary);
     const plain = await post<{ refreshed: unknown }>("/feedback", {
       session_id: "ses_mine",
       query_id: "qry_1",
@@ -109,6 +116,18 @@ describe("happy", () => {
     expect(page1.body).toEqual(fixtures.map_points_page1);
     const page2 = await get<MapPointsResponse>(`/map/points?limit=3&cursor=${page1.body.next_cursor}`);
     expect(page2.body).toEqual(fixtures.map_points_page2);
+  });
+
+  it("map meta genres count every served point", async () => {
+    const meta = (await get<MapMeta>("/map/meta")).body;
+    expect(meta.genres).toEqual((fixtures.map_meta as MapMeta).genres);
+    expect(meta.genres.reduce((sum, g) => sum + g.count, 0)).toBe(meta.n_points);
+    use("happy", { mapPoints: 40 });
+    const synthetic = (await get<MapMeta>("/map/meta")).body;
+    expect(synthetic.n_points).toBe(40);
+    expect(synthetic.genres.reduce((sum, g) => sum + g.count, 0)).toBe(40);
+    const counts = synthetic.genres.map((g) => g.count);
+    expect(counts).toEqual([...counts].sort((a, b) => b - a));
   });
 
   it("map limit is bounded", async () => {
@@ -142,6 +161,42 @@ describe("degraded scenarios", () => {
     expect([search.status, search.body.error.code]).toEqual([500, "internal_error"]);
     const track = await get<{ error: { code: string } }>("/tracks/trk_example_1");
     expect([track.status, track.body.error.code]).toEqual([404, "track_not_found"]);
+  });
+
+  it("empty: the search succeeds with no results", async () => {
+    use("empty");
+    const search = await post<SearchResponse>("/search", { query: "x" });
+    expect(search.status).toBe(200);
+    expect(search.body.outcome).toBe("ok");
+    expect(search.body.results).toEqual([]);
+  });
+
+  it("llm-fallback: the plate reports the fallback interpreter and its warning", async () => {
+    use("llm-fallback");
+    const search = await post<SearchResponse>("/search", { query: "x" });
+    expect(search.status).toBe(200);
+    expect(search.body.capabilities.llm_interpreter).toBe("fallback");
+    expect(search.body.warnings.map((w) => w.code)).toContain("llm_fallback");
+  });
+
+  it("offline: every request fails without a response and the client says network", async () => {
+    use("offline");
+    await expect(fetch(`${BASE}/health`)).rejects.toThrow();
+    const client = createApiClient({ baseUrl: "http://localhost" });
+    const calls = [
+      () => client.health(),
+      () => client.search({ query: "x" }),
+      () => client.getMapMeta(),
+      () => client.getTrack("trk_example_1"),
+    ];
+    for (const call of calls) {
+      const failure: unknown = await call().then(
+        () => null,
+        (e: unknown) => e,
+      );
+      expect(isApiError(failure)).toBe(true);
+      expect(failure).toMatchObject({ kind: "network", code: "network_error", status: null });
+    }
   });
 
   it("slow-network delays responses", async () => {
