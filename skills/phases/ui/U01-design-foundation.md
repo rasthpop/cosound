@@ -13,7 +13,8 @@
   - Check the Subwave reference ("See the shape of your library") and record what was matched in `docs/ui/visual-reference.md`. Adjust values only, never structure.
 - **Done when:**
   - Both themes `satisfies SemanticTokens`; text/surface pairs meet WCAG AA, including text on the glass panel over the darkest and lightest map backdrop (test).
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The Subwave page has no readable visual values. Its "ink-to-vermilion" ramp became the match-strength bands (values only), and the accent stays violet; see `docs/ui/visual-reference.md`. The contrast test composites the glass panel over the backdrop and every point fill at full opacity, and U01.T03 must add the genre fills. Match bands must rise by at least 1.2× contrast per band, which needed the new primitives `ink.450` and `vermilion.800` for the light theme. The light-theme panel is 0.86 opaque (0.72 is the dark value from ui.md).
 
 ### U01.T02 — Tailwind v4 wiring, token CSS emitter & ThemeProvider
 - **Skills:** ui-design-tokens, ui-architecture
