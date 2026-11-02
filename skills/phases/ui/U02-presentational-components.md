@@ -65,7 +65,8 @@
   - `NeighborList` "Nearby in sound" labeled by `metric` (catalog fallback shows its `reason`), with `onTrackSelect` per neighbor. `RelatedTracks` by `relationship_type`.
 - **Done when:**
   - Stories: detail, no-audio detail, catalog-fallback neighbors, loading, not found, mobile sheet. axe passes. Test: closing calls `onClose` and the container gets a chance to restore focus.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** Radix only traps focus in modal dialogs, but the desktop drawer must be non-modal (the map stays usable). So `TrackDetailsDrawer` loops Tab itself (`loopTab`), and outside clicks do not close it. Below 1024 px it is a modal sheet with an overlay. `onCloseAutoFocus` is passed through, so the container can `preventDefault()` and return focus to the row or point; Radix fires it asynchronously after unmount. Feedback, score bands and neighbor/related lists arrive through slots (`actions`, `evidence`, `related`). License and duration render only when recorded. The FMA credit is always next to playback. Added `neighborReasonLabel` for the catalog fallback's `reason`.
 
 ### U02.T06 — State views & status pill
 - **Skills:** ux-states-and-evidence

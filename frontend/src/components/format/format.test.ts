@@ -9,6 +9,7 @@ import {
   evidenceLabel,
   hardConstraintLabel,
   neighborMetricLabel,
+  neighborReasonLabel,
   relationshipLabel,
   retrievalSourceLabel,
   uncertaintyLabel,
@@ -61,6 +62,9 @@ describe("labels", () => {
     expect(neighborMetricLabel("clap_cosine")).toBe("Nearby in sound");
     expect(neighborMetricLabel("catalog_relationship")).toBe("Related in the catalog");
     expect(neighborMetricLabel("new_metric" as NeighborMetric)).toBe("New metric");
+    expect(neighborReasonLabel("no_audio_embedding")).toMatch(/related through the catalog/);
+    expect(neighborReasonLabel(null)).toBeNull();
+    expect(neighborReasonLabel("other_reason")).toBe("Other reason");
     expect(relationshipLabel("same_artist")).toBe("Same artist");
     expect(relationshipLabel("same_mood" as RelationshipType)).toBe("Same mood");
   });

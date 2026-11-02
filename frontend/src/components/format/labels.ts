@@ -126,6 +126,16 @@ export function neighborMetricLabel(metric: NeighborMetric): string {
   return label(METRIC, metric);
 }
 
+const NEIGHBOR_REASONS: Record<string, string> = {
+  no_audio_embedding: "This track has no audio analysis, so these tracks are related through the catalog instead.",
+};
+
+/** Why neighbors fell back from sound to the catalog (`NeighborsResponse.reason`); `null` = no note. */
+export function neighborReasonLabel(reason: string | null | undefined): string | null {
+  if (!reason) return null;
+  return NEIGHBOR_REASONS[reason] ?? humanize(reason);
+}
+
 const RELATIONSHIP: Record<RelationshipType, string> = {
   same_artist: "Same artist",
   same_label: "Same label",
