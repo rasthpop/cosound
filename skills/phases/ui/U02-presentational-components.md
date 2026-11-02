@@ -51,7 +51,8 @@
   - `ChangeStrip`: dismissible list of `change_summary` strings, with the original query kept visible. There is no undo.
 - **Done when:**
   - Tests: each gesture emits the right `FeedbackType` and payload; pending/rejected/error render; the strip renders `feedback_refined`.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** Payloads (`TrackFeedback`) have the same shape as useTrackFeedback's `FeedbackInput`. `WRONG_INSTRUMENT` sends `attribute: "instrument"` and the picked instrument as `value`, which Agent C reads. Per-track status (`idle`/`pending`/`applied`/`rejected`/`error`) comes from the container (`byTrack`). The view only acknowledges a gesture; the plate changes from the server response. Two layouts: `icons` (row) and `labels` (drawer). `ChangeStrip` renders `change_summary` strings; T07 adds the structured `changes`.
 
 ### U02.T05 — Details drawer
 - **Skills:** ui-architecture, ux-states-and-evidence
