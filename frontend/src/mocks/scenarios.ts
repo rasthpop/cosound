@@ -1,5 +1,8 @@
 // Named mock scenarios. In the browser (`npm run dev:mock`) pick one with `?scenario=<name>`;
 // `?mapPoints=10000` swaps the map dataset for synthetic points.
+// - `empty`: searches succeed with no results (`search_empty`).
+// - `llm-fallback`: the LLM interpreter fell back to the parser (`search_llm_fallback`).
+// - `offline`: every request fails without a response, so the client reports `kind: "network"`.
 export const SCENARIOS = [
   "happy",
   "degraded-semantic",
@@ -8,6 +11,9 @@ export const SCENARIOS = [
   "needs-clarification",
   "slow-network",
   "errors",
+  "empty",
+  "llm-fallback",
+  "offline",
 ] as const;
 
 export type Scenario = (typeof SCENARIOS)[number];

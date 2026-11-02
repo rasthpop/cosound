@@ -22,12 +22,15 @@ export type ErrorResponse = Schemas["ErrorResponse"];
 // --- parts ----------------------------------------------------------------------------------
 export type TrackResult = Schemas["TrackResult"];
 export type ScoreBreakdown = Schemas["ScoreBreakdown"];
+export type ScoreBands = Schemas["ScoreBands"];
 export type ConstraintCheck = Schemas["ConstraintCheck"];
 export type InterpretedQuery = Schemas["InterpretedQuery"];
 export type Preference = Schemas["Preference"];
 export type HardConstraint = Schemas["HardConstraint"];
 export type Capabilities = Schemas["Capabilities"];
 export type ApiWarning = Schemas["ApiWarning"];
+/** One structured "what changed" entry (`SearchResponse.changes`, `FeedbackResponse.changes`). */
+export type ChangeEntry = Schemas["Change"];
 export type Artist = Schemas["Artist"];
 export type Spatial = Schemas["Spatial"];
 export type Release = Schemas["Release"];
@@ -45,6 +48,8 @@ export type ErrorBody = Schemas["ErrorBody"];
 // --- enums -----------------------------------------------------------------------------------
 export type FeedbackType = Schemas["FeedbackType"];
 export type NextAction = Schemas["NextAction"];
+export type ChangeKind = Schemas["ChangeKind"];
+export type MatchStrength = Schemas["MatchStrength"];
 export type SearchOutcome = Schemas["SearchOutcomeKind"];
 export type CapabilityStatus = Schemas["CapabilityStatus"];
 export type InterpreterStatus = Schemas["InterpreterStatus"];

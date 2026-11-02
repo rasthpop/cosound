@@ -151,4 +151,5 @@ Appended by the `ui-plan-intake` skill (see `docs/ui/intake.md` §4). These task
   - `change_summary` strings stay for compatibility.
 - **Done when:**
   - Unit tests: every feedback rule emits its structured change. API tests: a `NOT_RELEVANT` refinement returns `{kind: "excluded", track_id, title}`. Fixtures regenerated; changelog entry.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** Added three kinds, agreed with the owner: `preference_removed`, `negative_removed` (a dropped or weaker negative) and `constraint_added`, with `negative_added` also covering a stronger negative. Also added an `operator` field (set only for `constraint_added`). `ChangeKind` and `SpecChange` live in `domain/` because the application and API layers cannot import `agents/`. A vocals constraint and its vocal preference are one entry. Session turns keep strings only. Added the `Change`/`ChangeKind` aliases in `types.ts`.

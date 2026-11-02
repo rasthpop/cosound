@@ -24,7 +24,9 @@ Rules for containers (`src/pages/`, the only place hooks are called):
 
 Scenarios to build every state against: `npm run dev:mock` and `?scenario=<name>`, with the
 names `happy`, `degraded-semantic`, `map-down`, `no-confident-match`,
-`needs-clarification`, `slow-network` and `errors`. `?mapPoints=10000` serves a synthetic map.
+`needs-clarification`, `slow-network`, `errors`, `empty` (a successful search with no results),
+`llm-fallback` (the LLM interpreter fell back to the parser; warning `llm_fallback`) and
+`offline` (no request gets a response; hooks report an `ApiError` with `kind: "network"`). `?mapPoints=10000` serves a synthetic map.
 Fixtures live in `src/mocks/fixtures/`.
 
 ---

@@ -102,6 +102,104 @@
         "title": "CapabilityStatus",
         "type": "string"
       },
+      "Change": {
+        "additionalProperties": false,
+        "description": "One structured \"what changed\" entry; `change_summary` has the same as plain text.",
+        "properties": {
+          "attribute": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Preference category (`mood`, `instrument`, `genre`, …, `vocals`), constraint attribute, `instrument` for a wrong-instrument exclusion, or the rejected event's attribute. Null for negatives (they have no category).",
+            "title": "Attribute"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ChangeKind"
+          },
+          "operator": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "`constraint_added` only: `required`, `excluded` or `range`.",
+            "title": "Operator"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Catalog title of `track_id`, resolved server-side; null when unknown.",
+            "title": "Title"
+          },
+          "track_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Track kinds and `rejected` track events.",
+            "title": "Track Id"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The term (`flute`), the constraint value, the instrument, the rejected event's value, or the clarification question.",
+            "title": "Value"
+          }
+        },
+        "required": [
+          "kind",
+          "track_id",
+          "title",
+          "attribute",
+          "value",
+          "operator"
+        ],
+        "title": "Change",
+        "type": "object"
+      },
+      "ChangeKind": {
+        "description": "One structured \"what changed\" entry (see `SpecChange`).",
+        "enum": [
+          "reference_added",
+          "negative_reference_added",
+          "excluded",
+          "preference_added",
+          "preference_raised",
+          "preference_lowered",
+          "preference_removed",
+          "negative_added",
+          "negative_removed",
+          "constraint_added",
+          "rejected",
+          "needs_clarification"
+        ],
+        "title": "ChangeKind",
+        "type": "string"
+      },
       "ConstraintAttribute": {
         "enum": [
           "vocals",
@@ -469,6 +567,18 @@
               "excluded trk_example_1",
               "added electronic"
             ],
+            "changes": [
+              {
+                "kind": "excluded",
+                "title": "Example Track 1",
+                "track_id": "trk_example_1"
+              },
+              {
+                "attribute": "genre",
+                "kind": "preference_added",
+                "value": "electronic"
+              }
+            ],
             "next_action": "REFINE_SEARCH",
             "refreshed": {
               "capabilities": {
@@ -479,6 +589,18 @@
               "change_summary": [
                 "excluded trk_example_1",
                 "added electronic"
+              ],
+              "changes": [
+                {
+                  "kind": "excluded",
+                  "title": "Example Track 1",
+                  "track_id": "trk_example_1"
+                },
+                {
+                  "attribute": "genre",
+                  "kind": "preference_added",
+                  "value": "electronic"
+                }
               ],
               "interpreted_query": {
                 "diversity": 0.5,
@@ -670,6 +792,11 @@
           {
             "accepted": false,
             "change_summary": [],
+            "changes": [
+              {
+                "kind": "rejected"
+              }
+            ],
             "next_action": "NONE",
             "reason": "nothing in the feedback text maps to a known attribute",
             "updated_search_state": {
@@ -725,6 +852,14 @@
             "title": "Change Summary",
             "type": "array"
           },
+          "changes": {
+            "description": "`change_summary` as structured entries.",
+            "items": {
+              "$ref": "#/components/schemas/Change"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
           "next_action": {
             "$ref": "#/components/schemas/NextAction"
           },
@@ -759,6 +894,7 @@
           "reason",
           "updated_search_state",
           "change_summary",
+          "changes",
           "next_action",
           "refreshed"
         ],
@@ -1961,6 +2097,7 @@
               "semantic": "available"
             },
             "change_summary": [],
+            "changes": [],
             "interpreted_query": {
               "diversity": 0.5,
               "energy_preferences": [],
@@ -2137,6 +2274,7 @@
               "semantic": "available"
             },
             "change_summary": [],
+            "changes": [],
             "interpreted_query": {
               "diversity": 0.5,
               "energy_preferences": [],
@@ -2186,6 +2324,7 @@
               "semantic": "available"
             },
             "change_summary": [],
+            "changes": [],
             "interpreted_query": {
               "diversity": 0.5,
               "energy_preferences": [],
@@ -2242,6 +2381,7 @@
               "semantic": "available"
             },
             "change_summary": [],
+            "changes": [],
             "clarification_question": "Should the music have vocals or not?",
             "interpreted_query": {
               "diversity": 0.5,
@@ -2280,6 +2420,7 @@
               "semantic": "unavailable"
             },
             "change_summary": [],
+            "changes": [],
             "interpreted_query": {
               "diversity": 0.5,
               "energy_preferences": [],
@@ -2415,6 +2556,7 @@
               "semantic": "available"
             },
             "change_summary": [],
+            "changes": [],
             "interpreted_query": {
               "diversity": 0.5,
               "energy_preferences": [],
@@ -2596,6 +2738,7 @@
               "semantic": "available"
             },
             "change_summary": [],
+            "changes": [],
             "interpreted_query": {
               "diversity": 0.5,
               "energy_preferences": [],
@@ -2705,6 +2848,14 @@
             "title": "Change Summary",
             "type": "array"
           },
+          "changes": {
+            "description": "`change_summary` as structured entries.",
+            "items": {
+              "$ref": "#/components/schemas/Change"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
           "clarification_question": {
             "anyOf": [
               {
@@ -2771,7 +2922,8 @@
           "results",
           "capabilities",
           "warnings",
-          "change_summary"
+          "change_summary",
+          "changes"
         ],
         "title": "SearchResponse",
         "type": "object"
