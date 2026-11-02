@@ -31,7 +31,7 @@ async function searchFor(text = "chill flute", scenario: Scenario = "happy") {
 }
 
 const liveRegion = () => document.querySelector('[aria-live="polite"][aria-atomic="true"]');
-const resultsPanel = () => screen.getByRole("region", { name: /tracks|Results/ });
+const resultsPanel = () => screen.getByRole("region", { name: /^(\d+ tracks?|No tracks|Results)$/ });
 
 describe("DiscoverPage", () => {
   it("idle: focuses the input and shows the example queries, with no results panel", async () => {

@@ -52,6 +52,8 @@ export interface TrackMapProps {
 }
 
 const EMPTY: ReadonlySet<string> = new Set();
+/** Pointer tolerance in px: the dots are 2–4 px, so a near miss still picks the nearest one. */
+const PICKING_RADIUS = 6;
 /** How far the pulse ring grows (×radius) before it fades out. */
 const PULSE_GROWTH = 1.5;
 
@@ -272,6 +274,7 @@ export function TrackMap({
           }}
           controller={{ inertia: true, scrollZoom: true, doubleClickZoom: true, dragPan: true, touchZoom: true, keyboard: true }}
           layers={layers}
+          pickingRadius={PICKING_RADIUS}
           onClick={onClick}
           onHover={onHover}
           onError={(error) => onWebGLError?.(error)}

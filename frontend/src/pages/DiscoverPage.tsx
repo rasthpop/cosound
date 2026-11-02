@@ -1,9 +1,12 @@
 // The Discover screen (ui.md §3, §5): the one page of the app. A container — it calls the hooks,
 // turns their state into view props and view events into hook actions, and owns only UI state
-// (the typed text, which track is selected or playing). Results are shown in API order.
-import { useEffect, useRef, useState, type ReactNode } from "react";
+// (the typed text, which track is selected, hovered or playing, camera requests). Results are
+// shown in API order. Selecting a row and selecting a point are the same action (`selectTrack`).
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import type { ApiError, Capabilities, SearchResponse } from "@/api/types";
+import { boundsOf } from "@/components/map/fitBounds";
+import type { FitRequest } from "@/components/map/TrackMap";
 import { ChangeStrip } from "@/components/feedback/ChangeStrip";
 import { FeedbackActions } from "@/components/feedback/FeedbackActions";
 import type { TrackFeedback as TrackFeedbackEvent, TrackFeedbackType } from "@/components/feedback/types";
@@ -22,8 +25,12 @@ import { PLATE_KEY, useMediaUrl, useMusicMap, useMusicSearch, useSystemStatus, u
 import { ANNOUNCE_SEARCHING, announceRefined, announceSearch, EXAMPLE_QUERIES } from "./copy";
 import { feedbackMessage, feedbackStatus, queryInstruments, stripFor } from "./feedback";
 import { DiscoverLayout, useIsDesktop } from "./layout";
+import { useMapLayer } from "./MapLayer";
+import { locate, pointBounds, resultsOnMap } from "./selection";
 import { useShortcuts } from "./useShortcuts";
 
+const NONE: ReadonlySet<string> = new Set();
+const NO_RESULTS: SearchResponse["results"] = [];
 const isOffline = (error: ApiError | null) => error?.kind === "network";
 
 /** The plate's capabilities when there is one (fresher), else the health check's; the map's own
@@ -42,8 +49,10 @@ function currentCapabilities(
 function ResultItem(props: {
   result: ResultRowData & { preview_url: string | null };
   selected: boolean;
+  hovered: boolean;
   playing: boolean;
   onTrackSelect: (id: string) => void;
+  onTrackHover: (id: string | null) => void;
   onPlay: (id: string | null) => void;
   actions: ReactNode;
 }) {
@@ -54,8 +63,10 @@ function ResultItem(props: {
       playUrl={playUrl}
       playing={props.playing}
       selected={props.selected}
+      hovered={props.hovered}
       actions={props.actions}
       onTrackSelect={props.onTrackSelect}
+      onTrackHover={props.onTrackHover}
       onPlay={props.onPlay}
     />
   );
@@ -66,6 +77,8 @@ export function DiscoverPage() {
   const system = useSystemStatus();
   const map = useMusicMap();
   const feedback = useTrackFeedback(search);
+  // SELECT_TRACK has its own instance so a selection never shows up as a row's feedback status
+  const selectionFeedback = useTrackFeedback(search);
   const desktop = useIsDesktop();
 
   const [text, setText] = useState("");
@@ -74,6 +87,11 @@ export function DiscoverPage() {
   // which gesture each track's feedback status belongs to, and whose result the strip shows
   const [lastEvent, setLastEvent] = useState<Record<string, TrackFeedbackType>>({});
   const [stripKey, setStripKey] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  // camera requests for the map, and whether "reset view" cleared the current plate's highlight
+  const [fit, setFit] = useState<FitRequest | null>(null);
+  const [highlightCleared, setHighlightCleared] = useState(false);
+  const cameraRequests = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const focusInput = () => inputRef.current?.focus();
@@ -89,6 +107,7 @@ export function DiscoverPage() {
 
   const runSearch = (query: string) => {
     setSelectedId(null);
+    map.clearSelection();
     setStripKey(null);
     void search.search(query);
   };
@@ -111,6 +130,48 @@ export function DiscoverPage() {
   };
 
   const plate = search.data;
+  const results = plate?.outcome === "ok" ? plate.results : NO_RESULTS;
+  // memoized: a stable set keeps the map's point layer from rebuilding on every hover
+  const onMap = useMemo(() => resultsOnMap(results, map.points, map.projectionVersion), [results, map.points, map.projectionVersion]);
+
+  // a new plate (search or refinement) lights up its results and fits the camera to them, once
+  // per plate and projection (adjusting state during render, no effect)
+  const plateKey = plate ? `${plate.query_id ?? ""}|${map.projectionVersion ?? ""}` : null;
+  const [fittedPlate, setFittedPlate] = useState<string | null>(null);
+  if (plateKey !== fittedPlate) {
+    setFittedPlate(plateKey);
+    setHighlightCleared(false);
+    if (onMap.bounds) setFit({ bounds: onMap.bounds, key: `plate:${plateKey}` });
+  }
+  const highlighted = highlightCleared ? NONE : onMap.ids;
+
+  /** The one selection action, for rows, points, the map list and neighbors. */
+  const selectTrack = (trackId: string) => {
+    setSelectedId(trackId);
+    map.clearSelection();
+    map.select(trackId);
+    const at = locate(trackId, map.points, results, map.projectionVersion);
+    if (at) setFit({ bounds: pointBounds(at), key: `select:${++cameraRequests.current}` });
+    // D4: recorded only within a search session; without one, the map click just opens details
+    if (search.sessionId) void selectionFeedback.submit({ trackId, eventType: "SELECT_TRACK" });
+  };
+  const resetView = () => {
+    setHighlightCleared(true);
+    const all = map.meta?.bounds ?? boundsOf(map.points);
+    if (all) setFit({ bounds: all, key: `reset:${++cameraRequests.current}` });
+  };
+  const mapLayer = useMapLayer({
+    map,
+    highlightedTrackIds: highlighted,
+    dimUnhighlighted: highlighted.size > 0,
+    hoveredTrackId: hoveredId,
+    fitTo: fit,
+    onTrackSelect: selectTrack,
+    onTrackHover: setHoveredId,
+    onReset: resetView,
+    resultsShown: desktop && plate !== null,
+  });
+
   const query = plate?.interpreted_query.original_query ?? search.lastQuery;
   const offline = isOffline(search.error) || isOffline(system.error);
   const capabilities = currentCapabilities(plate, system.capabilities, map.availability);
@@ -154,8 +215,10 @@ export function DiscoverPage() {
               key={result.track_id}
               result={result}
               selected={result.track_id === selectedId}
+              hovered={result.track_id === hoveredId}
               playing={result.track_id === playingId}
-              onTrackSelect={setSelectedId}
+              onTrackSelect={selectTrack}
+              onTrackHover={setHoveredId}
               onPlay={setPlayingId}
               actions={
                 <FeedbackActions
@@ -176,7 +239,7 @@ export function DiscoverPage() {
   // a clarification question replaces the plate; it is answered under the bar
   const clarifying = search.status !== "error" && plate?.outcome === "needs_clarification";
 
-  const results =
+  const panel =
     body !== null ? (
       <ResultsPanel query={query} count={count} stale={search.isRefreshing} changeStrip={changeStrip} variant={desktop ? "panel" : "sheet"}>
         {body}
@@ -191,7 +254,8 @@ export function DiscoverPage() {
 
   return (
     <DiscoverLayout
-      map={<div aria-hidden="true" className="size-full bg-surface-canvas" />}
+      map={mapLayer.canvas}
+      controls={mapLayer.controls}
       search={
         <>
           <SearchBar
@@ -221,8 +285,8 @@ export function DiscoverPage() {
           )}
         </>
       }
-      results={desktop ? results : null}
-      overlays={desktop ? null : results}
+      results={desktop ? panel : null}
+      overlays={desktop ? null : panel}
       status={
         <StatusPill
           capabilities={capabilities}

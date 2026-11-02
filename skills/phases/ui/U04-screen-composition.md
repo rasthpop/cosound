@@ -38,7 +38,8 @@
   - Legend → `setFilters({genre})` / `resetFilters()`, the audio toggle → `has_audio`. WebGL error → list alternative. Map down → fallback, search unaffected. Free browse (flow 5) opens the drawer with the results panel hidden.
 - **Done when:**
   - E2E (mock): a map click opens details; a row click selects the point; search results highlight and the rest dim; `map-down` leaves search fully usable.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `MapLayer.tsx` exports `useMapLayer`, which returns `{canvas, controls}` because the layout puts them in different zones. It owns the legend/list toggles, zoom requests and the WebGL-failure flag. `DiscoverPage` owns selection, hover, the highlight and the camera requests. `selectTrack` sets the drawer's id and the map selection and eases the camera; it sends `SELECT_TRACK` only with a session (D4), through a second `useTrackFeedback` instance so a selection never appears as a row's feedback status. The results fit and the selection use the *drawn* point's coordinates and fall back to `result.spatial`: in the fixtures they differ (trk_example_1 is at (-0.6, 0.3) on the map but (-0.5, 0.25) in the result), and fitting to the result's coordinates would miss the dots. "Map down" covers `availability` `unavailable` and `error`. `TrackMap` got `pickingRadius` 6 px (the dots are 2–4 px). `ResultRow` got `hovered` for the cross-highlight. The legend starts collapsed beside the desktop results panel, which it otherwise squeezes, until the user toggles it. The E2E clicks a real canvas point under reduced motion, placed with `fitBounds`.
 
 ### U04.T04 — Details drawer container
 - **Skills:** ui-architecture, ux-states-and-evidence
