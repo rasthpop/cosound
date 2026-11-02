@@ -86,7 +86,12 @@
   - On a throwaway branch, replace `theme/`, `components/` and `pages/` with a minimal alternative skin (or switch to a radically different theme). Then run the backend tests, hook tests, contract check and boundary check.
 - **Done when:**
   - All functional checks pass unchanged; the result is recorded (base §1 requirement 10, §14.4).
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:**
+  - **Setup.** The check ran in a throwaway worktree and branch, deleted afterwards. `theme/`, `components/`, `pages/`, `.storybook` and the UI E2E specs were replaced by a plain skin: a pass-through `ThemeProvider`, a form plus a table, and the map shown as a point count with no deck.gl. Nothing else was touched.
+  - **Results.** Backend: 1077 passed. OpenAPI, fixture and contract checks pass. Boundaries pass. `tsc` passes. Hook, API and mock tests plus `App.test`: 97 passed. Build and bundle check pass. Harness E2E: 3 passed.
+  - **The only coupling found.** The composition root imports two names, `ThemeProvider` and `DiscoverPage`. Separately, `vite.config.ts` needs some `.storybook/main.ts`; that is UI tooling, noted as an optional follow-up.
+  - **Write-up.** `docs/ui/isolation-check.md`.
 
 ## Exit criteria
-- [ ] Accessibility, visual regression, copy honesty, performance and isolation verified.
+- [x] Accessibility, visual regression, copy honesty, performance and isolation verified.
