@@ -4,6 +4,28 @@
 @import "@fontsource-variable/inter";
 @import "./generated/tokens.css";
 
+/* Token-driven animations. Their durations are motion tokens, which tokens.css sets to 0 under
+   prefers-reduced-motion, so they stop there without per-component checks. */
+@theme inline {
+  --animate-skeleton: skeleton-pulse var(--token-motion-duration-pulse) ease-in-out infinite;
+  --animate-progress: progress-slide var(--token-motion-duration-pulse) var(--token-motion-easing-out) infinite;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes progress-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
 @layer base {
   html {
     @apply bg-surface-canvas text-fg font-sans text-body font-regular;

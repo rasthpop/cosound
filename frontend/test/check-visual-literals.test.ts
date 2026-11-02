@@ -36,6 +36,7 @@ describe("check-visual-literals", () => {
     ['className="p-[13px]"', "Tailwind arbitrary value"],
     ['className="text-[var(--x)]"', "Tailwind arbitrary value"],
     ['className="[color:red]"', "Tailwind arbitrary property"],
+    ['className="data-[state=on]:bg-[#000]"', "Tailwind arbitrary value"],
   ])("flags %s", (snippet, rule) => {
     const { status, output } = check({ "View.tsx": `${snippet}\n` });
     expect(status).toBe(1);
@@ -46,6 +47,7 @@ describe("check-visual-literals", () => {
     const { status, output } = check({
       "Ok.tsx": [
         'const cls = "bg-surface-panel text-muted rounded-lg p-2 backdrop-blur-panel";',
+        'const v = "data-[state=open]:bg-surface-raised has-[>svg]:px-1 [&_svg]:size-2 aria-[invalid=true]:border-state-error";',
         "const pick = items[0]; const id = `#${anchor}`;",
         'export const V = () => <a href="#results" data-state="open" className={cls} />;',
       ].join("\n"),

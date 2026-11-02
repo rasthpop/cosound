@@ -15,6 +15,7 @@
   --token-size-ring-selected: 2px;
   --token-size-ring-focus: 2px;
   --token-size-icon: 16px;
+  --token-size-icon-stroke: 1.5px;
   --token-size-hit-target: 24px;
   --token-blur-panel: 12px;
   --token-radius-sm: 8px;
@@ -101,6 +102,7 @@
   --token-size-ring-selected: 2px;
   --token-size-ring-focus: 2px;
   --token-size-icon: 16px;
+  --token-size-icon-stroke: 1.5px;
   --token-size-hit-target: 24px;
   --token-blur-panel: 12px;
   --token-radius-sm: 8px;

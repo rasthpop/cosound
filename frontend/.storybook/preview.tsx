@@ -4,16 +4,22 @@ import { withThemeByDataAttribute } from "@storybook/addon-themes";
 import type { Decorator, Preview } from "@storybook/react-vite";
 import { mswLoader } from "msw-storybook-addon/csf3";
 
+import { TooltipProvider } from "../src/components/ui/tooltip";
 import "../src/theme/global.css";
 import { ThemeProvider } from "../src/theme/ThemeProvider";
+import { themes } from "../src/theme/tokens/semantic";
 import type { ThemeName } from "../src/theme/tokens/types";
 
 /** Keeps the ThemeProvider (useTheme, motion, tokens) in step with the toolbar's theme. */
 const withThemeProvider: Decorator = (Story, context) => {
-  const theme = (context.globals.theme as ThemeName | undefined) ?? "dark";
+  const chosen = context.globals.theme as string | undefined;
+  // the toolbar global can be "" or unset; anything that is not a theme name means the default
+  const theme: ThemeName = chosen && chosen in themes ? (chosen as ThemeName) : "dark";
   return (
     <ThemeProvider key={theme} defaultPreference={theme} storageKey={null}>
-      <Story />
+      <TooltipProvider>
+        <Story />
+      </TooltipProvider>
     </ThemeProvider>
   );
 };

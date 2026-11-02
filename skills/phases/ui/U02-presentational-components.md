@@ -12,7 +12,8 @@
   - Formatters: artist list, duration, result count ("12 tracks"), and labels for `evidence_status`, `uncertainty_flags`, `constraint_status`, hard-constraint `attribute/operator/value/range`, `vocal_preferences`, neighbor `metric`, `relationship_type`, `error.code`. No percentage formatter exists.
 - **Done when:**
   - Primitive stories in both themes pass axe; formatter tests include `null` → absent and unknown enum values (a readable fallback, never invented meaning).
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The shadcn CLI put the generated components in `components/ui/` but installed an unrelated `cn` package from the utils alias, so I removed it and fixed the imports. I rewrote all 11 primitives on token utilities and the 8 px grid (shadcn's `h-9` would be 72 px here), keeping shadcn's export API. Added `size.iconStroke` and `ICON` for lucide's 16 px / 1.5 stroke, plus two motion-token animations (`animate-skeleton`, `animate-progress`) that stop under reduced motion. The literal check now allows Tailwind arbitrary *variants* (`data-[state=on]:`), which are state selectors, not values. axe found real problems, all fixed: the scroll-area viewport is now focusable, `PopoverContent` requires an accessible name at the type level, and the Storybook theme decorator tolerates an empty global. Formatters live in `components/format/{text,labels}.ts`.
 
 ### U02.T02 — Search bar, example queries, chips & clarification
 - **Skills:** ui-architecture, ux-states-and-evidence

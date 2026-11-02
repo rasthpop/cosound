@@ -14,10 +14,12 @@ const EXTENSIONS = new Set([".ts", ".tsx", ".css", ".js", ".jsx", ".mdx"]);
 const RULES = [
   { name: "hex colour", pattern: /(?<![\w&])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b/g },
   { name: "colour function", pattern: /\b(?:rgba?|hsla?|oklch|oklab|lab|lch|hwb|color)\(/gi },
-  // a Tailwind utility with an arbitrary value: `bg-[#fff]`, `p-[13px]`, `w-[calc(…)]`, `text-[var(--x)]`
-  { name: "Tailwind arbitrary value", pattern: /(?<![\w$])-?[a-z][\w-]*-\[[^\]\s]+\]/g },
+  // a Tailwind utility with an arbitrary value: `bg-[#fff]`, `p-[13px]`, `w-[calc(…)]`, `text-[var(--x)]`.
+  // Arbitrary *variants* end in `]:` (`data-[state=open]:`, `has-[>svg]:`): they select a state,
+  // they set no visual value, so they are allowed.
+  { name: "Tailwind arbitrary value", pattern: /(?<![\w$])-?[a-z][\w-]*-\[[^\]\s]+\](?!:)/g },
   // an arbitrary property: `[color:red]`, `[mask-type:luminance]`
-  { name: "Tailwind arbitrary property", pattern: /(?<![\w$])\[[a-z][\w-]*:[^\]\s]+\]/g },
+  { name: "Tailwind arbitrary property", pattern: /(?<![\w$])\[[a-z][\w-]*:[^\]\s]+\](?!:)/g },
 ];
 
 /** Findings in one file's text: `{ line, column, rule, match }`. */
