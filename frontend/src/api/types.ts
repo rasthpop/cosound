@@ -39,6 +39,7 @@ export type SessionTurn = Schemas["SessionTurn"];
 export type FeedbackEventRecord = Schemas["FeedbackEventRecord"];
 export type MapPoint = Schemas["MapPoint"];
 export type MapBounds = Schemas["MapBounds"];
+export type GenreCount = Schemas["GenreCount"];
 export type ErrorBody = Schemas["ErrorBody"];
 
 // --- enums -----------------------------------------------------------------------------------

@@ -139,7 +139,8 @@ Appended by the `ui-plan-intake` skill (see `docs/ui/intake.md` §4). These task
   - Empty list when the projection is unavailable.
 - **Done when:**
   - API tests: counts sum to `n_points`; the `null` bucket is present when such points exist; the unavailable meta has `genres: []`; fixtures regenerated; changelog entry.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `genre` is the point's first source genre (`MapPoint.genre`). Projected tracks missing from the catalog count as `null`, so counts always sum to `n_points`. Ties are sorted by name, with `null` last. Also added the `GenreCount` alias in `frontend/src/api/types.ts`.
 
 ### P08.T12 — Structured "what changed" entries (G3)
 - **Skills:** api-contracts, agent-orchestration

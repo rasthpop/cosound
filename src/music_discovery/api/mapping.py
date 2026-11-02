@@ -260,6 +260,7 @@ def map_meta(meta: MapMeta) -> s.MapMetaResponse:
         n_points=meta.n_points,
         excluded_tracks=meta.excluded_tracks,
         coordinate_transform=meta.coordinate_transform,
+        genres=[s.GenreCount(genre=g.genre, count=g.count) for g in meta.genres],
     )
 
 

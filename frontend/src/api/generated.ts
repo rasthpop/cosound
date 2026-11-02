@@ -634,6 +634,16 @@ export interface components {
          * @enum {string}
          */
         FeedbackType: "MORE_LIKE_THIS" | "LESS_LIKE_THIS" | "NOT_RELEVANT" | "WRONG_INSTRUMENT" | "MORE_OF_ATTRIBUTE" | "LESS_OF_ATTRIBUTE" | "SELECT_TRACK";
+        /** GenreCount */
+        GenreCount: {
+            /** Count */
+            count: number;
+            /**
+             * Genre
+             * @description As in `MapPoint.genre`; null = points without one.
+             */
+            genre: string | null;
+        };
         /** HardConstraint */
         HardConstraint: {
             attribute: components["schemas"]["ConstraintAttribute"];
@@ -772,12 +782,23 @@ export interface components {
          *       "created_at": "2026-01-01T12:00:00Z",
          *       "embedding_version": "ev-example",
          *       "excluded_tracks": 1,
+         *       "genres": [
+         *         {
+         *           "count": 3,
+         *           "genre": "Folk"
+         *         },
+         *         {
+         *           "count": 2,
+         *           "genre": "Electronic"
+         *         }
+         *       ],
          *       "model_id": "example-clap-model",
          *       "n_points": 5,
          *       "projection_version": "umap-example",
          *       "status": "available"
          *     }
          * @example {
+         *       "genres": [],
          *       "n_points": 0,
          *       "reason": "projection_unavailable",
          *       "status": "unavailable"
@@ -798,6 +819,11 @@ export interface components {
              * @description Catalog tracks without audio, not shown.
              */
             excluded_tracks: number | null;
+            /**
+             * Genres
+             * @description Points per genre over the whole projection, independent of filters and pagination; sorted by count (desc), then name. Counts sum to `n_points`. Empty when unavailable.
+             */
+            genres: components["schemas"]["GenreCount"][];
             /** Model Id */
             model_id: string | null;
             /** N Points */

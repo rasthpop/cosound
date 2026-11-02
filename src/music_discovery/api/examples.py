@@ -410,6 +410,10 @@ def build_examples() -> dict[str, BaseModel]:
             n_points=5,
             excluded_tracks=1,
             coordinate_transform={"kind": "center_scale", "center": [0.0, 0.0], "scale": 1.0},
+            genres=[  # the five example points
+                s.GenreCount(genre="Folk", count=3),
+                s.GenreCount(genre="Electronic", count=2),
+            ],
         ),
         "map_unavailable": s.MapMetaResponse(
             status=CapabilityStatus.UNAVAILABLE,
@@ -422,6 +426,7 @@ def build_examples() -> dict[str, BaseModel]:
             n_points=0,
             excluded_tracks=None,
             coordinate_transform=None,
+            genres=[],
         ),
         "health": s.HealthResponse(
             status="ok",
