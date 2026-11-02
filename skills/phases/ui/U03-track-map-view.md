@@ -13,7 +13,8 @@
   - Color/radius/line pickers per point state from `theme/scales`, and stable update-trigger keys for selection, highlight, hover and theme.
 - **Done when:**
   - Unit tests: bounds for empty, single point and subset; zoom clamp; reduced-motion duration 0; key stability.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The helpers are pure and import nothing from deck.gl. `fitBounds` uses OrthographicView zoom (2^z px per unit), with 80 px padding and a single point treated as a 0.5-unit span. `zoomRange` runs from one level further out than "everything fits" to 10 levels in. `camera` uses a 600 ms cubic ease-out, or 0 under reduced motion. `pointStyle` wraps the U01 scales: dimming only applies while results exist, and a null genre gets the neutral token. `keys` builds FNV-hashed keys that are independent of Set identity and order, so state and theme keys stay separate. Installed `@deck.gl/{react,core,layers}` ~9.4 (ADR-0003); the lockfile was checked with npm 10.
 
 ### U03.T02 — TrackMap renderer
 - **Skills:** deckgl-track-map, ui-architecture
