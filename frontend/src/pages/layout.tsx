@@ -8,6 +8,8 @@
 //   controls sit above the sheet's peek height.
 import { useMemo, useSyncExternalStore, type ReactNode } from "react";
 
+import { cn } from "@/components/ui/cn";
+
 /** Same width as Tailwind's `lg` breakpoint (64rem = 1024 px), used by the `lg:` classes below. */
 export const DESKTOP_QUERY = "(min-width: 64rem)";
 
@@ -45,14 +47,20 @@ export interface DiscoverLayoutProps {
   overlays?: ReactNode;
   /** The polite live region's text. */
   announcement: string;
+  /** The details drawer is open: on desktop the floating zones make room for it on the right. */
+  detailsOpen?: boolean;
 }
 
-export function DiscoverLayout({ map, search, results, controls, status, overlays, announcement }: DiscoverLayoutProps) {
+export function DiscoverLayout({ map, search, results, controls, status, overlays, announcement, detailsOpen = false }: DiscoverLayoutProps) {
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-surface-canvas text-fg">
       <div className="fixed inset-0">{map}</div>
 
-      <main aria-label="Discover music" className="pointer-events-none fixed inset-0 flex flex-col gap-2 p-2 lg:p-3">
+      <main
+        aria-label="Discover music"
+        // the drawer is 400 px wide (50 × 8 px); 52 leaves the usual gap beside it
+        className={cn("pointer-events-none fixed inset-0 flex flex-col gap-2 p-2 lg:p-3", detailsOpen && "lg:pr-52")}
+      >
         <div className="mx-auto flex w-full max-w-80 flex-col gap-1">
           <div className="pointer-events-auto flex flex-col gap-1">{search}</div>
           {/* below the search on small screens; bottom-right on desktop */}

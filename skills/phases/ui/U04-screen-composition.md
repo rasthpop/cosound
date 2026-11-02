@@ -50,7 +50,8 @@
   - `useMediaUrl` → players, with one track playing at a time across rows and drawer. A neighbor click → `selectTrack`. Focus returns to the originating row or point on close.
 - **Done when:**
   - Tests: open/close focus behavior; neighbor click selects that track and moves the camera; a no-audio track shows "No audio preview available."; a second play pauses the first.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `audio.ts` enforces one clip at a time at the document level: a capture-phase `play` listener pauses every other `<audio>`. `AudioPlayer` marks its element with `data-player="details"`, so the page can clear the row's playing state when the drawer starts. Focus returns to the row or button the selection came from; canvas picks return focus to the map region (`onPointSelect`); a neighbor clicked inside the drawer keeps the original origin. Drawer feedback and score bands appear only for tracks in the current plate. A failed neighbors request hides the section instead of leaving a skeleton. In-browser fixes: the drawer's labeled feedback actions now wrap instead of overflowing, and on desktop the floating zones make room for the open drawer (`lg:pr-52`) so it never covers the search button. Story tests weren't re-run after the last view tweaks (FeedbackActions, AudioPlayer).
 
 ### U04.T05 — App shell & the dev harness
 - **Skills:** ui-architecture

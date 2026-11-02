@@ -93,6 +93,12 @@ test.describe("map & selection", () => {
     const at = await screenPosition(page, "trk_example_2");
     await page.mouse.click(at.x, at.y);
     await expect(rows.getByRole("listitem").filter({ hasText: "Example Track 2" }).first()).toHaveAttribute("aria-current", "true");
+    // …and opens its details (the mock serves the same detail fixture for every id)
+    const details = page.getByRole("dialog");
+    await expect(details).toBeVisible();
+    await expect(details.getByRole("region", { name: /nearby|sound/i })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(details).toBeHidden();
 
     await rows.getByRole("button", { name: "Example Track 1", exact: true }).click();
     await page.getByRole("button", { name: "List of map tracks" }).click();

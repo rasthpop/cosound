@@ -26,7 +26,10 @@ export interface MapLayerProps {
   dimUnhighlighted: boolean;
   hoveredTrackId: string | null;
   fitTo: FitRequest | null;
+  /** A row of the list alternative was chosen. */
   onTrackSelect: (trackId: string) => void;
+  /** A point on the canvas was clicked (focus later returns to the map). */
+  onPointSelect: (trackId: string) => void;
   onTrackHover: (trackId: string | null) => void;
   /** Reset view (control or `0`): fit all points and clear the highlight, keeping the list. */
   onReset: () => void;
@@ -43,6 +46,7 @@ export function useMapLayer({
   hoveredTrackId,
   fitTo,
   onTrackSelect,
+  onPointSelect,
   onTrackHover,
   onReset,
   resultsShown = false,
@@ -83,7 +87,7 @@ export function useMapLayer({
       dimUnhighlighted={dimUnhighlighted}
       fitTo={fitTo}
       zoomBy={zoom}
-      onTrackSelect={onTrackSelect}
+      onTrackSelect={onPointSelect}
       onTrackHover={onTrackHover}
       onResetRequest={onReset}
       onWebGLError={() => setWebglFailed(true)}

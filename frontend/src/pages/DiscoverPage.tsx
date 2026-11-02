@@ -22,10 +22,12 @@ import { OfflineState } from "@/components/states/OfflineState";
 import { StatusPill } from "@/components/states/StatusPill";
 import { PLATE_KEY, useMediaUrl, useMusicMap, useMusicSearch, useSystemStatus, useTrackFeedback, type FeedbackInput, type MusicMap } from "@/hooks";
 
+import { isDetailsPlayer, useSinglePlayback } from "./audio";
 import { ANNOUNCE_SEARCHING, announceRefined, announceSearch, EXAMPLE_QUERIES } from "./copy";
 import { feedbackMessage, feedbackStatus, queryInstruments, stripFor } from "./feedback";
+import { DetailsLayer } from "./DetailsLayer";
 import { DiscoverLayout, useIsDesktop } from "./layout";
-import { useMapLayer } from "./MapLayer";
+import { MAP_LABEL, useMapLayer } from "./MapLayer";
 import { locate, pointBounds, resultsOnMap } from "./selection";
 import { useShortcuts } from "./useShortcuts";
 
@@ -92,6 +94,8 @@ export function DiscoverPage() {
   const [fit, setFit] = useState<FitRequest | null>(null);
   const [highlightCleared, setHighlightCleared] = useState(false);
   const cameraRequests = useRef(0);
+  // where focus returns when the drawer closes: the row or the map the selection came from
+  const selectionOrigin = useRef<HTMLElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const focusInput = () => inputRef.current?.focus();
@@ -100,6 +104,11 @@ export function DiscoverPage() {
       event.preventDefault();
       focusInput();
     },
+  });
+
+  // one clip at a time; when the drawer's player starts, no row is playing any more
+  useSinglePlayback((audio) => {
+    if (isDetailsPlayer(audio)) setPlayingId(null);
   });
 
   // flow 1 (idle): the input is focused on arrival, so the examples are visible
@@ -146,7 +155,15 @@ export function DiscoverPage() {
   const highlighted = highlightCleared ? NONE : onMap.ids;
 
   /** The one selection action, for rows, points, the map list and neighbors. */
-  const selectTrack = (trackId: string) => {
+  const mapRegion = () => document.querySelector<HTMLElement>(`[role=region][aria-label="${MAP_LABEL}"]`);
+  /** `origin`: where focus returns when the drawer closes; by default the focused row or button. */
+  const selectTrack = (trackId: string, origin?: HTMLElement | null) => {
+    const active = document.activeElement;
+    // a neighbor clicked inside the drawer keeps the original origin
+    if (origin !== undefined) selectionOrigin.current = origin;
+    else if (!(active instanceof HTMLElement && active.closest("[role=dialog]"))) {
+      selectionOrigin.current = active instanceof HTMLElement && active !== document.body ? active : mapRegion();
+    }
     setSelectedId(trackId);
     map.clearSelection();
     map.select(trackId);
@@ -154,6 +171,16 @@ export function DiscoverPage() {
     if (at) setFit({ bounds: pointBounds(at), key: `select:${++cameraRequests.current}` });
     // D4: recorded only within a search session; without one, the map click just opens details
     if (search.sessionId) void selectionFeedback.submit({ trackId, eventType: "SELECT_TRACK" });
+  };
+  const closeDetails = () => {
+    setSelectedId(null);
+    map.clearSelection();
+  };
+  const restoreFocus = (event: Event) => {
+    event.preventDefault();
+    const origin = selectionOrigin.current;
+    if (origin?.isConnected) origin.focus();
+    else inputRef.current?.focus();
   };
   const resetView = () => {
     setHighlightCleared(true);
@@ -166,7 +193,8 @@ export function DiscoverPage() {
     dimUnhighlighted: highlighted.size > 0,
     hoveredTrackId: hoveredId,
     fitTo: fit,
-    onTrackSelect: selectTrack,
+    onTrackSelect: (id) => selectTrack(id),
+    onPointSelect: (id) => selectTrack(id, mapRegion()),
     onTrackHover: setHoveredId,
     onReset: resetView,
     resultsShown: desktop && plate !== null,
@@ -236,6 +264,33 @@ export function DiscoverPage() {
         </ResultsList>
       );
   }
+  const selectedResult = selectedId ? (results.find((r) => r.track_id === selectedId) ?? null) : null;
+  const details = (
+    <DetailsLayer
+      trackId={selectedId}
+      projectionVersion={map.projectionVersion}
+      result={selectedResult}
+      actions={
+        selectedResult && (
+          <FeedbackActions
+            trackId={selectedResult.track_id}
+            title={selectedResult.title}
+            status={feedbackStatus(feedback.byTrack[selectedResult.track_id])}
+            lastEvent={lastEvent[selectedResult.track_id] ?? null}
+            message={feedbackMessage(feedback.byTrack[selectedResult.track_id])}
+            instruments={instruments}
+            layout="labels"
+            onFeedback={onTrackFeedback}
+          />
+        )
+      }
+      variant={desktop ? "desktop" : "mobile"}
+      onClose={closeDetails}
+      onCloseAutoFocus={restoreFocus}
+      onTrackSelect={selectTrack}
+    />
+  );
+
   // a clarification question replaces the plate; it is answered under the bar
   const clarifying = search.status !== "error" && plate?.outcome === "needs_clarification";
 
@@ -286,7 +341,12 @@ export function DiscoverPage() {
         </>
       }
       results={desktop ? panel : null}
-      overlays={desktop ? null : panel}
+      overlays={
+        <>
+          {desktop ? null : panel}
+          {details}
+        </>
+      }
       status={
         <StatusPill
           capabilities={capabilities}
@@ -299,6 +359,7 @@ export function DiscoverPage() {
         />
       }
       announcement={announcement}
+      detailsOpen={selectedId !== null}
     />
   );
 }
