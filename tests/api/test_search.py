@@ -35,6 +35,9 @@ def test_follow_up_in_the_same_session(client: TestClient) -> None:
     assert second["session_id"] == first["session_id"]
     assert second["query_id"] != first["query_id"]
     assert second["change_summary"]
+    assert {"kind": "preference_added", "track_id": None, "title": None, "attribute": "genre",
+            "value": "electronic", "operator": None} in second["changes"]  # fmt: skip
+    assert first["changes"] == []
 
 
 @pytest.mark.parametrize(

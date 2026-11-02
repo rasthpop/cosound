@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, JsonValue, model_validator
 
 from music_discovery.domain.base import AwareDatetime, FrozenModel, NonEmptyStr, UnitInterval
 from music_discovery.domain.enums import (
+    ChangeKind,
     ConstraintStatus,
     DataSource,
     FeedbackType,
@@ -314,6 +315,30 @@ class FeedbackEvent(FrozenModel):
         if self.event_type in ATTRIBUTE_EVENTS and self.attribute is None:
             raise ValueError(f"{self.event_type} needs an attribute")
         return self
+
+
+class SpecChange(FrozenModel):
+    """One structured "what changed" entry, next to the human-readable change notes.
+
+    - track kinds (`reference_added`, `negative_reference_added`, `excluded`): `track_id`;
+      `excluded` after WRONG_INSTRUMENT also has `attribute="instrument"` and the instrument
+      as `value` when known.
+    - `preference_*`: `attribute` is the category (`mood`, `instrument`, …, `vocals`) and
+      `value` the term. A preference raised or lowered keeps its term.
+    - `negative_added` (new or stronger) / `negative_removed` (dropped or weaker): `value` is
+      the term; negatives have no category.
+    - `constraint_added`: `attribute`, `operator` and, for categorical constraints, `value`.
+    - `rejected`: the refused event's `track_id`, `attribute` and `value` as sent.
+    - `needs_clarification`: `value` is the clarification question.
+
+    Titles are not stored here; the application resolves them from the catalog.
+    """
+
+    kind: ChangeKind
+    track_id: NonEmptyStr | None = None
+    attribute: NonEmptyStr | None = None
+    value: NonEmptyStr | None = None
+    operator: NonEmptyStr | None = None
 
 
 # --- Evidence ---------------------------------------------------------------------
