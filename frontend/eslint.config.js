@@ -10,6 +10,10 @@ const deckGl = {
   group: ["@deck.gl/*", "deck.gl", "@luma.gl/*"],
   message: "deck.gl may only be imported under src/components/map/.",
 };
+const uiLibraries = {
+  group: ["radix-ui", "@radix-ui/*", "vaul", "motion", "motion/*", "lucide-react", "class-variance-authority", "clsx", "tailwind-merge"],
+  message: "UI libraries (ADR-0003) may only be imported under src/components/.",
+};
 const apiClient = {
   group: ["@/api/client", "**/api/client"],
   message: "Only hooks call the API client. Views receive data through props.",
@@ -25,7 +29,7 @@ const noFetch = [
 ];
 
 export default tseslint.config(
-  { ignores: ["dist", "coverage", "node_modules", "src/api/generated.ts", "playwright-report", "test-results", "public/mockServiceWorker.js"] },
+  { ignores: ["dist", "storybook-static", "coverage", "node_modules", "src/api/generated.ts", "playwright-report", "test-results", "public/mockServiceWorker.js"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -37,6 +41,7 @@ export default tseslint.config(
     files: ["src/api/**"],
     rules: {
       "no-restricted-imports": restrict(
+        uiLibraries,
         forbid(["hooks", "components", "pages", "theme", "mocks"], "api/ must not depend on other frontend layers."),
       ),
     },
@@ -46,6 +51,7 @@ export default tseslint.config(
     rules: {
       "no-restricted-imports": restrict(
         deckGl,
+        uiLibraries,
         forbid(["components", "pages", "theme", "mocks"], "Hooks expose state and actions only; no views or styling."),
       ),
       "no-restricted-globals": noFetch,
@@ -55,6 +61,7 @@ export default tseslint.config(
     files: ["src/mocks/**"],
     rules: {
       "no-restricted-imports": restrict(
+        uiLibraries,
         forbid(["hooks", "components", "pages", "theme"], "Mocks mirror the API contract only."),
       ),
     },
@@ -63,6 +70,7 @@ export default tseslint.config(
     files: ["src/theme/**"],
     rules: {
       "no-restricted-imports": restrict(
+        uiLibraries,
         forbid(["api", "hooks", "components", "pages", "mocks"], "theme/ holds design tokens only."),
       ),
       "no-restricted-globals": noFetch,
@@ -91,7 +99,7 @@ export default tseslint.config(
   {
     files: ["src/pages/**"],
     rules: {
-      "no-restricted-imports": restrict(deckGl, apiClient, forbid(["mocks"], "Containers use hooks, not mocks.")),
+      "no-restricted-imports": restrict(deckGl, apiClient, uiLibraries, forbid(["mocks"], "Containers use hooks, not mocks.")),
       "no-restricted-globals": noFetch,
     },
   },

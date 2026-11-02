@@ -83,11 +83,22 @@ TS_ALLOWED: dict[str, tuple[str, ...]] = {
 }
 
 # bare package prefix -> src path prefixes allowed to import it
+# UI libraries (ADR-0003) live in the visual layer only, so hooks/, api/ and mocks/ stay
+# independent of any component or styling library.
+_VIEWS = ("components",)
 TS_THIRD_PARTY: dict[str, tuple[str, ...]] = {
     "@deck.gl/": ("components/map",),
     "deck.gl": ("components/map",),
     "@luma.gl/": ("components/map",),
     "axios": ("api",),
+    "radix-ui": _VIEWS,
+    "@radix-ui/": _VIEWS,
+    "vaul": _VIEWS,
+    "motion": _VIEWS,
+    "lucide-react": _VIEWS,
+    "class-variance-authority": _VIEWS,
+    "clsx": _VIEWS,
+    "tailwind-merge": _VIEWS,
 }
 
 # forbidden call patterns -> src path prefixes where they are allowed

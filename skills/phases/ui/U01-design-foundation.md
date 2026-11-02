@@ -53,7 +53,8 @@
   - `@axe-core/playwright` installed for e2e.
 - **Done when:**
   - `npm run storybook`, `npm run test-storybook` (vitest addon) and `npm run e2e` run; token gallery renders in both themes with zero axe violations; boundary check green; the literal check fails on a planted `bg-[#fff]` (test).
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `components.json` is written by hand rather than by `shadcn init`, because init would overwrite `global.css` with shadcn's own palette (ADR-0003). `npx shadcn info` resolves it: Vite, Tailwind v4, radix, every alias under `components/ui`, and the hooks alias kept out of `hooks/`. `cn` registers the token scales with tailwind-merge, so `text-body text-muted` keeps both classes. msw-storybook-addon 3 uses the addon entry plus `mswLoader()` from `/csf3` (no `initialize`). Storybook 10 applies the project annotations by itself, so there is no setup file. Vitest has two projects: `unit` (jsdom, `npm test`) and `storybook` (Chromium with axe, `npm run test-storybook`, in CI). A planted unlabelled button fails the axe check. ESLint mirrors the boundary checker's UI-library rule.
 
 ## Exit criteria
-- [ ] Tokens and themes encode ui.md §2; Tailwind resolves only to tokens; workbench and checks ready; zero literal visual values outside `theme/`.
+- [x] Tokens and themes encode ui.md §2; Tailwind resolves only to tokens; workbench and checks ready; zero literal visual values outside `theme/`.

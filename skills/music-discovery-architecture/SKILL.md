@@ -51,6 +51,7 @@ Rules that the table implies:
 | `theme/` | UI plan | `theme` | design tokens only |
 | `components/` | UI plan | `components`, `theme`, `api/types`, `api/generated` (types) | pure views: props in, events out |
 | `components/map/` | UI plan | as above + `@deck.gl/*` | the only place deck.gl may appear |
+| `components/` (UI libraries) | UI plan | `radix-ui`, `@radix-ui/*`, `vaul`, `motion`, `lucide-react`, `class-variance-authority`, `clsx`, `tailwind-merge` | ADR-0003: only under `components/` (shadcn lives in `components/ui/`); never in `hooks/`, `api/`, `mocks/`, `theme/` or `pages/` |
 | `pages/` | UI plan | `pages`, `hooks`, `components`, `theme`, `api/types` | containers: wire hooks → views |
 | root (`main.tsx`, `App.tsx`) | shared | anything | composition root |
 
