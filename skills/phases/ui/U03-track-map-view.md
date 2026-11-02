@@ -25,7 +25,8 @@
   - Soft additive dots (ui.md §2), controller with inertia, drag/wheel/pinch/double-click and keyboard (arrows pan, `+`/`−` zoom, `0` reset via `onResetRequest`). Memoized layers with stable ids. Points fade in as pages arrive. A visually hidden summary ("Map of N tracks; M results highlighted").
 - **Done when:**
   - Component test (deck.gl mocked): a picked click emits `onTrackSelect(track_id)`; updateTriggers change with selection and highlight; `onError` triggers `onWebGLError`. Workbench renders 10k synthetic points (`?mapPoints=10000` generator) smoothly.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** Genre colours come from `MapMeta.genres` (the `genres` prop): until it arrives, points are the neutral "Other" grey rather than colours that would shift as pages load. Additive blending applies in the dark theme only, because on a light canvas it washes out to white. The camera is derived during render (first fit, then `fitTo` once per `key`), with no setState in effects, which the React hooks lint forbids. Keyboard pan and zoom come from the deck.gl controller; `0` asks the container to reset. The tests stub DeckGL (jsdom has no WebGL) but build the real ScatterplotLayer. The 10k-point workbench story is part of T03.
 
 ### U03.T03 — Tooltip, highlight & selection visuals
 - **Skills:** deckgl-track-map, ux-states-and-evidence

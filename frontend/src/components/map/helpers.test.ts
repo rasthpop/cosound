@@ -94,9 +94,9 @@ describe("pointStyle", () => {
   it("colours by genre and dims non-results only while results exist", () => {
     const folk = { track_id: "t1", genre: "Folk" };
     expect(styleFor(folk, ctx()).fill).toEqual(toRgba(scale.colorOf("Folk"), dark.opacity.point.default));
-    expect(styleFor(folk, ctx({ dimUnhighlighted: true })).fill[3]).toBe(toRgba("#000000", dark.opacity.point.default)[3]);
+    expect(styleFor(folk, ctx({ dimUnhighlighted: true })).fill[3]).toBe(toRgba(dark.color.surface.canvas, dark.opacity.point.default)[3]);
     const dimmed = styleFor(folk, ctx({ dimUnhighlighted: true, highlighted: new Set(["t2"]) }));
-    expect(dimmed.fill[3]).toBe(toRgba("#000000", dark.opacity.point.dimmed)[3]);
+    expect(dimmed.fill[3]).toBe(toRgba(dark.color.surface.canvas, dark.opacity.point.dimmed)[3]);
   });
 
   it("selection beats hover beats result, and is more than colour", () => {
