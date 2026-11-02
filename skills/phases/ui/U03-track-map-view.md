@@ -13,7 +13,8 @@
   - Color/radius/line pickers per point state from `theme/scales`, and stable update-trigger keys for selection, highlight, hover and theme.
 - **Done when:**
   - Unit tests: bounds for empty, single point and subset; zoom clamp; reduced-motion duration 0; key stability.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The helpers are pure and import nothing from deck.gl. `fitBounds` uses OrthographicView zoom (2^z px per unit), with 80 px padding and a single point treated as a 0.5-unit span. `zoomRange` runs from one level further out than "everything fits" to 10 levels in. `camera` uses a 600 ms cubic ease-out, or 0 under reduced motion. `pointStyle` wraps the U01 scales: dimming only applies while results exist, and a null genre gets the neutral token. `keys` builds FNV-hashed keys that are independent of Set identity and order, so state and theme keys stay separate. Installed `@deck.gl/{react,core,layers}` ~9.4 (ADR-0003); the lockfile was checked with npm 10.
 
 ### U03.T02 — TrackMap renderer
 - **Skills:** deckgl-track-map, ui-architecture
@@ -24,7 +25,8 @@
   - Soft additive dots (ui.md §2), controller with inertia, drag/wheel/pinch/double-click and keyboard (arrows pan, `+`/`−` zoom, `0` reset via `onResetRequest`). Memoized layers with stable ids. Points fade in as pages arrive. A visually hidden summary ("Map of N tracks; M results highlighted").
 - **Done when:**
   - Component test (deck.gl mocked): a picked click emits `onTrackSelect(track_id)`; updateTriggers change with selection and highlight; `onError` triggers `onWebGLError`. Workbench renders 10k synthetic points (`?mapPoints=10000` generator) smoothly.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** Genre colours come from `MapMeta.genres` (the `genres` prop): until it arrives, points are the neutral "Other" grey rather than colours that would shift as pages load. Additive blending applies in the dark theme only, because on a light canvas it washes out to white. The camera is derived during render (first fit, then `fitTo` once per `key`), with no setState in effects, which the React hooks lint forbids. Keyboard pan and zoom come from the deck.gl controller; `0` asks the container to reset. The tests stub DeckGL (jsdom has no WebGL) but build the real ScatterplotLayer. The 10k-point workbench story is part of T03.
 
 ### U03.T03 — Tooltip, highlight & selection visuals
 - **Skills:** deckgl-track-map, ux-states-and-evidence
@@ -35,7 +37,8 @@
   - Results highlighted (larger + ring) with the rest dimmed; selected = accent ring + slow pulse (none under reduced motion); never color alone.
 - **Done when:**
   - Stories: idle field, hover, one selected, results highlighted + others dimmed, reduced motion, 10k points.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The pulse is a separate non-pickable `selection-pulse` ScatterplotLayer whose ring grows ×1.5 and fades over `motion.duration.pulse` (driven by requestAnimationFrame). It is not created under reduced motion or without a selection. `ThemeProvider` gained a `reducedMotion` override for stories and tests. Story tests run in headless Chromium with real WebGL: every map story, the 10k-point one included, renders a canvas with no WebGL error, and axe passes. This also covers T02's workbench condition. Smoothness (frame rate) is not measured here; that is U05.T04.
 
 ### U03.T04 — Controls, genre legend, caption & fallbacks
 - **Skills:** deckgl-track-map, ux-states-and-evidence
@@ -49,7 +52,8 @@
   - `MapFallback`: "Map is unavailable — search still works."
 - **Done when:**
   - Stories: map down, WebGL failure, legend with and without filter, list alternative. axe passes on the list. Tests: legend emits the genre and then `null` on the second click.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `TrackMap` gained a `zoomBy {delta, key}` camera request for the ± controls. It applies once per key, keeps the centre and is clamped to the zoom range. The point layer and the pulse layer are now memoized separately, so the point layer stays the same object while the pulse animates. In the legend, the "Other" fold and points without a genre are listed with their counts but can't be filtered, because the API filters by a named genre only. The "Only tracks with audio" toggle appears only when the container passes `onAudioOnlyChange`. `MapFallback` takes `reason: "unavailable" | "webgl"`; for WebGL it shows `MapPointList` as its child. The story tests (headless Chromium, axe set to `error`) cover the list alternative, the WebGL failure, map down, and the legend with and without a filter. The container wiring is U04.
 
 ## Exit criteria
-- [ ] deck.gl appears only under `components/map/`; the map never fetches or computes similarity; copy never claims distance = similarity; fallbacks keep the experience usable without the map.
+- [x] deck.gl appears only under `components/map/`; the map never fetches or computes similarity; copy never claims distance = similarity; fallbacks keep the experience usable without the map.

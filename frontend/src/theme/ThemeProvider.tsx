@@ -62,19 +62,23 @@ export interface ThemeProviderProps {
   defaultPreference?: ThemePreference;
   /** localStorage key for the user's choice; `null` disables persistence (tests, stories). */
   storageKey?: string | null;
+  /** Force reduced motion on or off (stories, tests); by default it follows the media query. */
+  reducedMotion?: boolean;
 }
 
 export function ThemeProvider({
   children,
   defaultPreference = "system",
   storageKey = THEME_STORAGE_KEY,
+  reducedMotion: reducedOverride,
 }: ThemeProviderProps) {
   const [preference, setPreferenceState] = useState<ThemePreference>(
     () => (storageKey ? readStored(storageKey) : null) ?? defaultPreference,
   );
   const prefersLight = useMediaQuery(LIGHT_QUERY);
   const prefersDark = useMediaQuery(DARK_QUERY);
-  const reducedMotion = useMediaQuery(REDUCED_MOTION_QUERY);
+  const prefersReduced = useMediaQuery(REDUCED_MOTION_QUERY);
+  const reducedMotion = reducedOverride ?? prefersReduced;
 
   const systemTheme: ThemeName = prefersLight && !prefersDark ? "light" : DEFAULT_THEME;
   const theme: ThemeName = preference === "system" ? systemTheme : preference;
