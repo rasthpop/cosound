@@ -17,7 +17,8 @@ export function AudioPlayer({ src, title, license, clipSeconds }: AudioPlayerPro
   const clip = formatDuration(clipSeconds);
   return (
     <figure className="flex flex-col gap-0.5">
-      <audio controls preload="none" src={src} aria-label={`Preview of ${title}`} className="w-full" />
+      {/* `data-player` lets the container tell this player from the row mini-players */}
+      <audio controls preload="none" src={src} aria-label={`Preview of ${title}`} data-player="details" className="w-full" />
       <figcaption className="flex flex-col text-meta text-muted">
         {clip && <span>{clip} preview</span>}
         {license && <span>License: {license}</span>}

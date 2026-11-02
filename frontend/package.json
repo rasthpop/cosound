@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:mock": "vite --mode mock",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/check-bundle.mjs",
     "preview": "vite preview",
     "test": "vitest run --project unit",
     "test:watch": "vitest --project unit",

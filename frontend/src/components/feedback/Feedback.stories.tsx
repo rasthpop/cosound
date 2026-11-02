@@ -77,3 +77,19 @@ export const LightTheme: Story = {
     </Stage>
   ),
 };
+
+export const RefinementNotApplied: Story = {
+  name: "Refinement not applied",
+  render: () => (
+    <Stage>
+      <ChangeStrip
+        changeSummary={rejected.change_summary}
+        changes={rejected.changes}
+        status="rejected"
+        message={rejected.reason}
+        originalQuery={plate.interpreted_query.original_query}
+        onDismiss={() => {}}
+      />
+    </Stage>
+  ),
+};

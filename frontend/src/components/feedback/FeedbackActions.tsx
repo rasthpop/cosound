@@ -50,8 +50,8 @@ export function FeedbackActions({
 }: FeedbackActionsProps) {
   const pending = status === "pending";
   return (
-    <div className="flex flex-col items-end gap-0.5">
-      <div role="group" aria-label={`Feedback on ${title}`} className="flex items-center gap-0.5">
+    <div className={cn("flex gap-0.5", layout === "icons" ? "items-center" : "flex-col items-start")}>
+      <div role="group" aria-label={`Feedback on ${title}`} className="flex flex-wrap items-center gap-0.5">
         {GESTURES.map(({ eventType, label, Icon }) => (
           <Button
             key={eventType}
@@ -71,6 +71,7 @@ export function FeedbackActions({
           instruments={instruments}
           title={title}
           disabled={pending}
+          compact={layout === "icons"}
           onPick={(instrument) => onFeedback({ trackId, eventType: "WRONG_INSTRUMENT", attribute: "instrument", value: instrument })}
         />
       </div>

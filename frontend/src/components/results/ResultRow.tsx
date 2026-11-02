@@ -40,6 +40,8 @@ export interface ResultRowProps {
   playUrl: string | null;
   playing?: boolean;
   selected?: boolean;
+  /** Its point is hovered on the map (cross-highlight). */
+  hovered?: boolean;
   /** Feedback actions (FeedbackActions), shown on hover and keyboard focus. */
   actions?: ReactNode;
   onTrackSelect: (trackId: string) => void;
@@ -48,7 +50,7 @@ export interface ResultRowProps {
   onPlay?: (trackId: string | null) => void;
 }
 
-export function ResultRow({ result, playUrl, playing = false, selected = false, actions, onTrackSelect, onTrackHover, onPlay }: ResultRowProps) {
+export function ResultRow({ result, playUrl, playing = false, selected = false, hovered = false, actions, onTrackSelect, onTrackHover, onPlay }: ResultRowProps) {
   const artists = formatArtists(result.artists);
   const tags = [...result.genres, ...result.styles];
   const reasons = result.match_reasons.filter((r) => r.trim());
@@ -63,6 +65,7 @@ export function ResultRow({ result, playUrl, playing = false, selected = false, 
       }}
       className={cn(
         "group relative flex min-h-7 gap-1 rounded-md border border-transparent px-1 py-1 hover:bg-surface-raised",
+        hovered && "bg-surface-raised",
         selected && "border-accent bg-surface-raised",
       )}
     >
@@ -102,6 +105,12 @@ export function ResultRow({ result, playUrl, playing = false, selected = false, 
           retrieval_sources={result.retrieval_sources}
         />
         {result.spatial === null && <NotOnMapMarker />}
+        {/* under the text, so the actions never narrow the title column; a feedback status (its <p>) keeps them visible */}
+        {actions && (
+          <div className="opacity-0 transition-opacity duration-(--token-motion-duration-fast) group-focus-within:opacity-100 group-hover:opacity-100 has-[p]:opacity-100">
+            {actions}
+          </div>
+        )}
       </div>
       <div className="flex shrink-0 flex-col items-end gap-0.5">
         {playUrl && onPlay && (
@@ -117,11 +126,6 @@ export function ResultRow({ result, playUrl, playing = false, selected = false, 
           >
             <ExternalLink aria-hidden="true" {...ICON} />
           </a>
-        )}
-        {actions && (
-          <div className="opacity-0 transition-opacity duration-(--token-motion-duration-fast) group-focus-within:opacity-100 group-hover:opacity-100">
-            {actions}
-          </div>
         )}
       </div>
     </li>
