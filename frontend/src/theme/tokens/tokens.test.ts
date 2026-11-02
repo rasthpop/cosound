@@ -48,12 +48,12 @@ const AA_NON_TEXT = 3;
 
 /**
  * Opaque pixels a glass panel can sit over on the map: the backdrop and every point fill at
- * full opacity (a dense cluster). Covers the darkest and the lightest map pixel of a theme.
- * U01.T03 adds the genre scale's fills here.
+ * full opacity (a dense cluster), genre hues included. Covers the darkest and the lightest map
+ * pixel of a theme.
  */
 function mapPixels(t: SemanticTokens): string[] {
   const p = t.color.map.point;
-  return [t.color.map.backdrop, p.default, p.dimmed];
+  return [t.color.map.backdrop, p.default, p.dimmed, p.other, ...t.color.map.categorical];
 }
 
 /** Opaque colours a panel or raised surface actually renders as, per backdrop. */

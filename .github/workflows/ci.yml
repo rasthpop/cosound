@@ -35,5 +35,9 @@ jobs:
       - run: npm run test
       - run: npm run build
       - run: npm run contract:check
+      - run: npm run tokens:check
+      - run: npx playwright install --with-deps chromium
       - name: End-to-end (contract harness, mock mode)
-        run: npx playwright install --with-deps chromium && npm run e2e
+        run: npm run e2e
+      - name: Stories (render + axe, both themes)
+        run: npm run test-storybook

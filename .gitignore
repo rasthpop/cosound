@@ -57,6 +57,7 @@ artifacts/**
 # Node
 node_modules/
 frontend/dist/
+frontend/storybook-static/
 frontend/coverage/
 frontend/test-results/
 frontend/playwright-report/

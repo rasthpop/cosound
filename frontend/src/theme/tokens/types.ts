@@ -11,6 +11,9 @@ export type Ms = number;
 
 export type ThemeName = "dark" | "light";
 
+/** Eight categorical hues in their fixed, validated slot order. */
+export type CategoricalPalette = readonly [Color, Color, Color, Color, Color, Color, Color, Color];
+
 export interface MotionSet {
   duration: { fast: Ms; base: Ms; camera: Ms; pulse: Ms };
   easing: { out: string; linear: string };
@@ -71,7 +74,11 @@ export interface SemanticTokens {
         dimmed: Color;
         /** Thin ring around search results. */
         result: Color;
+        /** Fill of a point whose genre is outside the palette (folded into "Other"). */
+        other: Color;
       };
+      /** Genre hues for the map (`theme/scales/categorical`). */
+      categorical: CategoricalPalette;
     };
   };
   opacity: { point: { default: number; dimmed: number; result: number } };

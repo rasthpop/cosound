@@ -1,5 +1,8 @@
 import { fileURLToPath, URL } from "node:url";
 
+import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
+import tailwindcss from "@tailwindcss/vite";
+import { playwright } from "@vitest/browser-playwright";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
@@ -7,15 +10,39 @@ import { defineConfig } from "vitest/config";
 const apiTarget = process.env.API_PROXY_TARGET;
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: apiTarget ? { proxy: { "/api": { target: apiTarget, changeOrigin: true } } } : {},
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
+  // pre-bundled up front so the first story-test run does not reload mid-run
+  optimizeDeps: { include: ["msw-storybook-addon/csf3"] },
   test: {
-    environment: "jsdom",
-    setupFiles: ["./test/setup.ts"],
-    include: ["src/**/*.test.{ts,tsx}", "test/**/*.test.{ts,tsx}"],
-    exclude: ["e2e/**", "node_modules/**"],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unit",
+          environment: "jsdom",
+          setupFiles: ["./test/setup.ts"],
+          include: ["src/**/*.test.{ts,tsx}", "test/**/*.test.{ts,tsx}"],
+          exclude: ["e2e/**", "node_modules/**"],
+        },
+      },
+      {
+        // every story as a browser test, with axe (npm run test-storybook)
+        extends: true,
+        plugins: [storybookTest({ configDir: fileURLToPath(new URL("./.storybook", import.meta.url)) })],
+        test: {
+          name: "storybook",
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright(),
+            instances: [{ browser: "chromium" }],
+          },
+        },
+      },
+    ],
   },
 });

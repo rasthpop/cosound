@@ -2,6 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { App } from "./App";
+import "./theme/global.css";
+import { ThemeProvider } from "./theme/ThemeProvider";
 
 async function enableMocks(): Promise<void> {
   if (import.meta.env.VITE_API_MODE !== "mock") return;
@@ -17,7 +19,9 @@ if (!root) {
 void enableMocks().then(() => {
   createRoot(root).render(
     <StrictMode>
-      <App />
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     </StrictMode>,
   );
 });

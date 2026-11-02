@@ -52,4 +52,4 @@ contract:
 contract-check:
 	uv run python scripts/export_openapi.py --check
 	uv run python scripts/export_fixtures.py --check
-	cd frontend && npm run contract:check
+	cd frontend && npm run contract:check && npm run tokens:check

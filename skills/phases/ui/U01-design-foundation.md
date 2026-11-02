@@ -25,7 +25,8 @@
   - `ThemeProvider` sets `data-theme` on `<html>`, follows `prefers-color-scheme` only when no theme was chosen, and exposes `reducedMotion` from `prefers-reduced-motion`. `@fontsource-variable/inter` is imported in `global.css`.
 - **Done when:**
   - Test: switching theme changes only the `data-theme` attribute and the computed CSS variables; reduced motion is respected; `bg-red-500` does not compile to a rule (default palette reset); `tokens:check` green.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The token variables are prefixed `--token-*` so they cannot collide with the `--color-*` names Tailwind generates for utilities. Motion has its own `:root` block, because a reduced-motion override inside the more specific `:root[data-theme]` blocks would lose. The emitter loads the TS tokens with Vite's `runnerImport`. `tokens:check` is wired into CI and `make contract-check`. `main.tsx` imports `global.css` and wraps the app in `ThemeProvider`. Utility names: `bg-surface-{canvas,panel,raised}`, `text-fg`/`text-muted`/`text-on-accent`, `border-hairline`/`border-border-strong`, `ring-focus`, `*-accent*`, `*-state-*`, `*-evidence-*`, `*-match-*`, `*-feedback-*`, `text-{meta,body,heading,display}`, `font-{regular,medium}`, `rounded-{sm,md,lg,pill}`, `backdrop-blur-panel`, `ease-{out,linear}`, and spacing in 8 px steps (`p-1` = 8 px).
 
 ### U01.T03 — Map data-viz scales
 - **Skills:** ui-design-tokens, deckgl-track-map, dataviz
@@ -37,7 +38,8 @@
   - `toRgba` returns `[r, g, b, a]` tuples for deck.gl.
 - **Done when:**
   - Unit tests for determinism, the `null` mapping and RGBA output; dataviz contrast and color-vision-deficiency check against `#0B0B0F` documented in the test file header.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The genre hues are the dataviz reference palette (8 hues, dark and light steps), stored as theme tokens (`color.map.categorical`, plus `map.point.other` for genres folded into "Other"). The domain is the 8 largest genres in `MapMeta.genres`, and slots are assigned alphabetically, so colours depend on the genre name, never on load order or count rank. Adjacent-pair validation passes. The all-pairs check fails for 8 hues, as the skill predicts for scatter plots, so genre is always named in text and U03.T04's legend must be able to isolate one genre (see the header of `categorical.test.ts`). The contrast test now includes the genre fills, which moved the dark "Other" grey to `ink.300`.
 
 ### U01.T04 — shadcn/ui, Storybook & UI checks
 - **Skills:** ui-isolated-development, ui-architecture, music-discovery-architecture
@@ -51,7 +53,8 @@
   - `@axe-core/playwright` installed for e2e.
 - **Done when:**
   - `npm run storybook`, `npm run test-storybook` (vitest addon) and `npm run e2e` run; token gallery renders in both themes with zero axe violations; boundary check green; the literal check fails on a planted `bg-[#fff]` (test).
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `components.json` is written by hand rather than by `shadcn init`, because init would overwrite `global.css` with shadcn's own palette (ADR-0003). `npx shadcn info` resolves it: Vite, Tailwind v4, radix, every alias under `components/ui`, and the hooks alias kept out of `hooks/`. `cn` registers the token scales with tailwind-merge, so `text-body text-muted` keeps both classes. msw-storybook-addon 3 uses the addon entry plus `mswLoader()` from `/csf3` (no `initialize`). Storybook 10 applies the project annotations by itself, so there is no setup file. Vitest has two projects: `unit` (jsdom, `npm test`) and `storybook` (Chromium with axe, `npm run test-storybook`, in CI). A planted unlabelled button fails the axe check. ESLint mirrors the boundary checker's UI-library rule.
 
 ## Exit criteria
-- [ ] Tokens and themes encode ui.md §2; Tailwind resolves only to tokens; workbench and checks ready; zero literal visual values outside `theme/`.
+- [x] Tokens and themes encode ui.md §2; Tailwind resolves only to tokens; workbench and checks ready; zero literal visual values outside `theme/`.
