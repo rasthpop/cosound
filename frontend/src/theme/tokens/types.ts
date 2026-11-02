@@ -89,6 +89,8 @@ export interface SemanticTokens {
     /** lucide stroke width at `icon` size (ui.md §2: 16 px / 1.5). */
     iconStroke: Px;
     hitTarget: Px;
+    /** Height of the collapsed ("peek") mobile results sheet (ui.md §3). */
+    sheetPeek: Px;
   };
   blur: { panel: Px };
   radius: { sm: Px; md: Px; lg: Px; pill: Px };

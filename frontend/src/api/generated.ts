@@ -1603,7 +1603,9 @@ export interface components {
          *           "styles": [],
          *           "title": "Example Track 1",
          *           "track_id": "trk_example_1",
-         *           "uncertainty_flags": []
+         *           "uncertainty_flags": [
+         *             "semantic_unavailable"
+         *           ]
          *         },
          *         {
          *           "artists": [
@@ -1643,7 +1645,9 @@ export interface components {
          *           "styles": [],
          *           "title": "Example Track 2",
          *           "track_id": "trk_example_2",
-         *           "uncertainty_flags": []
+         *           "uncertainty_flags": [
+         *             "semantic_unavailable"
+         *           ]
          *         }
          *       ],
          *       "session_id": "ses_example_1",

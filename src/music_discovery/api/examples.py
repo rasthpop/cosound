@@ -126,7 +126,8 @@ def _result(n: int, *, semantic: bool = True, audio: bool = True) -> s.TrackResu
             EvidenceStatus.AUDIO_AND_METADATA if audio else EvidenceStatus.METADATA_ONLY
         ),
         constraint_status=[],
-        uncertainty_flags=[] if audio else ["no_audio"],
+        # as evidence_builder: no audio -> "no_audio"; semantic search down -> "semantic_unavailable"
+        uncertainty_flags=["no_audio"] if not audio else [] if semantic else ["semantic_unavailable"],
         retrieval_sources=sources,
         spatial=s.Spatial(x=round(-0.6 + n * 0.1, 2), y=0.25, projection_version=PROJECTION)
         if audio

@@ -38,7 +38,8 @@
   - Rows render in prop order, ~56 px tall.
 - **Done when:**
   - Stories from fixtures: ok, stale, empty, no confident match, degraded semantic, track without audio, track without coordinates, bottom-sheet snaps (mobile viewport). Tests: order equals input order; no `%` text; null description renders nothing; no link without `source_url`.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `ResultsPanel` has two variants: `panel` (desktop, left 380 px glass panel, collapsible) and `sheet` (vaul, snapping at `SHEET_SNAP_POINTS` = peek 96 px / half / full; the new `size.sheetPeek` token). The container picks the variant. The body is whatever the container passes: `ResultsList` + `ResultRow`s, or a state view. Feedback actions arrive through the row's `actions` slot (filled in T04) and appear on hover or focus. axe failed the stale state, because dimming with opacity dropped muted text below AA, so stale results are now marked in words ("Updating — these are the previous results") plus `aria-busy`, never dimmed. I also fixed the backend `search_semantic_unavailable` example to carry the `semantic_unavailable` flag, as `evidence_builder` does. Added a jsdom `ResizeObserver` stand-in to `test/setup.ts`.
 
 ### U02.T04 — Feedback controls & change strip
 - **Skills:** ux-states-and-evidence, ui-architecture

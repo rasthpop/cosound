@@ -49,6 +49,7 @@ const shared = {
     icon: 16,
     iconStroke: 1.5,
     hitTarget: 24,
+    sheetPeek: 96,
   },
   blur: { panel: blur.panel },
   radius: { sm: radius.sm, md: radius.md, lg: radius.lg, pill: radius.pill },
@@ -150,4 +151,7 @@ export const themes: Record<ThemeName, SemanticTokens> = { dark, light };
 
 /** lucide props for every icon (theme-independent): `<Play {...ICON} />`. */
 export const ICON = { size: shared.size.icon, strokeWidth: shared.size.iconStroke } as const;
+
+/** vaul snap points for the mobile results sheet: peek, half, full (ui.md §3). */
+export const SHEET_SNAP_POINTS = [`${shared.size.sheetPeek}px`, 0.5, 1] as const;
 export const DEFAULT_THEME: ThemeName = "dark";
