@@ -1,7 +1,8 @@
 # Business understanding (CRISP-DM step 1)
 
-- **Status:** DRAFT targets, for the project owner to confirm or change **before P10.T01 freezes
-  the evaluation inputs**. After the freeze they cannot change (ADR-0006).
+- **Status:** the CRISP-DM process was confirmed by the owner on 2026-11-02 (ADR-0006 accepted).
+  The targets below are still DRAFT values, for the owner to confirm or change **before P10.T01
+  freezes the evaluation inputs**. After the freeze they cannot change.
 - **Drafted:** 2026-11-02, from the dev-split evidence of runs `w0-initial-dev` → `p06-agents-dev`
   and the UMAP quality artifact.
 

@@ -1,6 +1,6 @@
 # ADR-0006: CRISP-DM as the project's development cycle
 
-- **Status:** Proposed
+- **Status:** Accepted (owner, 2026-11-02)
 - **Date:** 2026-11-02
 - **Phase/Task:** P10.T08–T10
 
