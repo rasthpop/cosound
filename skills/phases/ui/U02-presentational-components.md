@@ -73,7 +73,8 @@
   - Empty: suggest broadening. No confident match: list `no_match_reasons` and offer "Edit your search" (relaxing is the user's choice, D1). Error: copy by `error.code` with retry, no stack traces. Offline: retry, typed query preserved.
 - **Done when:**
   - A story per state; copy checked against `ux-states-and-evidence` (no overclaiming).
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The state views share a `StateMessage` layout (icon, heading, body, actions). `StatusPill` renders nothing unless something is degraded. `NoConfidentMatch` shows `no_match_reasons` as given and offers only "Edit your search", never a silent relax. `ErrorState` copy comes from `errorMessage(code)`, never the raw code. Added `@testing-library/user-event` as a declared dev dependency (it was only transitive).
 
 ### U02.T07 — Views for the contract additions (match bands, score bands, structured changes)
 - **Skills:** ux-states-and-evidence, ui-architecture
