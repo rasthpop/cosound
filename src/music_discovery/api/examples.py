@@ -126,7 +126,10 @@ def _result(n: int, *, semantic: bool = True, audio: bool = True) -> s.TrackResu
             EvidenceStatus.AUDIO_AND_METADATA if audio else EvidenceStatus.METADATA_ONLY
         ),
         constraint_status=[],
-        uncertainty_flags=[] if audio else ["no_audio"],
+        # as evidence_builder: no audio -> "no_audio"; semantic down -> "semantic_unavailable"
+        uncertainty_flags=(
+            ["no_audio"] if not audio else [] if semantic else ["semantic_unavailable"]
+        ),
         retrieval_sources=sources,
         spatial=s.Spatial(x=round(-0.6 + n * 0.1, 2), y=0.25, projection_version=PROJECTION)
         if audio
@@ -250,7 +253,23 @@ def build_examples() -> dict[str, BaseModel]:
                 )
             ],
         ),
+        # a hard constraint the evidence cannot verify, plus a soft negative preference
         "search_constraint_unknown": _search(
+            interpreted_query=_query(
+                original_query="chill flute without vocals, less electronic",
+                vocal_preferences="excluded",
+                hard_constraints=[
+                    s.HardConstraint(
+                        attribute=ConstraintAttribute.VOCALS,
+                        operator=ConstraintOperator.EXCLUDED,
+                        value=None,
+                        range=None,
+                    )
+                ],
+                negative_preferences=[
+                    s.Preference(value="electronic", weight=0.6, source_span="less electronic")
+                ],
+            ),
             results=[
                 _result(1).model_copy(
                     update={
@@ -262,10 +281,10 @@ def build_examples() -> dict[str, BaseModel]:
                                 status=ConstraintStatus.UNKNOWN,
                             )
                         ],
-                        "uncertainty_flags": ["vocals_unknown"],
+                        "uncertainty_flags": ["constraint_unknown:vocals"],
                     }
                 )
-            ]
+            ],
         ),
         "track_detail": s.TrackDetail(
             track_id="trk_example_1",
