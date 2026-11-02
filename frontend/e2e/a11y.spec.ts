@@ -5,7 +5,9 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 import { themes } from "../src/theme/tokens/semantic";
 
-test.skip(process.env.E2E_REAL_BACKEND === "1", "mock-mode audit");
+// axe and the walkthrough run on the mocks; the contrast check also runs on a real map
+// (E2E_REAL_BACKEND=1), where it measures the actual projection instead of synthetic points.
+const real = process.env.E2E_REAL_BACKEND === "1";
 
 const SCENARIOS = [
   "happy",
@@ -58,6 +60,7 @@ async function tabTo(page: Page, target: Locator, max = 40) {
 for (const scheme of SCHEMES) {
   for (const [viewportName, viewport] of Object.entries(VIEWPORTS)) {
     test.describe(`axe · ${scheme} · ${viewportName}`, () => {
+      test.skip(real, "mock-mode audit");
       test.use({ colorScheme: scheme, viewport, reducedMotion: "reduce" });
       for (const scenario of SCENARIOS) {
         test(scenario, async ({ page }) => {
@@ -104,6 +107,7 @@ for (const scheme of SCHEMES) {
 
 // ── the keyboard path of ui.md §7 ──
 test.describe("keyboard-only walkthrough", () => {
+  test.skip(real, "mock-mode audit");
   test.use({ reducedMotion: "reduce", viewport: VIEWPORTS.desktop });
 
   test("/ → input → results → feedback → details (focus loop & return) → map list alternative", async ({
@@ -214,10 +218,10 @@ for (const scheme of SCHEMES) {
     test("panel text keeps AA contrast over the densest map area", async ({
       page,
     }) => {
-      await page.goto("/?mapPoints=10000");
+      await page.goto(real ? "/" : "/?mapPoints=10000");
       await expect(
         page.getByRole("region", { name: "Map of tracks by audio similarity" }),
-      ).toContainText("Map of 10000 tracks", { timeout: 30_000 });
+      ).toContainText(real ? /Map of \d+ tracks/ : "Map of 10000 tracks", { timeout: 60_000 });
       await page.waitForTimeout(800); // points fade in
       await page.addStyleTag({
         content:

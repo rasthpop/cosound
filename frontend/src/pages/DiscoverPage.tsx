@@ -32,6 +32,7 @@ import { locate, pointBounds, resultsOnMap } from "./selection";
 import { useShortcuts } from "./useShortcuts";
 
 const NONE: ReadonlySet<string> = new Set();
+const MAP_PAGE_SIZE = 5000;
 const NO_RESULTS: SearchResponse["results"] = [];
 const isOffline = (error: ApiError | null) => error?.kind === "network";
 
@@ -77,7 +78,9 @@ function ResultItem(props: {
 export function DiscoverPage() {
   const search = useMusicSearch();
   const system = useSystemStatus();
-  const map = useMusicMap();
+  // the API's largest page: every page rebuilds the point layer's attributes over all points
+  // loaded so far, so fewer, larger pages page in much faster (docs/ui/performance.md)
+  const map = useMusicMap({ pageSize: MAP_PAGE_SIZE });
   const feedback = useTrackFeedback(search);
   // SELECT_TRACK has its own instance so a selection never shows up as a row's feedback status
   const selectionFeedback = useTrackFeedback(search);

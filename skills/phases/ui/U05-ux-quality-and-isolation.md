@@ -48,7 +48,17 @@
   - Production bundle against the ADR-0003 budget (≤ 600 kB gzip JS).
 - **Done when:**
   - Budgets met or deviations documented with a follow-up.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:**
+  - **Budgets.** JS is 348 kB gzip (budget 600). fma_small pages in in 2.2 s. Search to highlight on the real map is 2.6 s.
+  - **Frame rate.** Headless WebGL here is SwiftShader. A CPU profile shows over 95 % of pan time in native rasterization and under 200 ms of app JavaScript, so frame rate isn't measurable here; a headed run on a GPU machine is the documented follow-up.
+  - **Fixes:**
+    - The map loads 5000-point pages (the API maximum). 10k page-in went from 10.7 s to 2.7 s.
+    - Point styles are cached per state × colour and per point. A restyle went from 19 to 8 ms at 10k and from 194 to 86 ms at 100k.
+    - The map's list alternative overflowed off-screen on desktop with many points; it now scrolls.
+  - **Tests.** Render-count tests: hover keeps the point layer; a refinement settles in 8 commits.
+  - **Contrast.** `a11y.spec.ts`'s contrast check now also runs on a real map with `E2E_REAL_BACKEND=1`. On fma_small, muted text is 7.52:1 on dark and 6.41:1 on light.
+  - **Probe.** `e2e/perf.spec.ts` is opt-in (`PERF=1`).
 
 ### U05.T05 — Visual-layer isolation proof
 - **Skills:** ui-isolated-development, music-discovery-architecture

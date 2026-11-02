@@ -47,10 +47,12 @@ axe can't evaluate text over a WebGL canvas (it reports those nodes as "incomple
 
 | Theme | Extreme pixel (blurred) | Body text | Muted text |
 |---|---|---|---|
-| dark | rgb(61, 43, 10) | 15.88 : 1 | 7.52 : 1 |
-| light | rgb(172, 207, 175) | 18.33 : 1 | 6.31 : 1 |
+| dark, 10k synthetic | rgb(61, 43, 10) | 15.88 : 1 | 7.52 : 1 |
+| light, 10k synthetic | rgb(172, 207, 175) | 18.33 : 1 | 6.31 : 1 |
+| dark, real fma_small map (7,993) | rgb(60, 43, 12) | 15.89 : 1 | 7.52 : 1 |
+| light, real fma_small map | rgb(200, 212, 227) | 18.62 : 1 | 6.41 : 1 |
 
-Both are well above AA (4.5:1). The synthetic layout is clustered but not as dense as a real projection can be, so the token test's full-opacity worst case still matters. Repeating this measurement on the real fma_small map is a step of U05.T04 (performance pass), which loads that map.
+All are well above AA (4.5:1). The real projection was measured during U05.T04: the same test runs on a real map with `E2E_REAL_BACKEND=1 API_PROXY_TARGET=… npx playwright test e2e/a11y.spec.ts -g contrast`.
 
 ## Findings
 

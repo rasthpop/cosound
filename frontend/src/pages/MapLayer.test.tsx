@@ -2,6 +2,7 @@
 // jsdom lacks, so DeckGL is a stub that records its props (as in TrackMap.test.tsx); everything
 // else — hooks, containers, views, the real ScatterplotLayer — is real.
 import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { Profiler } from "react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -16,7 +17,7 @@ import { DiscoverPage } from "./DiscoverPage";
 import { locate, pointBounds, resultsOnMap, withAudioOnly, withGenre } from "./selection";
 
 type DeckProps = {
-  layers: { props: Record<string, unknown> }[];
+  layers: { id: string; props: Record<string, unknown> }[];
   viewState: { target: number[]; zoom: number };
   onClick: (info: { object: MapPoint | null }) => void;
   onHover: (info: { object: MapPoint | null; x: number; y: number }) => void;
@@ -181,6 +182,49 @@ describe("map container", () => {
     expect(within(list).getAllByText(/not on (the )?map/i).length).toBeGreaterThan(0);
     await userEvent.click(within(list).getByRole("button", { name: RESULTS[0]!.title }));
     expect(row(list, RESULTS[0]!.title)).toHaveAttribute("aria-current", "true");
+  });
+});
+
+describe("render cost (docs/ui/performance.md)", () => {
+  it("moving across one point re-renders the map, not the page, and keeps the point layer", async () => {
+    let pageCommits = 0;
+    server.use(...handlersFor("happy"));
+    render(
+      <ThemeProvider storageKey={null}>
+        <Profiler id="page" onRender={() => (pageCommits += 1)}>
+          <DiscoverPage />
+        </Profiler>
+      </ThemeProvider>,
+    );
+    await waitFor(() => expect(screen.getByText(/^Map of 5 tracks/)).toBeInTheDocument());
+    const p = point("trk_example_1");
+    act(() => deck.props!.onHover({ object: p, x: 1, y: 1 }));
+    const layer = deck.props!.layers[0];
+    const before = pageCommits;
+    for (let x = 2; x < 12; x++) act(() => deck.props!.onHover({ object: p, x, y: x }));
+    // the tooltip follows the pointer inside TrackMap; the page's hovered id doesn't change
+    expect(deck.props!.layers[0]).toBe(layer);
+    expect(pageCommits - before).toBeLessThanOrEqual(10); // one small commit per move at most (TrackMap only)
+  });
+
+  it("a refinement settles in a handful of page commits", async () => {
+    let commits = 0;
+    server.use(...handlersFor("happy"));
+    render(
+      <ThemeProvider storageKey={null}>
+        <Profiler id="page" onRender={() => (commits += 1)}>
+          <DiscoverPage />
+        </Profiler>
+      </ThemeProvider>,
+    );
+    await search();
+    await waitFor(() => expect(screen.getByText(/2 results highlighted/)).toBeInTheDocument());
+    const before = commits;
+    await userEvent.click(screen.getByRole("button", { name: "Less like this: Example Track 1" }));
+    await screen.findByRole("region", { name: "What changed" });
+    await waitFor(() => expect(screen.getByText(/results highlighted/)).toBeInTheDocument());
+    const spent = commits - before;
+    expect(spent).toBeLessThanOrEqual(12);
   });
 });
 
