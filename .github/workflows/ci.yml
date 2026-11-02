@@ -37,7 +37,14 @@ jobs:
       - run: npm run contract:check
       - run: npm run tokens:check
       - run: npx playwright install --with-deps chromium
-      - name: End-to-end (contract harness, mock mode)
+      - name: End-to-end (mock mode — flows, accessibility, visual baselines)
         run: npm run e2e
+      - name: Upload Playwright results (screenshot diffs, traces)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: frontend/test-results/
+          retention-days: 7
       - name: Stories (render + axe, both themes)
         run: npm run test-storybook

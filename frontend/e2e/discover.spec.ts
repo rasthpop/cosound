@@ -1,26 +1,9 @@
 // The Discover screen in mock mode (U04): search, refine with feedback, and the map in sync.
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-import { readFileSync } from "node:fs";
-
-import { fitBounds, type Bounds } from "../src/components/map/fitBounds";
-
-const fixtureJson = <T>(name: string): T => JSON.parse(readFileSync(new URL(`../src/mocks/fixtures/${name}.json`, import.meta.url), "utf8")) as T;
-const mapMeta = fixtureJson<{ bounds: Bounds }>("map_meta");
-const page1 = fixtureJson<{ points: { track_id: string; x: number; y: number }[] }>("map_points_page1");
+import { open, screenPosition, search } from "./helpers";
 
 test.skip(process.env.E2E_REAL_BACKEND === "1", "mock-mode flows");
-
-async function open(page: Page, scenario = "happy") {
-  await page.goto(`/?scenario=${scenario}`);
-  await expect(page.getByRole("search")).toBeVisible();
-}
-
-async function search(page: Page, text = "chill flute") {
-  await page.getByRole("textbox", { name: "Search by describing a sound" }).fill(text);
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("list", { name: "Ranked results" })).toBeVisible();
-}
 
 test.describe("feedback & refinement", () => {
   test("👎 on a row refreshes the plate and says what changed", async ({ page }) => {
@@ -69,15 +52,6 @@ test.describe("feedback & refinement", () => {
 // Under reduced motion the camera moves instantly, so a point's screen position follows from the
 // same fit the map uses: the whole projection after "Reset view".
 
-async function screenPosition(page: Page, trackId: string) {
-  const size = page.viewportSize()!;
-  const { target, zoom } = fitBounds(mapMeta.bounds, size);
-  const p = page1.points.find((q) => q.track_id === trackId)!;
-  const scale = 2 ** zoom;
-  // OrthographicView with flipY: false — y grows upwards
-  return { x: size.width / 2 + (p.x - target[0]!) * scale, y: size.height / 2 - (p.y - target[1]!) * scale };
-}
-
 test.describe("map & selection", () => {
   test.use({ reducedMotion: "reduce" });
 
@@ -90,7 +64,7 @@ test.describe("map & selection", () => {
 
     await page.getByRole("button", { name: "Reset view" }).click();
     await expect(map).not.toContainText("results highlighted");
-    const at = await screenPosition(page, "trk_example_2");
+    const at = screenPosition(page, "trk_example_2");
     await page.mouse.click(at.x, at.y);
     await expect(rows.getByRole("listitem").filter({ hasText: "Example Track 2" }).first()).toHaveAttribute("aria-current", "true");
     // …and opens its details (the mock serves the same detail fixture for every id)

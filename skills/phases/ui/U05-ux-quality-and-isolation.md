@@ -25,7 +25,8 @@
   - E2E for the five core flows in ui.md §5 across all mock scenarios. An optional `slow` smoke against the real backend (fma_small).
 - **Done when:**
   - CI runs e2e in mock mode; baselines committed.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `flows.spec.ts` runs the five ui.md §5 flows against all 10 scenarios. Each scenario declares its expected outcome, map and details; flows that can't apply there are skipped by name (37 run, 13 skipped). `visual.spec.ts` has 32 baselines in `e2e/__screenshots__/` (8 states × dark/light × 1280/390 px, 1.5 MB), with a 1 % pixel tolerance for the software-rendered WebGL. They are page-level states rather than per-story shots, since the stories are already checked by the story tests. `real-backend.spec.ts` (opt-in) passed against fma_small on 2026-11-02. Shared helpers moved to `e2e/helpers.ts`. CI's e2e step now uploads `test-results/` on failure. One flake was fixed: on phone, the "refined" shot pressed its button by pointer while the sheet was sliding in. The baselines were made on Linux Chromium (as in CI) but haven't yet been checked against a CI run.
 
 ### U05.T03 — Evidence & copy audit
 - **Skills:** ux-states-and-evidence, grounded-explanations
