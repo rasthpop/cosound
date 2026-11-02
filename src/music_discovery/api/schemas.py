@@ -365,6 +365,11 @@ class MapBounds(ApiModel):
     max_y: float
 
 
+class GenreCount(ApiModel):
+    genre: str | None = Field(description="As in `MapPoint.genre`; null = points without one.")
+    count: int
+
+
 class MapMetaResponse(ApiModel):
     status: CapabilityStatus
     reason: str | None
@@ -376,6 +381,12 @@ class MapMetaResponse(ApiModel):
     n_points: int
     excluded_tracks: int | None = Field(description="Catalog tracks without audio, not shown.")
     coordinate_transform: dict[str, JsonValue] | None
+    genres: list[GenreCount] = Field(
+        description=(
+            "Points per genre over the whole projection, independent of filters and pagination;"
+            " sorted by count (desc), then name. Counts sum to `n_points`. Empty when unavailable."
+        )
+    )
 
 
 # --- Health --------------------------------------------------------------------------------

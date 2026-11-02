@@ -69,6 +69,34 @@ def test_meta(client: TestClient) -> None:
     assert body.bounds is not None
 
 
+def test_meta_genres_cover_every_point(client: TestClient) -> None:
+    genres = client.get("/api/map/meta").json()["genres"]
+    assert genres == [
+        {"genre": "Rock", "count": 6},
+        {"genre": "Electronic", "count": 2},
+        {"genre": "Folk", "count": 2},
+        {"genre": "Punk", "count": 1},
+    ]
+    assert sum(g["count"] for g in genres) == len(EMBEDDED)
+
+
+def test_meta_genres_count_points_without_genre_as_null(make_client: ClientFactory) -> None:
+    client = make_client()
+    world = client.app.state.world  # type: ignore[attr-defined]
+    for tid in ("trk_fill0", "trk_fill1"):
+        track = world.tracks.get(tid)
+        world.tracks.upsert(track.model_copy(update={"genres": []}))
+    body = MapMetaResponse.model_validate(client.get("/api/map/meta").json())
+    assert [(g.genre, g.count) for g in body.genres] == [
+        ("Rock", 4),
+        ("Electronic", 2),
+        ("Folk", 2),
+        (None, 2),
+        ("Punk", 1),
+    ]
+    assert sum(g.count for g in body.genres) == body.n_points
+
+
 def test_projection_unavailable_is_503_while_search_works(make_client: ClientFactory) -> None:
     client = make_client(projection_available=False)
     points = page(client)
@@ -81,6 +109,7 @@ def test_projection_unavailable_is_503_while_search_works(make_client: ClientFac
     meta = client.get("/api/map/meta")
     assert meta.status_code == 200
     assert meta.json()["status"] == "unavailable"
+    assert meta.json()["genres"] == []
     search = client.post("/api/search", json={"query": QUERY})
     assert search.status_code == 200
     assert search.json()["capabilities"]["map"] == "unavailable"

@@ -779,6 +779,33 @@
         "title": "FeedbackType",
         "type": "string"
       },
+      "GenreCount": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "genre": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "As in `MapPoint.genre`; null = points without one.",
+            "title": "Genre"
+          }
+        },
+        "required": [
+          "genre",
+          "count"
+        ],
+        "title": "GenreCount",
+        "type": "object"
+      },
       "HardConstraint": {
         "additionalProperties": false,
         "properties": {
@@ -1142,12 +1169,23 @@
             "created_at": "2026-01-01T12:00:00Z",
             "embedding_version": "ev-example",
             "excluded_tracks": 1,
+            "genres": [
+              {
+                "count": 3,
+                "genre": "Folk"
+              },
+              {
+                "count": 2,
+                "genre": "Electronic"
+              }
+            ],
             "model_id": "example-clap-model",
             "n_points": 5,
             "projection_version": "umap-example",
             "status": "available"
           },
           {
+            "genres": [],
             "n_points": 0,
             "reason": "projection_unavailable",
             "status": "unavailable"
@@ -1213,6 +1251,14 @@
             "description": "Catalog tracks without audio, not shown.",
             "title": "Excluded Tracks"
           },
+          "genres": {
+            "description": "Points per genre over the whole projection, independent of filters and pagination; sorted by count (desc), then name. Counts sum to `n_points`. Empty when unavailable.",
+            "items": {
+              "$ref": "#/components/schemas/GenreCount"
+            },
+            "title": "Genres",
+            "type": "array"
+          },
           "model_id": {
             "anyOf": [
               {
@@ -1264,7 +1310,8 @@
           "bounds",
           "n_points",
           "excluded_tracks",
-          "coordinate_transform"
+          "coordinate_transform",
+          "genres"
         ],
         "title": "MapMetaResponse",
         "type": "object"

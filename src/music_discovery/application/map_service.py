@@ -12,6 +12,7 @@ without an embedding are not on the map (they are counted in `MapMeta.excluded_t
 from __future__ import annotations
 
 import logging
+from collections import Counter
 from collections.abc import Callable
 from datetime import datetime
 from typing import Literal
@@ -72,6 +73,12 @@ class MapBounds(_Model):
     max_y: float
 
 
+class GenreCount(_Model):
+    genre: str | None
+    """A point's genre as in `MapPoint.genre`; `None` for points without one."""
+    count: int
+
+
 class MapMeta(_Model):
     status: MapStatus
     reason: str | None = None
@@ -84,6 +91,15 @@ class MapMeta(_Model):
     excluded_tracks: int | None = None
     """Catalog tracks without an audio embedding, absent from the map. None if unknown."""
     coordinate_transform: dict[str, JsonValue] | None = None
+    genres: list[GenreCount] = Field(default_factory=list)
+    """Points per genre over the whole projection (no filters), largest first."""
+
+
+def _genre_counts(genres: list[str | None]) -> list[GenreCount]:
+    """Count by genre; ties ordered by name, the `None` bucket last among its ties."""
+    counted = Counter(genres)
+    order = sorted(counted.items(), key=lambda kv: (-kv[1], kv[0] is None, kv[0] or ""))
+    return [GenreCount(genre=g, count=n) for g, n in order]
 
 
 def _artist_display(track: Track) -> str | None:
@@ -192,7 +208,16 @@ class MapService:
             n_points=len(coords),
             excluded_tracks=meta.excluded_tracks,
             coordinate_transform=meta.coordinate_transform,
+            genres=self._genres(),
         )
+
+    def _genres(self) -> list[GenreCount]:
+        """Every projected point counts once. Points whose track is missing from the catalog
+        have no known genre and fall in the `None` bucket, so counts sum to `n_points`."""
+        assert self._spatial is not None
+        points = self._all_points()
+        missing = len(self._spatial.all_coordinates()) - len(points)
+        return _genre_counts([p.genre for p, _ in points] + [None] * missing)
 
     def _all_points(self) -> list[tuple[MapPoint, Track]]:
         """Built once: the catalog and the projection do not change while the app runs."""

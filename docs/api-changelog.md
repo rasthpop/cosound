@@ -19,6 +19,11 @@ Additive changes. Existing fields keep their meaning, so the version stays 1.
   `null` when the signal is missing (or has no calibrated bands; `relationship` for now).
   Thresholds: `config/descriptions.yaml`, `docs/calibration.md`. The UI shows bands, never
   `score` numbers.
+- 2026-11-02 (P08.T11): `MapMetaResponse.genres` (`[{genre, count}]`) counts every projected
+  point by `MapPoint.genre` over the whole projection, independent of filters and pagination,
+  so the legend and categorical colors stay stable. Sorted by count (desc), then name; `genre:
+  null` counts points without a genre (and projected tracks missing from the catalog), so counts
+  sum to `n_points`. `[]` when the map is unavailable.
 
 ## API_VERSION 1 — 2026-10-25
 

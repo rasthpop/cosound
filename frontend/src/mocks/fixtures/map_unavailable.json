@@ -4,6 +4,7 @@
   "created_at": null,
   "embedding_version": null,
   "excluded_tracks": null,
+  "genres": [],
   "model_id": null,
   "n_points": 0,
   "projection_version": null,
