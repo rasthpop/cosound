@@ -1,16 +1,36 @@
+import { rm } from "node:fs/promises";
+import { join } from "node:path";
 import { fileURLToPath, URL } from "node:url";
 
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { playwright } from "@vitest/browser-playwright";
 import react from "@vitejs/plugin-react";
+import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 
 // API_PROXY_TARGET=http://127.0.0.1:8000 proxies /api to a running backend in dev.
 const apiTarget = process.env.API_PROXY_TARGET;
 
+/** `public/mockServiceWorker.js` serves MSW in mock mode only; production builds drop it. */
+function dropMockWorker(): Plugin {
+  let outDir = "dist";
+  let mock = false;
+  return {
+    name: "drop-mock-worker",
+    apply: "build",
+    configResolved(config) {
+      outDir = config.build.outDir;
+      mock = config.mode === "mock";
+    },
+    async closeBundle() {
+      if (!mock) await rm(join(outDir, "mockServiceWorker.js"), { force: true });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), dropMockWorker()],
   server: apiTarget ? { proxy: { "/api": { target: apiTarget, changeOrigin: true } } } : {},
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },

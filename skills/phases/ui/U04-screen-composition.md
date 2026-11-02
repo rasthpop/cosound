@@ -61,7 +61,8 @@
   - `App` = `ThemeProvider` + `DiscoverPage`. No router. `/__dev/harness` stays dev-only.
 - **Done when:**
   - The production build contains neither the harness nor MSW (existing check); all container tests and e2e pass.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The App switch landed in T02. The "existing check" was manual, so it is now `scripts/check-bundle.mjs`, which runs at the end of `npm run build` (and therefore in CI). It fails on MSW setup, mock-scenario code, the harness, or `mockServiceWorker.js`, and it does flag a `--mode mock` build. The worker was in fact being copied into production `dist/` from `public/`; a `drop-mock-worker` plugin in `vite.config.ts` now removes it from non-mock builds. `App.test.tsx` covers the Discover screen at `/` and the harness at `/__dev/harness` in development.
 
 ## Exit criteria
-- [ ] Hooks are called only in `pages/`; views remain pure; display order equals API order; list and map selection are one event; search works with the map down.
+- [x] Hooks are called only in `pages/`; views remain pure; display order equals API order; list and map selection are one event; search works with the map down.
