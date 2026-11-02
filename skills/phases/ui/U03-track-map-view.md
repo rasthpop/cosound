@@ -52,7 +52,8 @@
   - `MapFallback`: "Map is unavailable — search still works."
 - **Done when:**
   - Stories: map down, WebGL failure, legend with and without filter, list alternative. axe passes on the list. Tests: legend emits the genre and then `null` on the second click.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `TrackMap` gained a `zoomBy {delta, key}` camera request for the ± controls. It applies once per key, keeps the centre and is clamped to the zoom range. The point layer and the pulse layer are now memoized separately, so the point layer stays the same object while the pulse animates. In the legend, the "Other" fold and points without a genre are listed with their counts but can't be filtered, because the API filters by a named genre only. The "Only tracks with audio" toggle appears only when the container passes `onAudioOnlyChange`. `MapFallback` takes `reason: "unavailable" | "webgl"`; for WebGL it shows `MapPointList` as its child. The story tests (headless Chromium, axe set to `error`) cover the list alternative, the WebGL failure, map down, and the legend with and without a filter. The container wiring is U04.
 
 ## Exit criteria
-- [ ] deck.gl appears only under `components/map/`; the map never fetches or computes similarity; copy never claims distance = similarity; fallbacks keep the experience usable without the map.
+- [x] deck.gl appears only under `components/map/`; the map never fetches or computes similarity; copy never claims distance = similarity; fallbacks keep the experience usable without the map.

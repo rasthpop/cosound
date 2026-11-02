@@ -160,3 +160,17 @@ describe("MapTooltip", () => {
     expect(card).toHaveTextContent(/^C$/);
   });
 });
+
+describe("zoom requests", () => {
+  it("zooms by the requested delta once per key, keeping the centre", () => {
+    const { rerenderMap } = renderMap();
+    const start = deck.props!.viewState;
+    rerenderMap({ zoomBy: { delta: 1, key: 1 } });
+    expect(deck.props!.viewState.zoom).toBeCloseTo(start.zoom + 1);
+    expect(deck.props!.viewState.target).toEqual(start.target);
+    rerenderMap({ zoomBy: { delta: 1, key: 1 } });
+    expect(deck.props!.viewState.zoom).toBeCloseTo(start.zoom + 1);
+    rerenderMap({ zoomBy: { delta: -100, key: 2 } });
+    expect(deck.props!.viewState.zoom).toBeGreaterThan(start.zoom - 100); // clamped to the range
+  });
+});

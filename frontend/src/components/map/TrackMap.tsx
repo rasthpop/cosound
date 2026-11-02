@@ -38,6 +38,8 @@ export interface TrackMapProps {
   dimUnhighlighted?: boolean;
   /** A camera request from the container: fit these bounds (results, or all points). */
   fitTo?: FitRequest | null;
+  /** A zoom request (the ± controls): change zoom by `delta` levels, once per `key`. */
+  zoomBy?: { delta: number; key: string | number } | null;
   onTrackSelect: (trackId: string) => void;
   onTrackHover?: (trackId: string | null) => void;
   /** The `0` key: the container fits all points and clears the highlight. */
@@ -108,6 +110,7 @@ export function TrackMap({
   hoveredTrackId = null,
   dimUnhighlighted = false,
   fitTo = null,
+  zoomBy = null,
   onTrackSelect,
   onTrackHover,
   onResetRequest,
@@ -135,6 +138,12 @@ export function TrackMap({
   }
   // until the user or the container moves the camera, show everything
   const view = camera ?? (extent && size ? fitBounds(extent, size) : null);
+  const [zoomed, setZoomed] = useState<string | number | null>(null);
+  if (zoomBy && view && zoomBy.key !== zoomed) {
+    setZoomed(zoomBy.key);
+    const next = { target: view.target, zoom: view.zoom + zoomBy.delta };
+    setCamera(range ? clampZoom(next, range) : next);
+  }
 
   const scale = useMemo(() => genreScale(genres ?? [], tokens), [genres, tokens]);
   const pulse = usePulse(motion.pulse && selectedTrackIds.size > 0, motion.duration.pulse);
@@ -151,7 +160,10 @@ export function TrackMap({
     [selectedTrackIds, highlightedTrackIds, hoveredTrackId, dimUnhighlighted, theme, genreKey],
   );
 
-  const layers = useMemo(() => {
+  // The point layer changes only with data, state or theme; the pulse layer changes every frame
+  // while a selection pulses, so it is memoized separately and the point layer stays the same
+  // object between frames.
+  const tracksLayer = useMemo(() => {
     const style = accessors({
       selected: selectedTrackIds,
       highlighted: highlightedTrackIds,
@@ -162,9 +174,30 @@ export function TrackMap({
       motion,
     });
     const fade = motion.duration.base;
-    const selectedPoints = selectedTrackIds.size > 0 ? points.filter((p) => selectedTrackIds.has(p.track_id)) : [];
-    // the slow selection pulse: an expanding, fading accent ring (never under reduced motion)
-    const pulseLayer =
+    return new ScatterplotLayer<TrackMapPoint>({
+      id: "tracks",
+      data: points,
+      getPosition: (d) => [d.x, d.y],
+      ...style,
+      radiusUnits: "pixels",
+      lineWidthUnits: "pixels",
+      stroked: true,
+      filled: true,
+      pickable: true,
+      parameters: theme === "dark" ? ADDITIVE : {},
+      updateTriggers: triggers,
+      // points fade in as pages arrive (instant under reduced motion)
+      transitions: { getFillColor: { duration: fade, enter: (c: number[]) => [c[0] ?? 0, c[1] ?? 0, c[2] ?? 0, 0] } },
+    });
+  }, [points, selectedTrackIds, highlightedTrackIds, hoveredTrackId, dimUnhighlighted, scale, tokens, motion, theme, triggers]);
+
+  const selectedPoints = useMemo(
+    () => (selectedTrackIds.size > 0 ? points.filter((p) => selectedTrackIds.has(p.track_id)) : []),
+    [points, selectedTrackIds],
+  );
+  // the slow selection pulse: an expanding, fading accent ring (never under reduced motion)
+  const pulseLayer = useMemo(
+    () =>
       motion.pulse && selectedPoints.length > 0
         ? new ScatterplotLayer<TrackMapPoint>({
             id: "selection-pulse",
@@ -181,26 +214,10 @@ export function TrackMap({
             opacity: 1 - pulse,
             pickable: false,
           })
-        : null;
-    return [
-      new ScatterplotLayer<TrackMapPoint>({
-        id: "tracks",
-        data: points,
-        getPosition: (d) => [d.x, d.y],
-        ...style,
-        radiusUnits: "pixels",
-        lineWidthUnits: "pixels",
-        stroked: true,
-        filled: true,
-        pickable: true,
-        parameters: theme === "dark" ? ADDITIVE : {},
-        updateTriggers: triggers,
-        // points fade in as pages arrive (instant under reduced motion)
-        transitions: { getFillColor: { duration: fade, enter: (c: number[]) => [c[0] ?? 0, c[1] ?? 0, c[2] ?? 0, 0] } },
-      }),
-      ...(pulseLayer ? [pulseLayer] : []),
-    ];
-  }, [points, selectedTrackIds, highlightedTrackIds, hoveredTrackId, dimUnhighlighted, scale, tokens, motion, theme, triggers, pulse]);
+        : null,
+    [motion.pulse, selectedPoints, tokens, pulse],
+  );
+  const layers = useMemo(() => (pulseLayer ? [tracksLayer, pulseLayer] : [tracksLayer]), [tracksLayer, pulseLayer]);
 
   const onClick = useCallback(
     (info: PickingInfo<TrackMapPoint>) => {
