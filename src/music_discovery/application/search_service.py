@@ -7,6 +7,7 @@ Relevance comes from the orchestrator (hybrid engine); this layer only assembles
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from music_discovery.agents.agent_b_discovery import MAX_LIMIT
@@ -17,7 +18,7 @@ from music_discovery.application.capabilities import (
     SearchWarning,
     turn_warnings,
 )
-from music_discovery.application.results import TrackView, TrackViewBuilder
+from music_discovery.application.results import ChangeView, TrackView, TrackViewBuilder
 from music_discovery.domain.errors import InvalidRequest, SessionNotFound
 from music_discovery.domain.models import SearchSession
 from music_discovery.domain.protocols import SessionRepository
@@ -26,6 +27,7 @@ from music_discovery.domain.schemas import (
     RankedCandidate,
     SearchOutcome,
     SearchSpecification,
+    SpecChange,
 )
 
 log = logging.getLogger(__name__)
@@ -50,6 +52,7 @@ class SearchResult:
     capabilities: Capabilities
     warnings: list[SearchWarning] = field(default_factory=list)
     change_summary: list[str] = field(default_factory=list)
+    changes: list[ChangeView] = field(default_factory=list)
 
 
 class SearchService:
@@ -114,7 +117,11 @@ class SearchService:
             capabilities=capabilities,
             warnings=turn_warnings(degraded, capabilities, llm_fallback_reason=fallback),
             change_summary=list(turn.change_summary),
+            changes=self._views.changes(turn.changes),
         )
+
+    def changes(self, changes: Sequence[SpecChange]) -> list[ChangeView]:
+        return self._views.changes(changes)
 
 
 def check_limit(limit: int) -> None:

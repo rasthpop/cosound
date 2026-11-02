@@ -134,3 +134,34 @@ def test_unknown_session_lookup_is_404(client: TestClient) -> None:
     response = client.get("/api/sessions/ses_nope")
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "session_not_found"
+
+
+def test_not_relevant_returns_a_structured_excluded_change(client: TestClient) -> None:
+    plate = search(client)
+    top = plate["results"][0]
+    response = feedback(
+        client, plate, event_type="NOT_RELEVANT", track_id=top["track_id"], refresh=True
+    )
+    body = FeedbackResponse.model_validate(response.json())
+    expected = {
+        "kind": "excluded",
+        "track_id": top["track_id"],
+        "title": top["title"],  # resolved from the catalog, not echoed from the client
+        "attribute": None,
+        "value": None,
+        "operator": None,
+    }
+    assert response.json()["changes"] == [expected]
+    assert body.change_summary == [f"removed {top['track_id']}"]  # strings stay
+    assert body.refreshed is not None
+    assert [c.model_dump(mode="json") for c in body.refreshed.changes] == [expected]
+
+
+def test_rejected_feedback_has_a_rejected_change(client: TestClient) -> None:
+    plate = search(client)
+    body = feedback(client, plate, event_type="MORE_OF_ATTRIBUTE", attribute="zxqv").json()
+    assert body["accepted"] is False
+    assert body["changes"] == [
+        {"kind": "rejected", "track_id": None, "title": None, "attribute": "zxqv",
+         "value": None, "operator": None}
+    ]  # fmt: skip

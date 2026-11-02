@@ -7,8 +7,10 @@
 - `refine_text(session, text, query_id, limit)`: free-text feedback normalized into events,
   applied in order, then one new search.
 
-Every turn carries a "what changed" summary. The outcome is passed through unchanged: OK,
-NO_CONFIDENT_MATCH (with reasons) or NEEDS_CLARIFICATION, with any `degraded` flags. Sessions
+Every turn carries a "what changed" summary: notes for people (`change_summary`) and the
+same changes as structured `SpecChange` entries (`changes`). The outcome is passed through
+unchanged: OK, NO_CONFIDENT_MATCH (with reasons) or NEEDS_CLARIFICATION, with any `degraded`
+flags. Sessions
 are saved with the version they were read at, so a concurrent update raises
 `StaleSessionVersion` instead of being lost. No agent here decides relevance.
 """
@@ -24,9 +26,10 @@ from music_discovery.agents.agent_c_feedback import (
     ExplainedCandidate,
     FeedbackAgent,
     FeedbackDecision,
+    rejected,
 )
 from music_discovery.agents.feedback_text import FeedbackTextNormalizer
-from music_discovery.domain.enums import NextAction
+from music_discovery.domain.enums import ChangeKind, NextAction
 from music_discovery.domain.ids import IdPrefix
 from music_discovery.domain.models import SearchSession, SearchTurnRecord
 from music_discovery.domain.protocols import (
@@ -41,6 +44,7 @@ from music_discovery.domain.schemas import (
     RetrievalTrace,
     SearchOutcome,
     SearchSpecification,
+    SpecChange,
     WeightedPreference,
 )
 
@@ -67,6 +71,7 @@ class SearchTurn:
     explanations: list[Explanation] = field(default_factory=list)
     trace: RetrievalTrace | None = None
     change_summary: list[str] = field(default_factory=list)
+    changes: list[SpecChange] = field(default_factory=list)
     decision: FeedbackDecision | None = None
     llm_fallback_reason: str | None = None
 
@@ -101,8 +106,10 @@ class Orchestrator:
         previous = session.current_spec
         interpretation = self._a.interpret_traced(query, session)
         spec = interpretation.spec
-        changes = spec_changes(previous, spec) if previous is not None else []
-        turn = self._run(session, query, spec, limit, changes, triggered_by=None)
+        diff = _spec_diff(previous, spec) if previous is not None else []
+        notes = [n for n, _ in diff]
+        changes = [c for _, c in diff if c is not None]
+        turn = self._run(session, query, spec, limit, notes, changes, triggered_by=None)
         self._sessions.save(turn.session, expected_version=read_version)
         return replace(turn, llm_fallback_reason=interpretation.llm_fallback_reason)
 
@@ -125,7 +132,9 @@ class Orchestrator:
             spec = session.current_spec
             if spec is None:
                 raise ValueError("feedback needs a session with a search")
-            decision = FeedbackDecision(False, spec, NextAction.NONE, reason=normalized.reason)
+            decision = FeedbackDecision(
+                False, spec, NextAction.NONE, reason=normalized.reason, changes=[rejected()]
+            )
             return SearchTurn(session, spec, None, None, decision=decision)
         return self._refine(session, normalized.events, limit)
 
@@ -143,13 +152,14 @@ class Orchestrator:
             if decision.accepted:
                 spec = decision.spec  # later events in a batch build on earlier ones
         assert spec is not None  # apply_feedback raised if the session had no search
-        rejected = [d.reason for d in decisions if not d.accepted and d.reason]
+        refused = [d.reason for d in decisions if not d.accepted and d.reason]
         summary = FeedbackDecision(
             accepted=any(d.accepted for d in decisions),
             spec=spec,
             next_action=_combined_action(decisions),
             change_notes=[n for d in decisions for n in d.change_notes],
-            reason="; ".join(rejected) or None,
+            reason="; ".join(refused) or None,
+            changes=[c for d in decisions for c in d.changes],
         )
         if summary.next_action is not NextAction.REFINE_SEARCH:
             turn = SearchTurn(recorded, spec, None, None, decision=summary)
@@ -161,6 +171,7 @@ class Orchestrator:
                 spec,
                 limit,
                 summary.change_notes,
+                summary.changes,
                 triggered_by=events[-1].event_id,
             )
             turn = replace(turn, decision=summary)
@@ -175,7 +186,8 @@ class Orchestrator:
         query_text: str,
         spec: SearchSpecification,
         limit: int,
-        changes: list[str],
+        notes: list[str],
+        changes: list[SpecChange],
         *,
         triggered_by: str | None,
     ) -> SearchTurn:
@@ -190,7 +202,7 @@ class Orchestrator:
             result_track_ids=[c.track_id for c in outcome.candidates],
             created_at=self._clock.now(),
             triggered_by_event_id=triggered_by,
-            change_summary=changes,
+            change_summary=notes,
         )
         return SearchTurn(
             session=session.with_turn(record),
@@ -199,7 +211,8 @@ class Orchestrator:
             outcome=outcome,
             explanations=[e.explanation for e in explained],
             trace=result.trace,
-            change_summary=changes,
+            change_summary=notes,
+            changes=changes,
         )
 
 
@@ -214,32 +227,81 @@ def _combined_action(decisions: Sequence[FeedbackDecision]) -> NextAction:
 
 def spec_changes(old: SearchSpecification, new: SearchSpecification) -> list[str]:
     """Human-readable differences between two specs, for "what changed"."""
-    changes: list[str] = []
+    return [note for note, _ in _spec_diff(old, new)]
+
+
+def spec_change_entries(old: SearchSpecification, new: SearchSpecification) -> list[SpecChange]:
+    """The same differences as structured entries."""
+    return [change for _, change in _spec_diff(old, new) if change is not None]
+
+
+_VOCAL_KINDS = {
+    "preferred": ChangeKind.PREFERENCE_RAISED,
+    "avoided": ChangeKind.PREFERENCE_LOWERED,
+    "unspecified": ChangeKind.PREFERENCE_REMOVED,
+}
+"""`required`/`excluded` vocals come with a hard constraint, reported as `constraint_added`."""
+
+
+Diff = list[tuple[str, SpecChange | None]]
+
+
+def _spec_diff(old: SearchSpecification, new: SearchSpecification) -> Diff:
+    """(note, entry) pairs; a note without an entry is covered by another entry."""
+    diff: Diff = []
     for name in PREFERENCE_FIELDS:
-        changes += _pref_changes(getattr(old, name), getattr(new, name), "")
-    changes += _pref_changes(old.negative_preferences, new.negative_preferences, "less ")
+        category = name.removesuffix("_preferences")
+        diff += _pref_diff(getattr(old, name), getattr(new, name), category)
+    diff += _pref_diff(old.negative_preferences, new.negative_preferences, None)
     if old.vocal_preferences != new.vocal_preferences:
-        changes.append(f"vocals {new.vocal_preferences}")
+        note = f"vocals {new.vocal_preferences}"
+        kind = _VOCAL_KINDS.get(new.vocal_preferences)
+        change = None if kind is None else SpecChange(kind=kind, attribute="vocals", value="vocals")
+        diff.append((note, change))
     old_hard = {c.model_dump_json() for c in old.hard_constraints}
     for c in new.hard_constraints:
         if c.model_dump_json() not in old_hard:
             subject = c.value if c.value is not None else str(c.attribute)
-            changes.append(f"constraint: {subject} {c.operator}")
+            change = SpecChange(
+                kind=ChangeKind.CONSTRAINT_ADDED,
+                attribute=str(c.attribute),
+                operator=str(c.operator),
+                value=c.value,
+            )
+            diff.append((f"constraint: {subject} {c.operator}", change))
     if new.needs_clarification and not old.needs_clarification:
-        changes.append("needs clarification")
-    return changes
+        change = SpecChange(kind=ChangeKind.NEEDS_CLARIFICATION, value=new.clarification_question)
+        diff.append(("needs clarification", change))
+    return diff
 
 
-def _pref_changes(
-    old: Sequence[WeightedPreference], new: Sequence[WeightedPreference], lead: str
-) -> list[str]:
+def _pref_diff(
+    old: Sequence[WeightedPreference],
+    new: Sequence[WeightedPreference],
+    category: str | None,
+) -> Diff:
+    """`category=None` diffs the negative preferences."""
+    lead = "" if category is not None else "less "
     before = {p.value: p.weight for p in old}
     after = {p.value: p.weight for p in new}
-    changes = [f"added {lead}{v}" for v in after if v not in before]
-    changes += [f"dropped {lead}{v}" for v in before if v not in after]
-    changes += [
-        f"{lead}{v} {before[v]:.2f} -> {after[v]:.2f}"
-        for v in after
-        if v in before and abs(after[v] - before[v]) > 1e-9
+
+    def entry(kind: ChangeKind, negative_kind: ChangeKind, value: str) -> SpecChange:
+        if category is None:
+            return SpecChange(kind=negative_kind, value=value)
+        return SpecChange(kind=kind, attribute=category, value=value)
+
+    added, removed = ChangeKind.PREFERENCE_ADDED, ChangeKind.PREFERENCE_REMOVED
+    neg_added, neg_removed = ChangeKind.NEGATIVE_ADDED, ChangeKind.NEGATIVE_REMOVED
+    diff: Diff = [
+        (f"added {lead}{v}", entry(added, neg_added, v)) for v in after if v not in before
     ]
-    return changes
+    diff += [
+        (f"dropped {lead}{v}", entry(removed, neg_removed, v)) for v in before if v not in after
+    ]
+    for v in after:
+        if v in before and abs(after[v] - before[v]) > 1e-9:
+            up = after[v] > before[v]
+            kind = ChangeKind.PREFERENCE_RAISED if up else ChangeKind.PREFERENCE_LOWERED
+            note = f"{lead}{v} {before[v]:.2f} -> {after[v]:.2f}"
+            diff.append((note, entry(kind, neg_added if up else neg_removed, v)))
+    return diff
