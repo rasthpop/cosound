@@ -126,8 +126,10 @@ def _result(n: int, *, semantic: bool = True, audio: bool = True) -> s.TrackResu
             EvidenceStatus.AUDIO_AND_METADATA if audio else EvidenceStatus.METADATA_ONLY
         ),
         constraint_status=[],
-        # as evidence_builder: no audio -> "no_audio"; semantic search down -> "semantic_unavailable"
-        uncertainty_flags=["no_audio"] if not audio else [] if semantic else ["semantic_unavailable"],
+        # as evidence_builder: no audio -> "no_audio"; semantic down -> "semantic_unavailable"
+        uncertainty_flags=(
+            ["no_audio"] if not audio else [] if semantic else ["semantic_unavailable"]
+        ),
         retrieval_sources=sources,
         spatial=s.Spatial(x=round(-0.6 + n * 0.1, 2), y=0.25, projection_version=PROJECTION)
         if audio
@@ -282,7 +284,7 @@ def build_examples() -> dict[str, BaseModel]:
                         "uncertainty_flags": ["constraint_unknown:vocals"],
                     }
                 )
-            ]
+            ],
         ),
         "track_detail": s.TrackDetail(
             track_id="trk_example_1",
