@@ -13,7 +13,8 @@
   - Shortcuts: `/` focuses the input, Esc. An `aria-live="polite"` region announces "N results for …". Example-query copy lives in `copy.ts`. Flow 1 (idle): full map, input focused, examples visible.
 - **Done when:**
   - MSW-backed tests for happy, empty, no-confident-match, needs-clarification, degraded-semantic, llm-fallback, offline and error scenarios; the live region announces the result count.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `DiscoverLayout` places the zones with Tailwind `lg` (1024 px). `useIsDesktop` picks the results panel or the vaul sheet, and defaults to desktop without `matchMedia`. Esc is left to the views (SearchBar blurs, the drawer closes); `useShortcuts` ignores single-key shortcuts while a field has focus. The pill merges the plate's capabilities (else health's) with `useMusicMap().availability`; its retry reloads health and the map, and re-runs an offline search. A small `ResultsLoading` view (row skeletons) was added to `ResultsPanel.tsx` for the first search. Chip feedback is a no-op until T02, and the map slot is an empty canvas until T03.
 
 ### U04.T02 — Feedback & refinement wiring
 - **Skills:** ui-architecture, ux-states-and-evidence

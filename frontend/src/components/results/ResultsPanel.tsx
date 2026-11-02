@@ -12,6 +12,7 @@ import { formatResultCount } from "../format/text";
 import { Button } from "../ui/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from "../ui/drawer";
 import { ScrollArea } from "../ui/scroll-area";
+import { Skeleton } from "../ui/skeleton";
 
 export interface ResultsPanelProps {
   /** The query as the user typed it (`interpreted_query.original_query`). */
@@ -109,5 +110,22 @@ export function ResultsList({ children, label = "Ranked results" }: { children: 
     <ol aria-label={label} className="flex flex-col gap-0.5">
       {children}
     </ol>
+  );
+}
+
+/** The first search is running and there is no plate yet: row-shaped placeholders, no layout jump. */
+export function ResultsLoading({ rows = 4 }: { rows?: number }) {
+  return (
+    <div role="status" aria-label="Loading results" className="flex flex-col gap-0.5">
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} className="flex min-h-7 gap-1 px-1 py-1">
+          <Skeleton className="h-2 w-2" />
+          <div className="flex flex-1 flex-col gap-0.5">
+            <Skeleton className="h-2 w-3/5" />
+            <Skeleton className="h-1.5 w-2/5" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
