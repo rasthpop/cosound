@@ -25,7 +25,8 @@
   - `ClarificationPrompt`: the question and a reply field (`onReply`).
 - **Done when:**
   - Stories: idle, focused with examples, loading/stale, interpreted soft/hard/negative (`search_ok`, `search_constraint_unknown`), LLM fallback, needs clarification. Tests: emitted payloads typed; hard and negative chips emit no feedback.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** No fixture had a negative preference, and `search_constraint_unknown` checked a vocals constraint its interpreted query did not contain. I fixed the backend example (`api/examples.py`): it now has the hard vocals constraint and a negative "electronic", and its flag is the real `constraint_unknown:vocals` instead of `vocals_unknown`, which the backend never produces. This changes example data only, not the schema; fixtures were regenerated and backend API tests pass. Attribute feedback sends `{attribute: <category>, value: <term>}`, which `resolve_attribute` accepts for any term (vocals: `attribute: "vocals"`, `value: null`). `QueryChip` props are a discriminated union, so only soft chips can take handlers. The search bar is controlled, so the container keeps the typed text across errors and offline.
 
 ### U02.T03 — Results panel & rows
 - **Skills:** ui-architecture, ux-states-and-evidence

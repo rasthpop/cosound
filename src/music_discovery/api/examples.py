@@ -250,7 +250,23 @@ def build_examples() -> dict[str, BaseModel]:
                 )
             ],
         ),
+        # a hard constraint the evidence cannot verify, plus a soft negative preference
         "search_constraint_unknown": _search(
+            interpreted_query=_query(
+                original_query="chill flute without vocals, less electronic",
+                vocal_preferences="excluded",
+                hard_constraints=[
+                    s.HardConstraint(
+                        attribute=ConstraintAttribute.VOCALS,
+                        operator=ConstraintOperator.EXCLUDED,
+                        value=None,
+                        range=None,
+                    )
+                ],
+                negative_preferences=[
+                    s.Preference(value="electronic", weight=0.6, source_span="less electronic")
+                ],
+            ),
             results=[
                 _result(1).model_copy(
                     update={
@@ -262,7 +278,7 @@ def build_examples() -> dict[str, BaseModel]:
                                 status=ConstraintStatus.UNKNOWN,
                             )
                         ],
-                        "uncertainty_flags": ["vocals_unknown"],
+                        "uncertainty_flags": ["constraint_unknown:vocals"],
                     }
                 )
             ]

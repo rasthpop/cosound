@@ -1850,7 +1850,12 @@ export interface components {
          *         "era_preferences": [],
          *         "excluded_track_ids": [],
          *         "genre_preferences": [],
-         *         "hard_constraints": [],
+         *         "hard_constraints": [
+         *           {
+         *             "attribute": "vocals",
+         *             "operator": "excluded"
+         *           }
+         *         ],
          *         "instrument_preferences": [
          *           {
          *             "source_span": "flute",
@@ -1866,9 +1871,15 @@ export interface components {
          *             "weight": 0.7
          *           }
          *         ],
-         *         "negative_preferences": [],
+         *         "negative_preferences": [
+         *           {
+         *             "source_span": "less electronic",
+         *             "value": "electronic",
+         *             "weight": 0.6
+         *           }
+         *         ],
          *         "negative_reference_track_ids": [],
-         *         "original_query": "Something chill with a flute",
+         *         "original_query": "chill flute without vocals, less electronic",
          *         "reference_track_ids": [],
          *         "semantic_prompts": [
          *           "chill music featuring flute"
@@ -1877,7 +1888,7 @@ export interface components {
          *         "tempo_preferences": [],
          *         "texture_preferences": [],
          *         "uncertainties": [],
-         *         "vocal_preferences": "unspecified"
+         *         "vocal_preferences": "excluded"
          *       },
          *       "no_match_reasons": [],
          *       "outcome": "ok",
@@ -1933,7 +1944,7 @@ export interface components {
          *           "title": "Example Track 1",
          *           "track_id": "trk_example_1",
          *           "uncertainty_flags": [
-         *             "vocals_unknown"
+         *             "constraint_unknown:vocals"
          *           ]
          *         }
          *       ],

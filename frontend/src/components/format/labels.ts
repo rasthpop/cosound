@@ -55,7 +55,6 @@ export function attributeLabel(attribute: string): string {
 const FLAGS: Record<string, string> = {
   no_audio: "No audio analysis for this track",
   semantic_unavailable: "Sound-based matching was unavailable",
-  vocals_unknown: "Vocals not verified",
 };
 
 /** One `uncertainty_flags` entry as a sentence; `constraint_unknown:<attribute>` → "<Attribute> not verified". */

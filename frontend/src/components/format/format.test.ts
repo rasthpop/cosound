@@ -68,7 +68,6 @@ describe("labels", () => {
   it("labels uncertainty flags, including per-constraint ones", () => {
     expect(uncertaintyLabel("no_audio")).toBe("No audio analysis for this track");
     expect(uncertaintyLabel("semantic_unavailable")).toBe("Sound-based matching was unavailable");
-    expect(uncertaintyLabel("vocals_unknown")).toBe("Vocals not verified");
     expect(uncertaintyLabel("constraint_unknown:vocals")).toBe("Vocals not verified");
     expect(uncertaintyLabel("constraint_unknown:mood")).toBe("Mood not verified");
     expect(uncertaintyLabel("brand_new_flag")).toBe("Brand new flag");
