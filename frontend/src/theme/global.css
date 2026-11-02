@@ -1,0 +1,23 @@
+/* Global styles: Tailwind, the self-hosted font and the generated token variables (ADR-0003).
+   Only semantic utilities exist: tokens.css resets Tailwind's default palette and scales. */
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "./generated/tokens.css";
+
+@layer base {
+  html {
+    @apply bg-surface-canvas text-fg font-sans text-body font-regular;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+  }
+
+  /* One visible focus ring everywhere (ui.md §7); components may refine it, never remove it. */
+  :focus-visible {
+    outline: var(--token-size-ring-focus) solid var(--token-color-focus-ring);
+    outline-offset: var(--token-size-ring-focus);
+  }
+}

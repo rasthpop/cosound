@@ -1,0 +1,245 @@
+/* Generated from src/theme/tokens by scripts/emit-tokens.mjs. Do not edit: change the tokens,
+   then run `npm run tokens`. */
+
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --token-opacity-point-default: 0.55;
+  --token-opacity-point-dimmed: 0.15;
+  --token-opacity-point-result: 1;
+  --token-size-point-default: 1.5px;
+  --token-size-point-hover: 2.5px;
+  --token-size-point-result: 3.5px;
+  --token-size-point-selected: 4px;
+  --token-size-ring-result: 1px;
+  --token-size-ring-selected: 2px;
+  --token-size-ring-focus: 2px;
+  --token-size-icon: 16px;
+  --token-size-hit-target: 24px;
+  --token-blur-panel: 12px;
+  --token-radius-sm: 8px;
+  --token-radius-md: 12px;
+  --token-radius-lg: 16px;
+  --token-radius-pill: 9999px;
+  --token-font-family-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+  --token-font-size-meta: 13px;
+  --token-font-size-body: 15px;
+  --token-font-size-heading: 20px;
+  --token-font-size-display: 28px;
+  --token-font-line-height-meta: 18px;
+  --token-font-line-height-body: 22px;
+  --token-font-line-height-heading: 28px;
+  --token-font-line-height-display: 36px;
+  --token-font-weight-regular: 400px;
+  --token-font-weight-medium: 500px;
+  --token-space-xs: 4px;
+  --token-space-sm: 8px;
+  --token-space-md: 12px;
+  --token-space-lg: 16px;
+  --token-space-xl: 24px;
+  --token-space-xxl: 32px;
+  --token-space-xxxl: 48px;
+  --token-density-comfortable-row-height: 56px;
+  --token-density-comfortable-row-gap: 4px;
+  --token-density-comfortable-panel-padding: 16px;
+  --token-density-compact-row-height: 44px;
+  --token-density-compact-row-gap: 0px;
+  --token-density-compact-panel-padding: 12px;
+  --token-color-surface-canvas: #0B0B0F;
+  --token-color-surface-panel: rgba(18, 18, 24, 0.72);
+  --token-color-surface-raised: rgba(31, 31, 40, 0.88);
+  --token-color-text-default: #F4F4F7;
+  --token-color-text-muted: #A9A9B8;
+  --token-color-text-on-accent: #0B0B0F;
+  --token-color-border-hairline: rgba(255, 255, 255, 0.08);
+  --token-color-border-strong: rgba(255, 255, 255, 0.16);
+  --token-color-focus-ring: #A78BFA;
+  --token-color-accent-default: #A78BFA;
+  --token-color-accent-hover: #C4B5FD;
+  --token-color-accent-subtle: #6D28D9;
+  --token-color-state-loading: #8A8A9A;
+  --token-color-state-empty: #8A8A9A;
+  --token-color-state-error: #F87171;
+  --token-color-state-warning: #FBBF24;
+  --token-color-state-degraded: #FCD34D;
+  --token-color-evidence-audio-and-metadata: #5EEAD4;
+  --token-color-evidence-metadata-only: #A9A9B8;
+  --token-color-evidence-no-audio: #8A8A9A;
+  --token-color-match-strong: #FF9B85;
+  --token-color-match-partial: #FF7556;
+  --token-color-match-weak: #8A8A9A;
+  --token-color-feedback-positive: #4ADE80;
+  --token-color-feedback-negative: #F87171;
+  --token-color-feedback-neutral: #A9A9B8;
+  --token-color-map-backdrop: #0B0B0F;
+  --token-color-map-point-default: #8A8A9A;
+  --token-color-map-point-hover: #E6E6EC;
+  --token-color-map-point-selected: #A78BFA;
+  --token-color-map-point-dimmed: #5A5A6A;
+  --token-color-map-point-result: #F4F4F7;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --token-opacity-point-default: 0.55;
+  --token-opacity-point-dimmed: 0.15;
+  --token-opacity-point-result: 1;
+  --token-size-point-default: 1.5px;
+  --token-size-point-hover: 2.5px;
+  --token-size-point-result: 3.5px;
+  --token-size-point-selected: 4px;
+  --token-size-ring-result: 1px;
+  --token-size-ring-selected: 2px;
+  --token-size-ring-focus: 2px;
+  --token-size-icon: 16px;
+  --token-size-hit-target: 24px;
+  --token-blur-panel: 12px;
+  --token-radius-sm: 8px;
+  --token-radius-md: 12px;
+  --token-radius-lg: 16px;
+  --token-radius-pill: 9999px;
+  --token-font-family-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+  --token-font-size-meta: 13px;
+  --token-font-size-body: 15px;
+  --token-font-size-heading: 20px;
+  --token-font-size-display: 28px;
+  --token-font-line-height-meta: 18px;
+  --token-font-line-height-body: 22px;
+  --token-font-line-height-heading: 28px;
+  --token-font-line-height-display: 36px;
+  --token-font-weight-regular: 400px;
+  --token-font-weight-medium: 500px;
+  --token-space-xs: 4px;
+  --token-space-sm: 8px;
+  --token-space-md: 12px;
+  --token-space-lg: 16px;
+  --token-space-xl: 24px;
+  --token-space-xxl: 32px;
+  --token-space-xxxl: 48px;
+  --token-density-comfortable-row-height: 56px;
+  --token-density-comfortable-row-gap: 4px;
+  --token-density-comfortable-panel-padding: 16px;
+  --token-density-compact-row-height: 44px;
+  --token-density-compact-row-gap: 0px;
+  --token-density-compact-panel-padding: 12px;
+  --token-color-surface-canvas: #F4F4F7;
+  --token-color-surface-panel: rgba(255, 255, 255, 0.86);
+  --token-color-surface-raised: rgba(255, 255, 255, 0.94);
+  --token-color-text-default: #0B0B0F;
+  --token-color-text-muted: #5A5A6A;
+  --token-color-text-on-accent: #FFFFFF;
+  --token-color-border-hairline: rgba(11, 11, 15, 0.10);
+  --token-color-border-strong: rgba(11, 11, 15, 0.20);
+  --token-color-focus-ring: #7C3AED;
+  --token-color-accent-default: #7C3AED;
+  --token-color-accent-hover: #6D28D9;
+  --token-color-accent-subtle: #DDD6FE;
+  --token-color-state-loading: #5A5A6A;
+  --token-color-state-empty: #5A5A6A;
+  --token-color-state-error: #B91C1C;
+  --token-color-state-warning: #B45309;
+  --token-color-state-degraded: #B45309;
+  --token-color-evidence-audio-and-metadata: #0F766E;
+  --token-color-evidence-metadata-only: #3A3A47;
+  --token-color-evidence-no-audio: #5A5A6A;
+  --token-color-match-strong: #7F1D0E;
+  --token-color-match-partial: #A82D14;
+  --token-color-match-weak: #737383;
+  --token-color-feedback-positive: #15803D;
+  --token-color-feedback-negative: #B91C1C;
+  --token-color-feedback-neutral: #5A5A6A;
+  --token-color-map-backdrop: #F4F4F7;
+  --token-color-map-point-default: #5A5A6A;
+  --token-color-map-point-hover: #1F1F28;
+  --token-color-map-point-selected: #7C3AED;
+  --token-color-map-point-dimmed: #A9A9B8;
+  --token-color-map-point-result: #0B0B0F;
+}
+
+:root {
+  --token-motion-duration-fast: 150ms;
+  --token-motion-duration-base: 250ms;
+  --token-motion-duration-camera: 600ms;
+  --token-motion-duration-pulse: 1600ms;
+  --token-motion-easing-out: cubic-bezier(0.2, 0, 0, 1);
+  --token-motion-easing-linear: linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --token-motion-duration-fast: 0ms;
+    --token-motion-duration-base: 0ms;
+    --token-motion-duration-camera: 0ms;
+    --token-motion-duration-pulse: 0ms;
+    --token-motion-easing-out: linear;
+    --token-motion-easing-linear: linear;
+  }
+}
+
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --font-weight-*: initial;
+  --leading-*: initial;
+  --tracking-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+  --ease-*: initial;
+  --animate-*: initial;
+  --perspective-*: initial;
+  --aspect-*: initial;
+}
+
+@theme inline {
+  --color-surface-canvas: var(--token-color-surface-canvas);
+  --color-surface-panel: var(--token-color-surface-panel);
+  --color-surface-raised: var(--token-color-surface-raised);
+  --color-fg: var(--token-color-text-default);
+  --color-muted: var(--token-color-text-muted);
+  --color-on-accent: var(--token-color-text-on-accent);
+  --color-hairline: var(--token-color-border-hairline);
+  --color-border-strong: var(--token-color-border-strong);
+  --color-focus: var(--token-color-focus-ring);
+  --color-accent: var(--token-color-accent-default);
+  --color-accent-hover: var(--token-color-accent-hover);
+  --color-accent-subtle: var(--token-color-accent-subtle);
+  --color-state-loading: var(--token-color-state-loading);
+  --color-state-empty: var(--token-color-state-empty);
+  --color-state-error: var(--token-color-state-error);
+  --color-state-warning: var(--token-color-state-warning);
+  --color-state-degraded: var(--token-color-state-degraded);
+  --color-evidence-audio-and-metadata: var(--token-color-evidence-audio-and-metadata);
+  --color-evidence-metadata-only: var(--token-color-evidence-metadata-only);
+  --color-evidence-no-audio: var(--token-color-evidence-no-audio);
+  --color-match-strong: var(--token-color-match-strong);
+  --color-match-partial: var(--token-color-match-partial);
+  --color-match-weak: var(--token-color-match-weak);
+  --color-feedback-positive: var(--token-color-feedback-positive);
+  --color-feedback-negative: var(--token-color-feedback-negative);
+  --color-feedback-neutral: var(--token-color-feedback-neutral);
+  --color-map-backdrop: var(--token-color-map-backdrop);
+  --font-sans: var(--token-font-family-sans);
+  --text-meta: var(--token-font-size-meta);
+  --text-meta--line-height: var(--token-font-line-height-meta);
+  --text-body: var(--token-font-size-body);
+  --text-body--line-height: var(--token-font-line-height-body);
+  --text-heading: var(--token-font-size-heading);
+  --text-heading--line-height: var(--token-font-line-height-heading);
+  --text-display: var(--token-font-size-display);
+  --text-display--line-height: var(--token-font-line-height-display);
+  --font-weight-regular: var(--token-font-weight-regular);
+  --font-weight-medium: var(--token-font-weight-medium);
+  --radius-sm: var(--token-radius-sm);
+  --radius-md: var(--token-radius-md);
+  --radius-lg: var(--token-radius-lg);
+  --radius-pill: var(--token-radius-pill);
+  --blur-panel: var(--token-blur-panel);
+  --ease-out: var(--token-motion-easing-out);
+  --ease-linear: var(--token-motion-easing-linear);
+  --spacing: var(--token-space-sm);
+}

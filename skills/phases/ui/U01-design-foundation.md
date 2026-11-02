@@ -25,7 +25,8 @@
   - `ThemeProvider` sets `data-theme` on `<html>`, follows `prefers-color-scheme` only when no theme was chosen, and exposes `reducedMotion` from `prefers-reduced-motion`. `@fontsource-variable/inter` is imported in `global.css`.
 - **Done when:**
   - Test: switching theme changes only the `data-theme` attribute and the computed CSS variables; reduced motion is respected; `bg-red-500` does not compile to a rule (default palette reset); `tokens:check` green.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The token variables are prefixed `--token-*` so they cannot collide with the `--color-*` names Tailwind generates for utilities. Motion has its own `:root` block, because a reduced-motion override inside the more specific `:root[data-theme]` blocks would lose. The emitter loads the TS tokens with Vite's `runnerImport`. `tokens:check` is wired into CI and `make contract-check`. `main.tsx` imports `global.css` and wraps the app in `ThemeProvider`. Utility names: `bg-surface-{canvas,panel,raised}`, `text-fg`/`text-muted`/`text-on-accent`, `border-hairline`/`border-border-strong`, `ring-focus`, `*-accent*`, `*-state-*`, `*-evidence-*`, `*-match-*`, `*-feedback-*`, `text-{meta,body,heading,display}`, `font-{regular,medium}`, `rounded-{sm,md,lg,pill}`, `backdrop-blur-panel`, `ease-{out,linear}`, and spacing in 8 px steps (`p-1` = 8 px).
 
 ### U01.T03 — Map data-viz scales
 - **Skills:** ui-design-tokens, deckgl-track-map, dataviz
