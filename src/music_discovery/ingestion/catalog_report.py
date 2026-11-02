@@ -50,6 +50,73 @@ def summarize(
     )
 
 
+#: Track fields whose completeness the data-understanding report measures (CRISP-DM step 2).
+PROFILED_FIELDS = (
+    "artists",
+    "year",
+    "genres",
+    "styles",
+    "tags",
+    "duration_seconds",
+    "release_id",
+    "source_url",
+    "audio_path",
+    "audio_embedding_id",
+)
+
+
+@dataclass
+class CatalogProfile:
+    """What the catalog contains and how complete it is. Missing values are counted, not filled."""
+
+    tracks: int = 0
+    by_source: dict[str, int] = field(default_factory=dict)
+    present: dict[str, int] = field(default_factory=dict)
+    """Tracks with a non-empty value, per field in PROFILED_FIELDS."""
+    first_genre: dict[str, int] = field(default_factory=dict)
+    """First genre tag per track (the map's colour), `"(none)"` for tracks without one."""
+    genres_per_track: dict[int, int] = field(default_factory=dict)
+    with_decodable_audio: int = 0
+    with_embeddings: int = 0
+    without_audio: list[str] = field(default_factory=list)
+    """Track ids with no validated audio (not embedded, not on the map)."""
+    audio_licenses: dict[str, int] = field(default_factory=dict)
+
+
+def _present(track: Track, name: str) -> bool:
+    value = getattr(track, name)
+    return bool(value) if isinstance(value, list | str) else value is not None
+
+
+def profile(tracks: TrackRepository, audio: TrackAudioRepository) -> CatalogProfile:
+    """Field completeness, genre balance and audio/embedding coverage of the whole catalog."""
+    sources: Counter[str] = Counter()
+    present: Counter[str] = Counter()
+    first_genre: Counter[str] = Counter()
+    per_track: Counter[int] = Counter()
+    ids: list[str] = []
+    for track in iter_tracks(tracks):
+        ids.append(track.id)
+        sources[str(track.provenance.source)] += 1
+        present.update(name for name in PROFILED_FIELDS if _present(track, name))
+        first_genre[track.genres[0] if track.genres else "(none)"] += 1
+        per_track[len(track.genres)] += 1
+    records = audio.list_all()
+    with_audio = {a.track_id for a in records}
+    licenses = Counter(a.license or "(not recorded)" for a in records)
+    return CatalogProfile(
+        tracks=len(ids),
+        by_source=dict(sorted(sources.items())),
+        present={name: present[name] for name in PROFILED_FIELDS},
+        first_genre=dict(first_genre.most_common()),
+        genres_per_track=dict(sorted(per_track.items())),
+        with_decodable_audio=len(records),
+        with_embeddings=sum(a.has_embedding for a in records),
+        without_audio=sorted(set(ids) - with_audio),
+        audio_licenses=dict(licenses.most_common()),
+    )
+
+
 def lookup(tracks: TrackRepository, text: str, *, limit: int = 20) -> list[Track]:
     """Tracks whose title or an artist name contains `text` (normalized), ordered by id."""
     needle = matching_key(text)
