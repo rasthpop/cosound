@@ -13,7 +13,8 @@
   - Check the live-region announcements, focus loop and return in the drawer, and contrast of text on glass panels over the densest map area in both themes. Selection must not rely on color alone, and reduced motion must stop the pulse and camera easing.
 - **Done when:**
   - No serious/critical axe violations; the walkthrough is scripted in e2e and documented.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `e2e/a11y.spec.ts` has 43 tests: axe on all 10 scenarios × 2 viewports × 2 themes (idle, after search, and with the drawer open in `happy`), the scripted keyboard walkthrough, and a measured contrast check. axe can't see under panels over WebGL, so the test screenshots a 10k-point map, blurs it 12 px like the panels' backdrop, and checks the text tokens on the panel fill over the most extreme pixel: ≥ 7.5:1 muted on dark, ≥ 6.3:1 on light. Zero serious or critical violations; no code changes were needed. Selection styling and reduced motion are covered by existing unit and story tests, referenced in `docs/ui/accessibility.md`. Re-measuring contrast on the real fma_small map is left to T04.
 
 ### U05.T02 — Visual regression & e2e flows
 - **Skills:** ui-isolated-development
