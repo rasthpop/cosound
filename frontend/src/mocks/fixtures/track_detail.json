@@ -20,17 +20,17 @@
     {
       "artists": [
         {
-          "artist_id": "art_example_1",
-          "name": "Example Artist 1"
+          "artist_id": "art_example_2",
+          "name": "Example Artist 2"
         }
       ],
-      "relationship_type": "same_artist",
+      "relationship_type": "same_label",
       "title": "Example Track 2",
       "track_id": "trk_example_2"
     }
   ],
   "relationship_counts": {
-    "same_artist": 1
+    "same_label": 1
   },
   "release": {
     "release_id": "rel_example_1",
@@ -40,8 +40,8 @@
   "source_url": null,
   "spatial": {
     "projection_version": "umap-example",
-    "x": -0.5,
-    "y": 0.25
+    "x": -0.6,
+    "y": 0.3
   },
   "styles": [],
   "tags": [

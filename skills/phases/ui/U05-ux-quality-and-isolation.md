@@ -13,7 +13,8 @@
   - Check the live-region announcements, focus loop and return in the drawer, and contrast of text on glass panels over the densest map area in both themes. Selection must not rely on color alone, and reduced motion must stop the pulse and camera easing.
 - **Done when:**
   - No serious/critical axe violations; the walkthrough is scripted in e2e and documented.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `e2e/a11y.spec.ts` has 43 tests: axe on all 10 scenarios × 2 viewports × 2 themes (idle, after search, and with the drawer open in `happy`), the scripted keyboard walkthrough, and a measured contrast check. axe can't see under panels over WebGL, so the test screenshots a 10k-point map, blurs it 12 px like the panels' backdrop, and checks the text tokens on the panel fill over the most extreme pixel: ≥ 7.5:1 muted on dark, ≥ 6.3:1 on light. Zero serious or critical violations; no code changes were needed. Selection styling and reduced motion are covered by existing unit and story tests, referenced in `docs/ui/accessibility.md`. Re-measuring contrast on the real fma_small map is left to T04.
 
 ### U05.T02 — Visual regression & e2e flows
 - **Skills:** ui-isolated-development
@@ -24,7 +25,8 @@
   - E2E for the five core flows in ui.md §5 across all mock scenarios. An optional `slow` smoke against the real backend (fma_small).
 - **Done when:**
   - CI runs e2e in mock mode; baselines committed.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `flows.spec.ts` runs the five ui.md §5 flows against all 10 scenarios. Each scenario declares its expected outcome, map and details; flows that can't apply there are skipped by name (37 run, 13 skipped). `visual.spec.ts` has 32 baselines in `e2e/__screenshots__/` (8 states × dark/light × 1280/390 px, 1.5 MB), with a 1 % pixel tolerance for the software-rendered WebGL. They are page-level states rather than per-story shots, since the stories are already checked by the story tests. `real-backend.spec.ts` (opt-in) passed against fma_small on 2026-11-02. Shared helpers moved to `e2e/helpers.ts`. CI's e2e step now uploads `test-results/` on failure. One flake was fixed: on phone, the "refined" shot pressed its button by pointer while the sheet was sliding in. The baselines were made on Linux Chromium (as in CI) but haven't yet been checked against a CI run.
 
 ### U05.T03 — Evidence & copy audit
 - **Skills:** ux-states-and-evidence, grounded-explanations
@@ -35,7 +37,25 @@
   - Verify: no percentages or probabilities; bands only from the API; no implied instrument detection; honest map labeling ("nearness is suggestive"); neighbors labeled by metric; nulls absent; FMA attribution and per-track license shown with playback.
 - **Done when:**
   - The audit has zero unresolved findings.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The `evidence-auditor` agent found no blockers, 10 should-fix items and 10 notes; the details are in `docs/ui/copy-audit.md`.
+  - **Fixed in the generator** (`src/music_discovery/api/examples.py`):
+    - Fixture descriptions now use the real `description_service` templates, and all of them pass the claim validator.
+    - The example data is one consistent world: tracks without audio are off the map, and genre, artist and coordinates agree across fixtures.
+    - Fixtures and the OpenAPI schema were regenerated; backend tests pass (1077).
+  - **Fixed in the UI:**
+    - The drawer shows the evidence note.
+    - "Can't reach the server" replaces "Offline".
+    - Evidence labels say what evidence exists, not how a track matched.
+    - Labelled "FMA genres" and "FMA tags" groups in the drawer.
+    - The `semantic_unavailable` neighbor reason has a label.
+    - The useless "Only tracks with audio" toggle is removed.
+    - The map label is hedged.
+    - Instrument feedback reads as the user's own marking.
+    - The parser and credit wording is updated.
+  - **Contract request:** the row player's license needs a new API field: P08.T13 and P09.T13 were appended, flagged for the UI.
+  - **Accessibility fix:** the new instrument-button label had to keep the visible text in its accessible name (axe `label-content-name-mismatch`).
+  - All 32 visual baselines were regenerated.
 
 ### U05.T04 — Performance pass
 - **Skills:** deckgl-track-map, ui-architecture
@@ -46,7 +66,17 @@
   - Production bundle against the ADR-0003 budget (≤ 600 kB gzip JS).
 - **Done when:**
   - Budgets met or deviations documented with a follow-up.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:**
+  - **Budgets.** JS is 348 kB gzip (budget 600). fma_small pages in in 2.2 s. Search to highlight on the real map is 2.6 s.
+  - **Frame rate.** Headless WebGL here is SwiftShader. A CPU profile shows over 95 % of pan time in native rasterization and under 200 ms of app JavaScript, so frame rate isn't measurable here; a headed run on a GPU machine is the documented follow-up.
+  - **Fixes:**
+    - The map loads 5000-point pages (the API maximum). 10k page-in went from 10.7 s to 2.7 s.
+    - Point styles are cached per state × colour and per point. A restyle went from 19 to 8 ms at 10k and from 194 to 86 ms at 100k.
+    - The map's list alternative overflowed off-screen on desktop with many points; it now scrolls.
+  - **Tests.** Render-count tests: hover keeps the point layer; a refinement settles in 8 commits.
+  - **Contrast.** `a11y.spec.ts`'s contrast check now also runs on a real map with `E2E_REAL_BACKEND=1`. On fma_small, muted text is 7.52:1 on dark and 6.41:1 on light.
+  - **Probe.** `e2e/perf.spec.ts` is opt-in (`PERF=1`).
 
 ### U05.T05 — Visual-layer isolation proof
 - **Skills:** ui-isolated-development, music-discovery-architecture
@@ -56,7 +86,12 @@
   - On a throwaway branch, replace `theme/`, `components/` and `pages/` with a minimal alternative skin (or switch to a radically different theme). Then run the backend tests, hook tests, contract check and boundary check.
 - **Done when:**
   - All functional checks pass unchanged; the result is recorded (base §1 requirement 10, §14.4).
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:**
+  - **Setup.** The check ran in a throwaway worktree and branch, deleted afterwards. `theme/`, `components/`, `pages/`, `.storybook` and the UI E2E specs were replaced by a plain skin: a pass-through `ThemeProvider`, a form plus a table, and the map shown as a point count with no deck.gl. Nothing else was touched.
+  - **Results.** Backend: 1077 passed. OpenAPI, fixture and contract checks pass. Boundaries pass. `tsc` passes. Hook, API and mock tests plus `App.test`: 97 passed. Build and bundle check pass. Harness E2E: 3 passed.
+  - **The only coupling found.** The composition root imports two names, `ThemeProvider` and `DiscoverPage`. Separately, `vite.config.ts` needs some `.storybook/main.ts`; that is UI tooling, noted as an optional follow-up.
+  - **Write-up.** `docs/ui/isolation-check.md`.
 
 ## Exit criteria
-- [ ] Accessibility, visual regression, copy honesty, performance and isolation verified.
+- [x] Accessibility, visual regression, copy honesty, performance and isolation verified.

@@ -1,5 +1,6 @@
 // The map container (ui.md §4.3): `useMusicMap` state → TrackMap and its chrome. It owns only map
-// UI state (legend and list open, zoom requests, a WebGL failure). Which tracks are highlighted,
+// UI state (legend and list open, zoom requests, a WebGL failure). The "Only tracks with audio"
+// filter is not offered: every map point comes from the audio projection, so it would do nothing. Which tracks are highlighted,
 // selected or hovered, and where the camera should go, come from the Discover screen, so the list
 // and the map share one selection.
 //
@@ -16,7 +17,7 @@ import { MapTooltip } from "@/components/map/MapTooltip";
 import { TrackMap, type FitRequest } from "@/components/map/TrackMap";
 import type { MusicMap } from "@/hooks";
 
-import { withAudioOnly, withGenre } from "./selection";
+import { withGenre } from "./selection";
 
 export interface MapLayerProps {
   map: MusicMap;
@@ -37,7 +38,8 @@ export interface MapLayerProps {
   resultsShown?: boolean;
 }
 
-export const MAP_LABEL = "Map of tracks by audio similarity";
+// "arranged by" and "approximate": positions are a 2-D projection, not a similarity measure
+export const MAP_LABEL = "Map of tracks arranged by audio similarity (approximate)";
 
 export function useMapLayer({
   map,
@@ -73,7 +75,8 @@ export function useMapLayer({
     return { canvas: <MapFallback reason="unavailable" />, controls: null };
   }
   if (webglFailed) {
-    return { canvas: <MapFallback reason="webgl">{list}</MapFallback>, controls: <MapCaption /> };
+    // no positions are drawn, so the caption about positions is left out
+    return { canvas: <MapFallback reason="webgl">{list}</MapFallback>, controls: null };
   }
 
   const canvas = (
@@ -114,8 +117,6 @@ export function useMapLayer({
         onLegendToggle={setLegendChoice}
         listOpen={listOpen}
         onListToggle={setListOpen}
-        audioOnly={map.filters.has_audio === true}
-        onAudioOnlyChange={(on) => map.setFilters(withAudioOnly(map.filters, on))}
       />
       <MapCaption />
     </>

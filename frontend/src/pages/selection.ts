@@ -48,11 +48,3 @@ export function withGenre(filters: MapFilters, genre: string | null): MapFilters
   else next.genre = genre;
   return next;
 }
-
-/** The "Only tracks with audio" toggle: on = `has_audio: true`, off = no audio filter. */
-export function withAudioOnly(filters: MapFilters, on: boolean): MapFilters {
-  const next: MapFilters = { ...filters };
-  if (on) next.has_audio = true;
-  else delete next.has_audio;
-  return next;
-}

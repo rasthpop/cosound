@@ -68,7 +68,8 @@ export function DiscoverLayout({ map, search, results, controls, status, overlay
         </div>
         <div className="flex min-h-0 flex-1 flex-col items-start justify-end gap-1">
           {results && <div className="pointer-events-auto flex min-h-0 flex-1 flex-col">{results}</div>}
-          {controls && <div className="pointer-events-auto mb-12 flex flex-col items-start gap-1 lg:mb-0">{controls}</div>}
+          {/* min-h-0: the column can shrink, so a tall child (the map's track list) scrolls instead of overflowing */}
+          {controls && <div className="pointer-events-auto mb-12 flex min-h-0 flex-col items-start gap-1 *:shrink-0 lg:mb-0">{controls}</div>}
         </div>
       </main>
 

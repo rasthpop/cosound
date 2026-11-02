@@ -27,7 +27,7 @@ export function StatusPill({ capabilities, offline = false, onRetry }: StatusPil
       {offline && (
         <p className="flex items-center gap-1">
           <WifiOff aria-hidden="true" className="text-state-error" {...ICON} />
-          <span>Offline</span>
+          <span>Can't reach the server</span>
           {onRetry && (
             <Button size="sm" variant="ghost" onClick={onRetry}>
               Retry

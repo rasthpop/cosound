@@ -108,6 +108,17 @@
 - **Notes:** Starlette `FileResponse` handles Range (206, `Content-Range`, `Accept-Ranges`). Path resolution and the DATA_DIR containment check live in `TrackService.audio_file` (done in T01); a record whose path escapes DATA_DIR, a missing file or an unknown suffix is `audio_missing` (404). License in `X-Audio-License` (percent-encoded if needed; `unknown` when not recorded).
 - **Status:** [x]
 
+### P08.T13 — Per-track audio license on results (G4, from U05.T03)
+- **Skills:** api-contracts, fma-audio-corpus
+- **Depends on:** P08.T09
+- **Files:** src/music_discovery/api/schemas.py, src/music_discovery/api/mapping.py, src/music_discovery/application/results.py, src/music_discovery/api/examples.py, tests/api/test_search.py, docs/api-changelog.md
+- **Do:**
+  - Add `audio: AudioInfo | null` (the same `{duration_seconds, license}` as `TrackDetail.audio`) to `TrackResult`. `null` when the track has no preview; `license` stays `null` when the catalog has none (never invented).
+  - Reason: ux-states-and-evidence §3 requires each track's own license next to playback, and result rows have a play button but no license to show (U05.T03 finding S3).
+- **Done when:**
+  - API test: a result with a preview carries its license from the catalog; one without carries `audio: null`. Fixtures regenerated; changelog entry. P09.T13 picks it up on the frontend.
+- **Status:** [ ]
+
 ## Exit criteria (Milestone 6, backend)
 - [x] Search, track details, neighbors, feedback, sessions, map points/meta exposed with validated schemas.
 - [x] Error envelope everywhere; degraded modes visible in responses.

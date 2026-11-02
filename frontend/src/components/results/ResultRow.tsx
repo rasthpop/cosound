@@ -83,7 +83,7 @@ export function ResultRow({ result, playUrl, playing = false, selected = false, 
         </div>
         {artists && <p className="truncate text-meta text-muted">{artists}</p>}
         {tags.length > 0 && (
-          <ul aria-label="Genres and styles" className="flex flex-wrap gap-0.5">
+          <ul aria-label="FMA genres and styles" className="flex flex-wrap gap-0.5">
             {tags.map((tag) => (
               <li key={tag}>
                 <Badge>{tag}</Badge>

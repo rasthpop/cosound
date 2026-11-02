@@ -94,7 +94,7 @@ describe("QueryChips", () => {
     const query = { ...fixture("search_needs_clarification").interpreted_query };
     render(<QueryChips query={query} interpreterFallback onAttributeFeedback={() => {}} />);
     expect(screen.getByText("vocals are both excluded and requested")).toBeInTheDocument();
-    expect(screen.getByText(/language model didn't answer/)).toBeInTheDocument();
+    expect(screen.getByText(/built-in parser instead of the language model/)).toBeInTheDocument();
   });
 });
 

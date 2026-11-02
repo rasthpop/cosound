@@ -70,17 +70,28 @@ function Facts({ detail }: { detail: TrackDetail }) {
     ["Year", detail.year === null ? null : String(detail.year)],
     ["Duration", duration],
   ].filter((f): f is [string, string] => f[1] !== null);
-  const tags = [...detail.genres, ...detail.styles, ...detail.tags];
+  // catalog labels, each group named by its source, so a free-form tag ("flute") never reads
+  // as something the system detected in the audio
+  const groups = [
+    ["FMA genres", [...new Set([...detail.genres, ...detail.styles])]],
+    ["FMA tags", [...new Set(detail.tags)]],
+  ] as const;
   return (
     <>
-      {tags.length > 0 && (
-        <ul aria-label="Genres, styles and tags" className="flex flex-wrap gap-0.5">
-          {[...new Set(tags)].map((t) => (
-            <li key={t}>
-              <Badge>{t}</Badge>
-            </li>
-          ))}
-        </ul>
+      {groups.map(
+        ([name, values]) =>
+          values.length > 0 && (
+            <div key={name} className="flex flex-col gap-0.5">
+              <p className="text-meta text-muted">{name}</p>
+              <ul aria-label={name} className="flex flex-wrap gap-0.5">
+                {values.map((t) => (
+                  <li key={t}>
+                    <Badge>{t}</Badge>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ),
       )}
       {facts.length > 0 && (
         <dl className="flex flex-col text-meta">

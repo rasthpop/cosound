@@ -22,7 +22,7 @@ export function AudioPlayer({ src, title, license, clipSeconds }: AudioPlayerPro
       <figcaption className="flex flex-col text-meta text-muted">
         {clip && <span>{clip} preview</span>}
         {license && <span>License: {license}</span>}
-        <span>Audio and metadata from the Free Music Archive (FMA).</span>
+        <span>Audio and metadata from the Free Music Archive (FMA); metadata CC BY 4.0.</span>
       </figcaption>
     </figure>
   );

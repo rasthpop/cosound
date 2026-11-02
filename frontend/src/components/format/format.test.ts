@@ -55,8 +55,10 @@ describe("text formatters", () => {
 
 describe("labels", () => {
   it("labels evidence, sources, metrics and relationships, with readable fallbacks", () => {
-    expect(evidenceLabel("metadata_only")).toBe("Matched on catalog data only");
-    expect(evidenceLabel("audio_and_metadata")).toBe("Matched on sound and catalog data");
+    // what evidence exists, never how the track matched (that is retrieval_sources)
+    expect(evidenceLabel("metadata_only")).toBe("No audio analysis for this track");
+    expect(evidenceLabel("audio_and_metadata")).toBe("Audio analysis and catalog data");
+    expect(neighborReasonLabel("semantic_unavailable")).toMatch(/^Sound-based matching is unavailable/);
     expect(evidenceLabel("lyrics_only" as EvidenceStatus)).toBe("Lyrics only");
     expect(retrievalSourceLabel("semantic")).toBe("sound");
     expect(neighborMetricLabel("clap_cosine")).toBe("Nearby in sound");

@@ -5,6 +5,7 @@
 import type { ReactNode } from "react";
 
 import type { TrackResult } from "@/api/types";
+import { EvidenceNote } from "@/components/results/EvidenceNote";
 import { NeighborList } from "@/components/track/NeighborList";
 import { RelatedTracks } from "@/components/track/RelatedTracks";
 import { ScoreBands } from "@/components/track/ScoreBands";
@@ -59,7 +60,18 @@ export function DetailsLayer({ trackId, projectionVersion, result, actions, vari
       description={result?.description ?? null}
       matchReasons={result?.match_reasons ?? []}
       actions={actions}
-      evidence={result ? <ScoreBands bands={result.score_bands} /> : null}
+      // what the match rests on (the row's flags), or for a track opened from the map, whether it
+      // has audio analysis at all
+      evidence={
+        result ? (
+          <>
+            <EvidenceNote evidence_status={result.evidence_status} uncertainty_flags={result.uncertainty_flags} retrieval_sources={result.retrieval_sources} />
+            <ScoreBands bands={result.score_bands} />
+          </>
+        ) : detail ? (
+          <EvidenceNote evidence_status={detail.evidence_status} uncertainty_flags={[]} retrieval_sources={[]} />
+        ) : null
+      }
       related={related}
     />
   );

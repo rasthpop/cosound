@@ -23,7 +23,7 @@ export function MapPointList({ points, highlightedTrackIds = EMPTY, selectedTrac
   const [shown, setShown] = useState(pageSize);
   const visible = points.slice(0, shown);
   return (
-    <section aria-label="Tracks on the map" className="flex max-h-full w-47.5 flex-col rounded-lg border border-hairline bg-surface-panel text-fg backdrop-blur-panel">
+    <section aria-label="Tracks on the map" className="flex max-h-full min-h-0 w-47.5 shrink! flex-col rounded-lg border border-hairline bg-surface-panel text-fg backdrop-blur-panel">
       <h2 className="px-2 pt-1.5 pb-1 text-body font-medium">
         {points.length} {points.length === 1 ? "track" : "tracks"} on the map
       </h2>

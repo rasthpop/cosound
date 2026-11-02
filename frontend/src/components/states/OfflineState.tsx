@@ -1,4 +1,5 @@
-// No response at all (`ApiError.kind === "network"`): retry, and the typed query is kept.
+// No response at all (`ApiError.kind === "network"`): the user's connection or the server may be
+// down, so the copy doesn't claim which. Retry, and the typed query is kept.
 import { WifiOff } from "lucide-react";
 
 import { Button } from "../ui/button";
@@ -16,7 +17,7 @@ export function OfflineState({ query, onRetry }: OfflineStateProps) {
       icon={WifiOff}
       tone="error"
       role="alert"
-      title="You're offline"
+      title="Can't reach the server"
       actions={
         onRetry && (
           <Button size="sm" onClick={onRetry}>

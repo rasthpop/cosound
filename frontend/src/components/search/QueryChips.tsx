@@ -100,7 +100,7 @@ export function QueryChips({ query, interpreterFallback = false, onAttributeFeed
           ))}
         </ul>
       )}
-      {interpreterFallback && <p className="text-meta text-muted">Read by the built-in parser; the language model didn't answer.</p>}
+      {interpreterFallback && <p className="text-meta text-muted">Read by the built-in parser instead of the language model.</p>}
     </section>
   );
 }

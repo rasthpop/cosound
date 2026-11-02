@@ -89,7 +89,7 @@
       "original_query": "Something chill with a flute",
       "reference_track_ids": [],
       "semantic_prompts": [
-        "chill music featuring flute"
+        "chill music with a flute"
       ],
       "spec_version": 2,
       "tempo_preferences": [],
@@ -110,14 +110,14 @@
         ],
         "audio_available": true,
         "constraint_status": [],
-        "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
+        "description": "Its audio is a strong match for \"chill music with a flute\". Listed under \"Folk\" in FMA.",
         "evidence_status": "audio_and_metadata",
         "genres": [
           "Folk"
         ],
         "match_reasons": [
           "Strong audio match",
-          "Genre tag: Folk"
+          "Tagged: Folk"
         ],
         "match_strength": "strong",
         "preview_url": "/api/tracks/trk_example_1/audio",
@@ -141,8 +141,8 @@
         "source_url": null,
         "spatial": {
           "projection_version": "umap-example",
-          "x": -0.5,
-          "y": 0.25
+          "x": -0.6,
+          "y": 0.3
         },
         "styles": [],
         "title": "Example Track 1",
@@ -158,14 +158,14 @@
         ],
         "audio_available": true,
         "constraint_status": [],
-        "description": "Its audio is a partial match for the requested sound. Tagged Folk.",
+        "description": "Its audio is a partial match for the requested sound. Listed under \"Electronic\" in FMA.",
         "evidence_status": "audio_and_metadata",
         "genres": [
-          "Folk"
+          "Electronic"
         ],
         "match_reasons": [
           "Partial audio match",
-          "Genre tag: Folk"
+          "Tagged: Electronic"
         ],
         "match_strength": "partial",
         "preview_url": "/api/tracks/trk_example_2/audio",
@@ -189,8 +189,8 @@
         "source_url": null,
         "spatial": {
           "projection_version": "umap-example",
-          "x": -0.4,
-          "y": 0.25
+          "x": -0.2,
+          "y": 0.0
         },
         "styles": [],
         "title": "Example Track 2",
@@ -238,7 +238,7 @@
       "original_query": "Something chill with a flute",
       "reference_track_ids": [],
       "semantic_prompts": [
-        "chill music featuring flute"
+        "chill music with a flute"
       ],
       "spec_version": 2,
       "tempo_preferences": [],

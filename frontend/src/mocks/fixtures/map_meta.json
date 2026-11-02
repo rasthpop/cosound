@@ -15,15 +15,15 @@
   },
   "created_at": "2026-01-01T12:00:00Z",
   "embedding_version": "ev-example",
-  "excluded_tracks": 1,
+  "excluded_tracks": 2,
   "genres": [
     {
       "count": 3,
-      "genre": "Folk"
+      "genre": "Electronic"
     },
     {
       "count": 2,
-      "genre": "Electronic"
+      "genre": "Folk"
     }
   ],
   "model_id": "example-clap-model",

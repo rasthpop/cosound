@@ -24,9 +24,17 @@ export function InstrumentPicker({ instruments, title, disabled = false, compact
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button size={compact ? "icon-sm" : "sm"} variant="quiet" disabled={disabled} aria-label={`Wrong instrument in ${title}…`}>
-          {compact ? <Guitar aria-hidden="true" {...ICON} /> : "Wrong instrument…"}
-        </Button>
+        {/* the user marks it; nothing here claims the system detected an instrument. The
+            accessible name starts with the visible text (WCAG 2.5.3) and adds the track. */}
+        {compact ? (
+          <Button size="icon-sm" variant="quiet" disabled={disabled} aria-label={`Mark wrong instrument… (for ${title})`}>
+            <Guitar aria-hidden="true" {...ICON} />
+          </Button>
+        ) : (
+          <Button size="sm" variant="quiet" disabled={disabled}>
+            Mark wrong instrument…<span className="sr-only"> (for {title})</span>
+          </Button>
+        )}
       </PopoverTrigger>
       <PopoverContent aria-labelledby={headingId} align="end" className="w-24">
         <p id={headingId} className="px-0.5 text-meta text-muted">
