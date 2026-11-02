@@ -77,6 +77,15 @@
   --token-color-map-point-selected: #A78BFA;
   --token-color-map-point-dimmed: #5A5A6A;
   --token-color-map-point-result: #F4F4F7;
+  --token-color-map-point-other: #A9A9B8;
+  --token-color-map-categorical-0: #3987E5;
+  --token-color-map-categorical-1: #D95926;
+  --token-color-map-categorical-2: #199E70;
+  --token-color-map-categorical-3: #C98500;
+  --token-color-map-categorical-4: #D55181;
+  --token-color-map-categorical-5: #008300;
+  --token-color-map-categorical-6: #9085E9;
+  --token-color-map-categorical-7: #E66767;
 }
 
 :root[data-theme="light"] {
@@ -154,6 +163,15 @@
   --token-color-map-point-selected: #7C3AED;
   --token-color-map-point-dimmed: #A9A9B8;
   --token-color-map-point-result: #0B0B0F;
+  --token-color-map-point-other: #2A2A35;
+  --token-color-map-categorical-0: #2A78D6;
+  --token-color-map-categorical-1: #EB6834;
+  --token-color-map-categorical-2: #1BAF7A;
+  --token-color-map-categorical-3: #EDA100;
+  --token-color-map-categorical-4: #E87BA4;
+  --token-color-map-categorical-5: #008300;
+  --token-color-map-categorical-6: #6250D6;
+  --token-color-map-categorical-7: #E34948;
 }
 
 :root {

@@ -54,6 +54,15 @@ export const green = { 400: "#4ADE80", 700: "#15803D" } as const;
 export const amber = { 300: "#FCD34D", 400: "#FBBF24", 700: "#B45309" } as const;
 export const red = { 400: "#F87171", 700: "#B91C1C" } as const;
 
+/**
+ * Categorical genre hues: the dataviz skill's validated reference palette (same hues and slot
+ * order), each mode stepped for its own surface. Validation results: theme/scales/categorical.test.ts.
+ */
+export const categorical = {
+  dark: ["#3987E5", "#D95926", "#199E70", "#C98500", "#D55181", "#008300", "#9085E9", "#E66767"],
+  light: ["#2A78D6", "#EB6834", "#1BAF7A", "#EDA100", "#E87BA4", "#008300", "#6250D6", "#E34948"],
+} as const;
+
 /** Translucent layers. The panel value is the plan's glass surface. */
 export const alpha = {
   glassDark: "rgba(18, 18, 24, 0.72)", // ui.md §2 floating panel

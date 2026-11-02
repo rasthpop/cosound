@@ -38,7 +38,8 @@
   - `toRgba` returns `[r, g, b, a]` tuples for deck.gl.
 - **Done when:**
   - Unit tests for determinism, the `null` mapping and RGBA output; dataviz contrast and color-vision-deficiency check against `#0B0B0F` documented in the test file header.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The genre hues are the dataviz reference palette (8 hues, dark and light steps), stored as theme tokens (`color.map.categorical`, plus `map.point.other` for genres folded into "Other"). The domain is the 8 largest genres in `MapMeta.genres`, and slots are assigned alphabetically, so colours depend on the genre name, never on load order or count rank. Adjacent-pair validation passes. The all-pairs check fails for 8 hues, as the skill predicts for scatter plots, so genre is always named in text and U03.T04's legend must be able to isolate one genre (see the header of `categorical.test.ts`). The contrast test now includes the genre fills, which moved the dark "Other" grey to `ink.300`.
 
 ### U01.T04 — shadcn/ui, Storybook & UI checks
 - **Skills:** ui-isolated-development, ui-architecture, music-discovery-architecture

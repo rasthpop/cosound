@@ -4,6 +4,7 @@ import {
   alpha,
   amber,
   blur,
+  categorical,
   duration,
   easing,
   font,
@@ -104,7 +105,9 @@ export const dark = {
         selected: violet[400],
         dimmed: ink[500],
         result: ink[50],
+        other: ink[300],
       },
+      categorical: categorical.dark,
     },
   },
 } satisfies SemanticTokens;
@@ -135,7 +138,9 @@ export const light = {
         selected: violet[600],
         dimmed: ink[300],
         result: ink[950],
+        other: ink[700],
       },
+      categorical: categorical.light,
     },
   },
 } satisfies SemanticTokens;
