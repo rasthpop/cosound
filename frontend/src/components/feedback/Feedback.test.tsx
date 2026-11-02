@@ -26,7 +26,7 @@ describe("FeedbackActions", () => {
   it("wrong instrument emits WRONG_INSTRUMENT with the picked instrument", async () => {
     const onFeedback = vi.fn();
     render(<FeedbackActions {...base} instruments={["flute", "piano"]} onFeedback={onFeedback} />);
-    await userEvent.click(screen.getByRole("button", { name: "Wrong instrument in Example Track 1…" }));
+    await userEvent.click(screen.getByRole("button", { name: "Mark wrong instrument… (for Example Track 1)" }));
     await userEvent.click(screen.getByRole("button", { name: "piano" }));
     expect(onFeedback).toHaveBeenCalledWith({ trackId: "trk_example_1", eventType: "WRONG_INSTRUMENT", attribute: "instrument", value: "piano" });
   });

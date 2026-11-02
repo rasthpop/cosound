@@ -37,7 +37,25 @@
   - Verify: no percentages or probabilities; bands only from the API; no implied instrument detection; honest map labeling ("nearness is suggestive"); neighbors labeled by metric; nulls absent; FMA attribution and per-track license shown with playback.
 - **Done when:**
   - The audit has zero unresolved findings.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** The `evidence-auditor` agent found no blockers, 10 should-fix items and 10 notes; the details are in `docs/ui/copy-audit.md`.
+  - **Fixed in the generator** (`src/music_discovery/api/examples.py`):
+    - Fixture descriptions now use the real `description_service` templates, and all of them pass the claim validator.
+    - The example data is one consistent world: tracks without audio are off the map, and genre, artist and coordinates agree across fixtures.
+    - Fixtures and the OpenAPI schema were regenerated; backend tests pass (1077).
+  - **Fixed in the UI:**
+    - The drawer shows the evidence note.
+    - "Can't reach the server" replaces "Offline".
+    - Evidence labels say what evidence exists, not how a track matched.
+    - Labelled "FMA genres" and "FMA tags" groups in the drawer.
+    - The `semantic_unavailable` neighbor reason has a label.
+    - The useless "Only tracks with audio" toggle is removed.
+    - The map label is hedged.
+    - Instrument feedback reads as the user's own marking.
+    - The parser and credit wording is updated.
+  - **Contract request:** the row player's license needs a new API field: P08.T13 and P09.T13 were appended, flagged for the UI.
+  - **Accessibility fix:** the new instrument-button label had to keep the visible text in its accessible name (axe `label-content-name-mismatch`).
+  - All 32 visual baselines were regenerated.
 
 ### U05.T04 — Performance pass
 - **Skills:** deckgl-track-map, ui-architecture

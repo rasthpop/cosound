@@ -127,10 +127,10 @@ describe("DiscoverPage", () => {
 
   it("offline: keeps the typed query, explains, and retries", async () => {
     const { input } = await searchFor("chill flute", "offline");
-    expect(await screen.findByText("You're offline")).toBeInTheDocument();
+    expect(await screen.findByText("Can't reach the server", { selector: "h2" })).toBeInTheDocument();
     expect(input).toHaveValue("chill flute");
     expect(screen.getByText(/Your search “chill flute” is kept/)).toBeInTheDocument();
-    expect(await screen.findByText("Offline")).toBeInTheDocument(); // the pill
+    expect(await screen.findByText("Can't reach the server", { selector: "span" })).toBeInTheDocument(); // the pill
     server.use(...handlersFor("happy"));
     await userEvent.click(within(screen.getByRole("alert")).getByRole("button", { name: "Retry" }));
     expect(await screen.findByRole("list", { name: "Ranked results" })).toBeInTheDocument();

@@ -477,7 +477,7 @@ export interface components {
          *           "original_query": "Something chill with a flute",
          *           "reference_track_ids": [],
          *           "semantic_prompts": [
-         *             "chill music featuring flute"
+         *             "chill music with a flute"
          *           ],
          *           "spec_version": 2,
          *           "tempo_preferences": [],
@@ -498,14 +498,14 @@ export interface components {
          *             ],
          *             "audio_available": true,
          *             "constraint_status": [],
-         *             "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
+         *             "description": "Its audio is a strong match for \"chill music with a flute\". Listed under \"Folk\" in FMA.",
          *             "evidence_status": "audio_and_metadata",
          *             "genres": [
          *               "Folk"
          *             ],
          *             "match_reasons": [
          *               "Strong audio match",
-         *               "Genre tag: Folk"
+         *               "Tagged: Folk"
          *             ],
          *             "match_strength": "strong",
          *             "preview_url": "/api/tracks/trk_example_1/audio",
@@ -526,8 +526,8 @@ export interface components {
          *             },
          *             "spatial": {
          *               "projection_version": "umap-example",
-         *               "x": -0.5,
-         *               "y": 0.25
+         *               "x": -0.6,
+         *               "y": 0.3
          *             },
          *             "styles": [],
          *             "title": "Example Track 1",
@@ -543,14 +543,14 @@ export interface components {
          *             ],
          *             "audio_available": true,
          *             "constraint_status": [],
-         *             "description": "Its audio is a partial match for the requested sound. Tagged Folk.",
+         *             "description": "Its audio is a partial match for the requested sound. Listed under \"Electronic\" in FMA.",
          *             "evidence_status": "audio_and_metadata",
          *             "genres": [
-         *               "Folk"
+         *               "Electronic"
          *             ],
          *             "match_reasons": [
          *               "Partial audio match",
-         *               "Genre tag: Folk"
+         *               "Tagged: Electronic"
          *             ],
          *             "match_strength": "partial",
          *             "preview_url": "/api/tracks/trk_example_2/audio",
@@ -571,8 +571,8 @@ export interface components {
          *             },
          *             "spatial": {
          *               "projection_version": "umap-example",
-         *               "x": -0.4,
-         *               "y": 0.25
+         *               "x": -0.2,
+         *               "y": 0
          *             },
          *             "styles": [],
          *             "title": "Example Track 2",
@@ -618,7 +618,7 @@ export interface components {
          *           "original_query": "Something chill with a flute",
          *           "reference_track_ids": [],
          *           "semantic_prompts": [
-         *             "chill music featuring flute"
+         *             "chill music with a flute"
          *           ],
          *           "spec_version": 2,
          *           "tempo_preferences": [],
@@ -668,7 +668,7 @@ export interface components {
          *           "original_query": "Something chill with a flute",
          *           "reference_track_ids": [],
          *           "semantic_prompts": [
-         *             "chill music featuring flute"
+         *             "chill music with a flute"
          *           ],
          *           "spec_version": 1,
          *           "tempo_preferences": [],
@@ -853,15 +853,15 @@ export interface components {
          *       },
          *       "created_at": "2026-01-01T12:00:00Z",
          *       "embedding_version": "ev-example",
-         *       "excluded_tracks": 1,
+         *       "excluded_tracks": 2,
          *       "genres": [
          *         {
          *           "count": 3,
-         *           "genre": "Folk"
+         *           "genre": "Electronic"
          *         },
          *         {
          *           "count": 2,
-         *           "genre": "Electronic"
+         *           "genre": "Folk"
          *         }
          *       ],
          *       "model_id": "example-clap-model",
@@ -930,7 +930,7 @@ export interface components {
         /**
          * MapPointsResponse
          * @example {
-         *       "next_cursor": "trk_example_3",
+         *       "next_cursor": "trk_example_4",
          *       "points": [
          *         {
          *           "artist": "Example Artist 1",
@@ -951,11 +951,11 @@ export interface components {
          *           "y": 0
          *         },
          *         {
-         *           "artist": "Example Artist 3",
-         *           "genre": "Folk",
+         *           "artist": "Example Artist 4",
+         *           "genre": "Electronic",
          *           "has_audio": true,
-         *           "title": "Example Track 3",
-         *           "track_id": "trk_example_3",
+         *           "title": "Example Track 4",
+         *           "track_id": "trk_example_4",
          *           "x": 0.2,
          *           "y": -0.3
          *         }
@@ -965,20 +965,20 @@ export interface components {
          * @example {
          *       "points": [
          *         {
-         *           "artist": "Example Artist 4",
+         *           "artist": "Example Artist 6",
          *           "genre": "Electronic",
          *           "has_audio": true,
-         *           "title": "Example Track 4",
-         *           "track_id": "trk_example_4",
+         *           "title": "Example Track 6",
+         *           "track_id": "trk_example_6",
          *           "x": 0.6,
          *           "y": -0.6
          *         },
          *         {
-         *           "artist": "Example Artist 5",
+         *           "artist": "Example Artist 7",
          *           "genre": "Folk",
          *           "has_audio": true,
-         *           "title": "Example Track 5",
-         *           "track_id": "trk_example_5",
+         *           "title": "Example Track 7",
+         *           "track_id": "trk_example_7",
          *           "x": 1,
          *           "y": -0.9
          *         }
@@ -1039,8 +1039,8 @@ export interface components {
          *           "score": 0.85,
          *           "spatial": {
          *             "projection_version": "umap-example",
-         *             "x": -0.4,
-         *             "y": 0.3
+         *             "x": -0.2,
+         *             "y": 0
          *           },
          *           "title": "Example Track 2",
          *           "track_id": "trk_example_2"
@@ -1057,8 +1057,8 @@ export interface components {
          *           "score": 0.75,
          *           "spatial": {
          *             "projection_version": "umap-example",
-         *             "x": -0.3,
-         *             "y": 0.3
+         *             "x": 0.2,
+         *             "y": -0.3
          *           },
          *           "title": "Example Track 4",
          *           "track_id": "trk_example_4"
@@ -1230,7 +1230,7 @@ export interface components {
          *         "original_query": "Something chill with a flute",
          *         "reference_track_ids": [],
          *         "semantic_prompts": [
-         *           "chill music featuring flute"
+         *           "chill music with a flute"
          *         ],
          *         "spec_version": 1,
          *         "tempo_preferences": [],
@@ -1251,14 +1251,14 @@ export interface components {
          *           ],
          *           "audio_available": true,
          *           "constraint_status": [],
-         *           "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
+         *           "description": "Its audio is a strong match for \"chill music with a flute\". Listed under \"Folk\" in FMA.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
          *             "Strong audio match",
-         *             "Genre tag: Folk"
+         *             "Tagged: Folk"
          *           ],
          *           "match_strength": "strong",
          *           "preview_url": "/api/tracks/trk_example_1/audio",
@@ -1279,8 +1279,8 @@ export interface components {
          *           },
          *           "spatial": {
          *             "projection_version": "umap-example",
-         *             "x": -0.5,
-         *             "y": 0.25
+         *             "x": -0.6,
+         *             "y": 0.3
          *           },
          *           "styles": [],
          *           "title": "Example Track 1",
@@ -1296,14 +1296,14 @@ export interface components {
          *           ],
          *           "audio_available": true,
          *           "constraint_status": [],
-         *           "description": "Its audio is a partial match for the requested sound. Tagged Folk.",
+         *           "description": "Its audio is a partial match for the requested sound. Listed under \"Electronic\" in FMA.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
-         *             "Folk"
+         *             "Electronic"
          *           ],
          *           "match_reasons": [
          *             "Partial audio match",
-         *             "Genre tag: Folk"
+         *             "Tagged: Electronic"
          *           ],
          *           "match_strength": "partial",
          *           "preview_url": "/api/tracks/trk_example_2/audio",
@@ -1324,8 +1324,8 @@ export interface components {
          *           },
          *           "spatial": {
          *             "projection_version": "umap-example",
-         *             "x": -0.4,
-         *             "y": 0.25
+         *             "x": -0.2,
+         *             "y": 0
          *           },
          *           "styles": [],
          *           "title": "Example Track 2",
@@ -1341,13 +1341,14 @@ export interface components {
          *           ],
          *           "audio_available": false,
          *           "constraint_status": [],
-         *           "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+         *           "description": "Listed under \"Folk\" in FMA. Audio analysis unavailable; matched on catalog metadata.",
          *           "evidence_status": "metadata_only",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
-         *             "Genre tag: Folk"
+         *             "Tagged: Folk",
+         *             "No audio analysis"
          *           ],
          *           "rank": 3,
          *           "retrieval_sources": [
@@ -1407,7 +1408,7 @@ export interface components {
          *         "original_query": "Something chill with a flute",
          *         "reference_track_ids": [],
          *         "semantic_prompts": [
-         *           "chill music featuring flute"
+         *           "chill music with a flute"
          *         ],
          *         "spec_version": 1,
          *         "tempo_preferences": [],
@@ -1462,7 +1463,7 @@ export interface components {
          *         "original_query": "instrumental only flute",
          *         "reference_track_ids": [],
          *         "semantic_prompts": [
-         *           "chill music featuring flute"
+         *           "chill music with a flute"
          *         ],
          *         "spec_version": 1,
          *         "tempo_preferences": [],
@@ -1553,7 +1554,7 @@ export interface components {
          *         "original_query": "Something chill with a flute",
          *         "reference_track_ids": [],
          *         "semantic_prompts": [
-         *           "chill music featuring flute"
+         *           "chill music with a flute"
          *         ],
          *         "spec_version": 1,
          *         "tempo_preferences": [],
@@ -1574,13 +1575,14 @@ export interface components {
          *           ],
          *           "audio_available": true,
          *           "constraint_status": [],
-         *           "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+         *           "description": "Listed under \"Folk\" in FMA. Audio search was unavailable; matched on catalog metadata.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
-         *             "Genre tag: Folk"
+         *             "Tagged: Folk",
+         *             "Metadata only"
          *           ],
          *           "preview_url": "/api/tracks/trk_example_1/audio",
          *           "rank": 1,
@@ -1597,8 +1599,8 @@ export interface components {
          *           },
          *           "spatial": {
          *             "projection_version": "umap-example",
-         *             "x": -0.5,
-         *             "y": 0.25
+         *             "x": -0.6,
+         *             "y": 0.3
          *           },
          *           "styles": [],
          *           "title": "Example Track 1",
@@ -1616,13 +1618,14 @@ export interface components {
          *           ],
          *           "audio_available": true,
          *           "constraint_status": [],
-         *           "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+         *           "description": "Listed under \"Electronic\" in FMA. Audio search was unavailable; matched on catalog metadata.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
-         *             "Folk"
+         *             "Electronic"
          *           ],
          *           "match_reasons": [
-         *             "Genre tag: Folk"
+         *             "Tagged: Electronic",
+         *             "Metadata only"
          *           ],
          *           "preview_url": "/api/tracks/trk_example_2/audio",
          *           "rank": 2,
@@ -1639,8 +1642,8 @@ export interface components {
          *           },
          *           "spatial": {
          *             "projection_version": "umap-example",
-         *             "x": -0.4,
-         *             "y": 0.25
+         *             "x": -0.2,
+         *             "y": 0
          *           },
          *           "styles": [],
          *           "title": "Example Track 2",
@@ -1693,7 +1696,7 @@ export interface components {
          *         "original_query": "Something chill with a flute",
          *         "reference_track_ids": [],
          *         "semantic_prompts": [
-         *           "chill music featuring flute"
+         *           "chill music with a flute"
          *         ],
          *         "spec_version": 1,
          *         "tempo_preferences": [],
@@ -1714,14 +1717,14 @@ export interface components {
          *           ],
          *           "audio_available": true,
          *           "constraint_status": [],
-         *           "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
+         *           "description": "Its audio is a strong match for \"chill music with a flute\". Listed under \"Folk\" in FMA.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
          *             "Strong audio match",
-         *             "Genre tag: Folk"
+         *             "Tagged: Folk"
          *           ],
          *           "match_strength": "strong",
          *           "preview_url": "/api/tracks/trk_example_1/audio",
@@ -1742,8 +1745,8 @@ export interface components {
          *           },
          *           "spatial": {
          *             "projection_version": "umap-example",
-         *             "x": -0.5,
-         *             "y": 0.25
+         *             "x": -0.6,
+         *             "y": 0.3
          *           },
          *           "styles": [],
          *           "title": "Example Track 1",
@@ -1759,14 +1762,14 @@ export interface components {
          *           ],
          *           "audio_available": true,
          *           "constraint_status": [],
-         *           "description": "Its audio is a partial match for the requested sound. Tagged Folk.",
+         *           "description": "Its audio is a partial match for the requested sound. Listed under \"Electronic\" in FMA.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
-         *             "Folk"
+         *             "Electronic"
          *           ],
          *           "match_reasons": [
          *             "Partial audio match",
-         *             "Genre tag: Folk"
+         *             "Tagged: Electronic"
          *           ],
          *           "match_strength": "partial",
          *           "preview_url": "/api/tracks/trk_example_2/audio",
@@ -1787,8 +1790,8 @@ export interface components {
          *           },
          *           "spatial": {
          *             "projection_version": "umap-example",
-         *             "x": -0.4,
-         *             "y": 0.25
+         *             "x": -0.2,
+         *             "y": 0
          *           },
          *           "styles": [],
          *           "title": "Example Track 2",
@@ -1804,13 +1807,14 @@ export interface components {
          *           ],
          *           "audio_available": false,
          *           "constraint_status": [],
-         *           "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+         *           "description": "Listed under \"Folk\" in FMA. Audio analysis unavailable; matched on catalog metadata.",
          *           "evidence_status": "metadata_only",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
-         *             "Genre tag: Folk"
+         *             "Tagged: Folk",
+         *             "No audio analysis"
          *           ],
          *           "rank": 3,
          *           "retrieval_sources": [
@@ -1886,7 +1890,7 @@ export interface components {
          *         "original_query": "chill flute without vocals, less electronic",
          *         "reference_track_ids": [],
          *         "semantic_prompts": [
-         *           "chill music featuring flute"
+         *           "chill music with a flute"
          *         ],
          *         "spec_version": 1,
          *         "tempo_preferences": [],
@@ -1913,14 +1917,14 @@ export interface components {
          *               "status": "unknown"
          *             }
          *           ],
-         *           "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
+         *           "description": "Its audio is a strong match for \"chill music with a flute\". Listed under \"Folk\" in FMA.",
          *           "evidence_status": "audio_and_metadata",
          *           "genres": [
          *             "Folk"
          *           ],
          *           "match_reasons": [
          *             "Strong audio match",
-         *             "Genre tag: Folk"
+         *             "Tagged: Folk"
          *           ],
          *           "match_strength": "strong",
          *           "preview_url": "/api/tracks/trk_example_1/audio",
@@ -1941,8 +1945,8 @@ export interface components {
          *           },
          *           "spatial": {
          *             "projection_version": "umap-example",
-         *             "x": -0.5,
-         *             "y": 0.25
+         *             "x": -0.6,
+         *             "y": 0.3
          *           },
          *           "styles": [],
          *           "title": "Example Track 1",
@@ -2043,7 +2047,7 @@ export interface components {
          *             "original_query": "Something chill with a flute",
          *             "reference_track_ids": [],
          *             "semantic_prompts": [
-         *               "chill music featuring flute"
+         *               "chill music with a flute"
          *             ],
          *             "spec_version": 1,
          *             "tempo_preferences": [],
@@ -2099,7 +2103,7 @@ export interface components {
          *             "original_query": "Something chill with a flute",
          *             "reference_track_ids": [],
          *             "semantic_prompts": [
-         *               "chill music featuring flute"
+         *               "chill music with a flute"
          *             ],
          *             "spec_version": 2,
          *             "tempo_preferences": [],
@@ -2191,17 +2195,17 @@ export interface components {
          *         {
          *           "artists": [
          *             {
-         *               "artist_id": "art_example_1",
-         *               "name": "Example Artist 1"
+         *               "artist_id": "art_example_2",
+         *               "name": "Example Artist 2"
          *             }
          *           ],
-         *           "relationship_type": "same_artist",
+         *           "relationship_type": "same_label",
          *           "title": "Example Track 2",
          *           "track_id": "trk_example_2"
          *         }
          *       ],
          *       "relationship_counts": {
-         *         "same_artist": 1
+         *         "same_label": 1
          *       },
          *       "release": {
          *         "release_id": "rel_example_1",
@@ -2210,8 +2214,8 @@ export interface components {
          *       },
          *       "spatial": {
          *         "projection_version": "umap-example",
-         *         "x": -0.5,
-         *         "y": 0.25
+         *         "x": -0.6,
+         *         "y": 0.3
          *       },
          *       "styles": [],
          *       "tags": [

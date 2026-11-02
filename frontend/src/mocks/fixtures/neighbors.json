@@ -14,8 +14,8 @@
       "score": 0.85,
       "spatial": {
         "projection_version": "umap-example",
-        "x": -0.4,
-        "y": 0.3
+        "x": -0.2,
+        "y": 0.0
       },
       "title": "Example Track 2",
       "track_id": "trk_example_2"
@@ -32,8 +32,8 @@
       "score": 0.75,
       "spatial": {
         "projection_version": "umap-example",
-        "x": -0.3,
-        "y": 0.3
+        "x": 0.2,
+        "y": -0.3
       },
       "title": "Example Track 4",
       "track_id": "trk_example_4"

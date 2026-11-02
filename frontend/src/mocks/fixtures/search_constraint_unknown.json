@@ -48,7 +48,7 @@
     "original_query": "chill flute without vocals, less electronic",
     "reference_track_ids": [],
     "semantic_prompts": [
-      "chill music featuring flute"
+      "chill music with a flute"
     ],
     "spec_version": 1,
     "tempo_preferences": [],
@@ -76,14 +76,14 @@
           "value": null
         }
       ],
-      "description": "Its audio is a strong match for “chill music featuring flute”. Tagged Folk.",
+      "description": "Its audio is a strong match for \"chill music with a flute\". Listed under \"Folk\" in FMA.",
       "evidence_status": "audio_and_metadata",
       "genres": [
         "Folk"
       ],
       "match_reasons": [
         "Strong audio match",
-        "Genre tag: Folk"
+        "Tagged: Folk"
       ],
       "match_strength": "strong",
       "preview_url": "/api/tracks/trk_example_1/audio",
@@ -107,8 +107,8 @@
       "source_url": null,
       "spatial": {
         "projection_version": "umap-example",
-        "x": -0.5,
-        "y": 0.25
+        "x": -0.6,
+        "y": 0.3
       },
       "styles": [],
       "title": "Example Track 1",

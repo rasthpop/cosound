@@ -18,7 +18,7 @@ test.describe("feedback & refinement", () => {
     await expect(strip).toContainText("Removed “Example Track 1”");
     await expect(strip).toContainText("Refined “Something chill with a flute”");
     // the map highlight follows the refreshed plate (flow 4)
-    await expect(page.getByRole("region", { name: "Map of tracks by audio similarity" })).toContainText("2 results highlighted");
+    await expect(page.getByRole("region", { name: "Map of tracks arranged by audio similarity (approximate)" })).toContainText("2 results highlighted");
   });
 
   test("feedback the backend rejects shows its reason", async ({ page }) => {
@@ -58,7 +58,7 @@ test.describe("map & selection", () => {
   test("results light up and the rest dim; a map click selects the row; a row click selects the point", async ({ page }) => {
     await open(page);
     await search(page);
-    const map = page.getByRole("region", { name: "Map of tracks by audio similarity" });
+    const map = page.getByRole("region", { name: "Map of tracks arranged by audio similarity (approximate)" });
     await expect(map).toContainText("2 results highlighted");
     const rows = page.getByRole("list", { name: "Ranked results" });
 

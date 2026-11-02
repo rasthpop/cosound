@@ -18,13 +18,16 @@ import { formatDuration, humanize } from "./text";
 
 const label = <K extends string>(labels: Partial<Record<K, string>>, value: K): string => labels[value] ?? humanize(value);
 
+// `evidence_status` says what evidence exists for a track (is there audio analysis?), not how it
+// matched; how it was found is `retrieval_sources`. metadata_only shares the `no_audio` flag's
+// wording, so the two never show as two notes.
 const EVIDENCE: Record<EvidenceStatus, string> = {
-  audio_and_metadata: "Matched on sound and catalog data",
-  metadata_only: "Matched on catalog data only",
-  audio_only: "Matched on sound only",
+  audio_and_metadata: "Audio analysis and catalog data",
+  metadata_only: "No audio analysis for this track",
+  audio_only: "Audio analysis only (no catalog data)",
 };
 
-/** The evidence a match rests on. */
+/** The evidence available for a track. */
 export function evidenceLabel(status: EvidenceStatus): string {
   return label(EVIDENCE, status);
 }
@@ -130,6 +133,7 @@ export function neighborMetricLabel(metric: NeighborMetric): string {
 
 const NEIGHBOR_REASONS: Record<string, string> = {
   no_audio_embedding: "This track has no audio analysis, so these tracks are related through the catalog instead.",
+  semantic_unavailable: "Sound-based matching is unavailable, so these tracks are related through the catalog instead.",
 };
 
 /** Why neighbors fell back from sound to the catalog (`NeighborsResponse.reason`); `null` = no note. */
@@ -201,7 +205,7 @@ export function changeLabel(change: ChangeEntry): string {
       return `Less like ${quoted(change.title)}`;
     case "excluded":
       return change.attribute === "instrument"
-        ? `Removed ${quoted(change.title)} (wrong ${change.value ?? "instrument"})`
+        ? `Removed ${quoted(change.title)} (you marked ${change.value ?? "an instrument"} as wrong)`
         : `Removed ${quoted(change.title)}`;
     case "preference_added":
       return `Added ${term}`;

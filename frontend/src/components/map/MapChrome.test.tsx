@@ -45,7 +45,7 @@ describe("GenreLegend", () => {
 
   it("shows counts, labels points without a genre neutrally and does not make them a filter", () => {
     wrap(<Legend onGenreFilter={() => {}} />);
-    expect(screen.getByRole("button", { name: /Folk\s*3/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Folk\s*2/ })).toBeInTheDocument();
     const none = screen.getByText("No genre");
     expect(none.closest("button")).toBeNull();
   });

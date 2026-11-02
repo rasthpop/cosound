@@ -62,7 +62,7 @@ const STATES: Record<string, (page: Page) => Promise<void>> = {
     await open(page, "offline");
     await searchInput(page).fill("chill flute");
     await page.keyboard.press("Enter");
-    await expect(page.getByText("You're offline")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Can't reach the server" })).toBeVisible();
   },
 };
 

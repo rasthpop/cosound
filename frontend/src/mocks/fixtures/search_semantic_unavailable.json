@@ -35,7 +35,7 @@
     "original_query": "Something chill with a flute",
     "reference_track_ids": [],
     "semantic_prompts": [
-      "chill music featuring flute"
+      "chill music with a flute"
     ],
     "spec_version": 1,
     "tempo_preferences": [],
@@ -56,13 +56,14 @@
       ],
       "audio_available": true,
       "constraint_status": [],
-      "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+      "description": "Listed under \"Folk\" in FMA. Audio search was unavailable; matched on catalog metadata.",
       "evidence_status": "audio_and_metadata",
       "genres": [
         "Folk"
       ],
       "match_reasons": [
-        "Genre tag: Folk"
+        "Tagged: Folk",
+        "Metadata only"
       ],
       "match_strength": null,
       "preview_url": "/api/tracks/trk_example_1/audio",
@@ -85,8 +86,8 @@
       "source_url": null,
       "spatial": {
         "projection_version": "umap-example",
-        "x": -0.5,
-        "y": 0.25
+        "x": -0.6,
+        "y": 0.3
       },
       "styles": [],
       "title": "Example Track 1",
@@ -104,13 +105,14 @@
       ],
       "audio_available": true,
       "constraint_status": [],
-      "description": "Matched on metadata: Tagged Folk. Audio analysis unavailable.",
+      "description": "Listed under \"Electronic\" in FMA. Audio search was unavailable; matched on catalog metadata.",
       "evidence_status": "audio_and_metadata",
       "genres": [
-        "Folk"
+        "Electronic"
       ],
       "match_reasons": [
-        "Genre tag: Folk"
+        "Tagged: Electronic",
+        "Metadata only"
       ],
       "match_strength": null,
       "preview_url": "/api/tracks/trk_example_2/audio",
@@ -133,8 +135,8 @@
       "source_url": null,
       "spatial": {
         "projection_version": "umap-example",
-        "x": -0.4,
-        "y": 0.25
+        "x": -0.2,
+        "y": 0.0
       },
       "styles": [],
       "title": "Example Track 2",

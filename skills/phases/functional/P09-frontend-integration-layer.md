@@ -106,6 +106,17 @@
 - **Notes:** Served by `App.tsx` only when `import.meta.env.DEV` and the path is `/__dev/harness`; the production bundle contains neither the harness nor MSW (checked on build). Playwright runs the dev server in mock mode (3 tests: full flow, map-down, degraded semantic) and is now a CI step. `E2E_REAL_BACKEND=1 API_PROXY_TARGET=…` runs the real-backend test through a new Vite `/api` proxy; it passed against the fma_small install on 2026-10-25. The mock's refreshed plate now carries the feedback's `change_summary`, as the API's does.
 - **Status:** [x]
 
+### P09.T13 — Result audio license in the frontend contract (G4)
+- **Skills:** api-contracts, ui-isolated-development
+- **Depends on:** P08.T13
+- **Files:** frontend/src/api/generated.ts, frontend/src/api/types.ts, frontend/src/mocks/fixtures/, frontend/src/hooks/README.md
+- **Do:**
+  - Regenerate types and fixtures for `TrackResult.audio`; mention it in the hooks README.
+  - **Flag for the UI track:** once this lands, `ResultRow` shows the license and the FMA credit next to its mini-player, as the drawer already does (U05.T03 finding S3, docs/ui/copy-audit.md).
+- **Done when:**
+  - `npm run contract:check` passes and the fixtures carry `audio` on results.
+- **Status:** [ ]
+
 ## Exit criteria (Milestone 6)
 - [x] The interface layer can search, display a plate, submit feedback, and retrieve map points without implementing ML or retrieval logic (P09.T09).
 - [x] Loading, error, empty, degraded, and stale-response states exposed by hooks and tested.

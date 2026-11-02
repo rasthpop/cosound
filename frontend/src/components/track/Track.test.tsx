@@ -81,6 +81,6 @@ describe("NeighborList and RelatedTracks", () => {
     render(<NeighborList neighbors={fixture("neighbors")} onTrackSelect={() => {}} />);
     expect(screen.getByRole("heading", { name: "Nearby in sound" })).toBeInTheDocument();
     render(<RelatedTracks related={fixture("track_detail").related_tracks} onTrackSelect={() => {}} />);
-    expect(screen.getByRole("heading", { name: "Same artist" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Same label" })).toBeInTheDocument();
   });
 });

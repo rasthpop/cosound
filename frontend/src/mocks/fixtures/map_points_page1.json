@@ -1,5 +1,5 @@
 {
-  "next_cursor": "trk_example_3",
+  "next_cursor": "trk_example_4",
   "points": [
     {
       "artist": "Example Artist 1",
@@ -24,13 +24,13 @@
       "y": 0.0
     },
     {
-      "artist": "Example Artist 3",
-      "genre": "Folk",
+      "artist": "Example Artist 4",
+      "genre": "Electronic",
       "has_audio": true,
       "source_url": null,
       "style": null,
-      "title": "Example Track 3",
-      "track_id": "trk_example_3",
+      "title": "Example Track 4",
+      "track_id": "trk_example_4",
       "x": 0.2,
       "y": -0.3
     }

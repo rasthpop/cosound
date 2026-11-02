@@ -14,7 +14,7 @@ import { server } from "@/mocks/server";
 import { ThemeProvider } from "@/theme/ThemeProvider";
 
 import { DiscoverPage } from "./DiscoverPage";
-import { locate, pointBounds, resultsOnMap, withAudioOnly, withGenre } from "./selection";
+import { locate, pointBounds, resultsOnMap, withGenre } from "./selection";
 
 type DeckProps = {
   layers: { id: string; props: Record<string, unknown> }[];
@@ -137,7 +137,7 @@ describe("map container", () => {
     expect(screen.getByRole("list", { name: "Ranked results" })).toBeInTheDocument();
   });
 
-  it("the legend filters the points by genre and clears on the second click; the audio toggle sets has_audio", async () => {
+  it("the legend filters the points by genre and clears on the second click; no audio-only toggle", async () => {
     await openPage();
     const requests = record("/api/map/points");
     const legend = screen.getByRole("region", { name: "Genre legend" });
@@ -145,8 +145,8 @@ describe("map container", () => {
     await waitFor(() => expect(requests.some((r) => new URL(r.url).searchParams.get("genre") === "Folk")).toBe(true));
     await userEvent.click(within(screen.getByRole("region", { name: "Genre legend" })).getByRole("button", { name: /Folk/ }));
     await waitFor(() => expect(new URL(requests.at(-1)!.url).searchParams.get("genre")).toBeNull());
-    await userEvent.click(screen.getByRole("button", { name: "Only tracks with audio" }));
-    await waitFor(() => expect(new URL(requests.at(-1)!.url).searchParams.get("has_audio")).toBe("true"));
+    // every point is from the audio projection, so an audio filter would do nothing
+    expect(screen.queryByRole("button", { name: "Only tracks with audio" })).toBeNull();
   });
 
   it("the legend is open on the idle map and collapses beside results, unless the user chose", async () => {
@@ -232,7 +232,8 @@ describe("selection helpers", () => {
   it("keeps only results with coordinates from this projection", () => {
     const { ids, bounds } = resultsOnMap(RESULTS, [], "umap-example");
     expect([...ids]).toEqual(["trk_example_1", "trk_example_2"]);
-    expect(bounds).toEqual({ min_x: -0.5, max_x: -0.4, min_y: 0.25, max_y: 0.25 });
+    const [one, two] = [point("trk_example_1"), point("trk_example_2")];
+    expect(bounds).toEqual({ min_x: one.x, max_x: two.x, min_y: two.y, max_y: one.y });
     expect(resultsOnMap(RESULTS, [], "umap-other").ids.size).toBe(0);
     expect(resultsOnMap(RESULTS, [], null).bounds).toBeNull();
     // loaded points win: the camera fits where the dots are drawn
@@ -242,7 +243,7 @@ describe("selection helpers", () => {
 
   it("locates a track by its point, else by a same-projection result", () => {
     expect(locate("trk_example_2", POINTS, [], "umap-example")).toMatchObject({ x: point("trk_example_2").x });
-    expect(locate("trk_example_1", [], RESULTS, "umap-example")).toMatchObject({ x: -0.5, y: 0.25 });
+    expect(locate("trk_example_1", [], RESULTS, "umap-example")).toMatchObject({ x: point("trk_example_1").x, y: point("trk_example_1").y });
     expect(locate("trk_example_1", [], RESULTS, "umap-other")).toBeNull();
     expect(pointBounds({ x: 1, y: 2 })).toEqual({ min_x: 1, max_x: 1, min_y: 2, max_y: 2 });
   });
@@ -250,7 +251,5 @@ describe("selection helpers", () => {
   it("changes one filter and keeps the others", () => {
     expect(withGenre({ has_audio: true }, "Folk")).toEqual({ has_audio: true, genre: "Folk" });
     expect(withGenre({ has_audio: true, genre: "Folk" }, null)).toEqual({ has_audio: true });
-    expect(withAudioOnly({ genre: "Folk" }, true)).toEqual({ genre: "Folk", has_audio: true });
-    expect(withAudioOnly({ genre: "Folk", has_audio: true }, false)).toEqual({ genre: "Folk" });
   });
 });

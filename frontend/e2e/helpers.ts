@@ -14,7 +14,7 @@ const mapPoints = [
   ...fixtureJson<{ points: { track_id: string; x: number; y: number }[] }>("map_points_page2").points,
 ];
 
-export const MAP_REGION = "Map of tracks by audio similarity";
+export const MAP_REGION = "Map of tracks arranged by audio similarity (approximate)";
 
 export async function open(page: Page, scenario = "happy") {
   await page.goto(`/?scenario=${scenario}`);

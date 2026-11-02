@@ -220,7 +220,7 @@ for (const scheme of SCHEMES) {
     }) => {
       await page.goto(real ? "/" : "/?mapPoints=10000");
       await expect(
-        page.getByRole("region", { name: "Map of tracks by audio similarity" }),
+        page.getByRole("region", { name: "Map of tracks arranged by audio similarity (approximate)" }),
       ).toContainText(real ? /Map of \d+ tracks/ : "Map of 10000 tracks", { timeout: 60_000 });
       await page.waitForTimeout(800); // points fade in
       await page.addStyleTag({

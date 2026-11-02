@@ -68,7 +68,9 @@ describe("ResultsPanel and ResultRow", () => {
   it("marks tracks without coordinates and explains missing audio", () => {
     renderRows([plate.results[2] as TrackResult]);
     expect(screen.getByText("Not on map")).toBeInTheDocument();
-    expect(screen.getByText(/Matched on catalog data only · No audio analysis for this track/)).toBeInTheDocument();
+    // the evidence status and the no_audio flag say the same thing once, not twice
+    expect(screen.getByText("No audio analysis for this track")).toBeInTheDocument();
+    expect(screen.queryByText(/·/)).toBeNull();
   });
 
   it("emits select, hover and play events with the track id", async () => {

@@ -83,7 +83,7 @@ describe("details drawer", () => {
     expect(screen.queryByRole("list", { name: "Ranked results" })).toBeNull(); // free browse: no panel
     await userEvent.click(within(panel).getByRole("button", { name: "Close details" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    expect(screen.getByRole("region", { name: "Map of tracks by audio similarity" })).toHaveFocus();
+    expect(screen.getByRole("region", { name: "Map of tracks arranged by audio similarity (approximate)" })).toHaveFocus();
   });
 
   it("a neighbor click selects that track and moves the camera", async () => {
@@ -100,10 +100,24 @@ describe("details drawer", () => {
   });
 
   it("a track without audio says so", async () => {
+    // tracks without audio are not on the audio map: open one from the results
     await openPage();
-    act(() => deck.props!.onClick({ object: point("trk_example_3") }));
+    const list = await search();
+    await userEvent.click(within(list).getByRole("button", { name: "Example Track 3" }));
     const panel = await drawer();
     expect(await within(panel).findByText("No audio preview available.")).toBeInTheDocument();
+    // and why: no audio analysis, said once (evidence status and flag agree)
+    expect(within(panel).getByText("No audio analysis for this track")).toBeInTheDocument();
+  });
+
+  it("from the map, the drawer still says what evidence the track has, and labels FMA tags as such", async () => {
+    await openPage();
+    act(() => deck.props!.onClick({ object: point("trk_example_1") }));
+    const panel = await drawer();
+    expect(await within(panel).findByRole("list", { name: "FMA tags" })).toHaveTextContent("flute");
+    expect(within(panel).getByRole("list", { name: "FMA genres" })).toHaveTextContent("Folk");
+    // a track with audio and catalog data has nothing to caveat
+    expect(within(panel).queryByText(/No audio analysis/)).toBeNull();
   });
 
   it("one clip at a time: a second row play pauses the first, and the drawer's player stops the rows", async () => {

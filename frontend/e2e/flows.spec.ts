@@ -30,7 +30,7 @@ const SCENARIOS: Record<string, Expectation> = {
   errors: { outcome: "error", map: false, details: false },
   empty: { outcome: "empty", map: true, details: true },
   "llm-fallback": { outcome: "results", map: true, details: true, notice: /built-in parser/ },
-  offline: { outcome: "offline", map: false, details: false, notice: /^Offline$/ },
+  offline: { outcome: "offline", map: false, details: false, notice: /^Can't reach the server$/ },
 };
 
 const TIMEOUT = { timeout: 10_000 };
@@ -48,7 +48,7 @@ async function expectOutcome(page: Page, outcome: Outcome) {
     "no-confident-match": page.getByText("No confident match", { exact: true }),
     clarification: page.getByText("Should the music have vocals or not?", { exact: true }),
     error: page.getByRole("alert").filter({ hasText: "Search didn't work" }),
-    offline: page.getByRole("alert").filter({ hasText: "You're offline" }),
+    offline: page.getByRole("alert").filter({ hasText: "Can't reach the server" }),
   }[outcome];
   await expect(panel).toBeVisible(TIMEOUT);
 }
@@ -69,7 +69,7 @@ for (const [scenario, expected] of Object.entries(SCENARIOS)) {
       await runSearch(page);
       await expectOutcome(page, expected.outcome);
       await expect(page.getByRole("progressbar", { name: "Searching" })).toHaveCount(0, TIMEOUT);
-      if (expected.notice) await expect(page.getByText(expected.notice)).toBeVisible(TIMEOUT);
+      if (expected.notice) await expect(page.getByText(expected.notice).first()).toBeVisible(TIMEOUT); // offline: the pill and the panel say it
       if (expected.outcome === "results" || expected.outcome === "no-confident-match" || expected.outcome === "empty") {
         await expect(page.getByRole("region", { name: "What the search understood" })).toBeVisible();
       }

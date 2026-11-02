@@ -2,24 +2,24 @@
   "next_cursor": null,
   "points": [
     {
-      "artist": "Example Artist 4",
+      "artist": "Example Artist 6",
       "genre": "Electronic",
       "has_audio": true,
       "source_url": null,
       "style": null,
-      "title": "Example Track 4",
-      "track_id": "trk_example_4",
+      "title": "Example Track 6",
+      "track_id": "trk_example_6",
       "x": 0.6,
       "y": -0.6
     },
     {
-      "artist": "Example Artist 5",
+      "artist": "Example Artist 7",
       "genre": "Folk",
       "has_audio": true,
       "source_url": null,
       "style": null,
-      "title": "Example Track 5",
-      "track_id": "trk_example_5",
+      "title": "Example Track 7",
+      "track_id": "trk_example_7",
       "x": 1.0,
       "y": -0.9
     }

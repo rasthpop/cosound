@@ -82,7 +82,7 @@ describe("ChangeStrip with structured changes", () => {
   it("labels every change kind without inventing data", () => {
     expect(changeLabel(entry("reference_added", { track_id: "t", title: "Night Train" }))).toBe("More like “Night Train”");
     expect(changeLabel(entry("negative_reference_added", { track_id: "t" }))).toBe("Less like a track");
-    expect(changeLabel(entry("excluded", { track_id: "t", title: "Bus", attribute: "instrument", value: "flute" }))).toBe("Removed “Bus” (wrong flute)");
+    expect(changeLabel(entry("excluded", { track_id: "t", title: "Bus", attribute: "instrument", value: "flute" }))).toBe("Removed “Bus” (you marked flute as wrong)");
     expect(changeLabel(entry("preference_added", { attribute: "genre", value: "electronic" }))).toBe("Added electronic");
     expect(changeLabel(entry("preference_raised", { attribute: "mood", value: "chill" }))).toBe("More chill");
     expect(changeLabel(entry("preference_lowered", { attribute: "vocals", value: "vocals" }))).toBe("Fewer vocals");

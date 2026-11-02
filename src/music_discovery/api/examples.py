@@ -64,7 +64,7 @@ def _query(**overrides: Any) -> s.InterpretedQuery:
         "reference_track_ids": [],
         "negative_reference_track_ids": [],
         "excluded_track_ids": [],
-        "semantic_prompts": ["chill music featuring flute"],
+        "semantic_prompts": ["chill music with a flute"],
         "diversity": 0.5,
         "uncertainties": [],
         "interpreter": "deterministic",
@@ -83,6 +83,45 @@ def _band(value: float | None, strong: float, partial: float) -> MatchStrength |
     return MatchStrength.PARTIAL if value >= partial else MatchStrength.WEAK
 
 
+# One consistent example world. Tracks 3 and 5 have no audio, so they are not on the audio map;
+# the map holds the audio tracks below, and every fixture agrees on a track's genre, artist,
+# audio and coordinates.
+MAP_TRACKS = (1, 2, 4, 6, 7)
+
+
+def _genre(n: int) -> str:
+    return "Folk" if n % 2 else "Electronic"
+
+
+def _xy(n: int) -> tuple[float, float]:
+    """Map coordinates of an audio track (by its place on the map)."""
+    i = MAP_TRACKS.index(n) + 1
+    return round(-1.0 + i * 0.4, 2), round(0.6 - i * 0.3, 2)
+
+
+def _description(
+    n: int, strength: MatchStrength | None, *, semantic: bool, audio: bool
+) -> tuple[str, list[str]]:
+    """Description and reasons in the exact templates of descriptions/description_service.py."""
+    texts: list[str] = []
+    reasons: list[str] = []
+    if strength is MatchStrength.STRONG:
+        texts.append('Its audio is a strong match for "chill music with a flute".')
+        reasons.append("Strong audio match")
+    elif strength is MatchStrength.PARTIAL:
+        texts.append("Its audio is a partial match for the requested sound.")
+        reasons.append("Partial audio match")
+    texts.append(f'Listed under "{_genre(n)}" in FMA.')
+    reasons.append(f"Tagged: {_genre(n)}")
+    if audio and not semantic:
+        texts.append("Audio search was unavailable; matched on catalog metadata.")
+        reasons.append("Metadata only")
+    if not audio:
+        texts.append("Audio analysis unavailable; matched on catalog metadata.")
+        reasons.append("No audio analysis")
+    return " ".join(texts), reasons
+
+
 def _result(n: int, *, semantic: bool = True, audio: bool = True) -> s.TrackResult:
     sem = round(0.9 - n * 0.08, 2) if semantic and audio else None
     meta = round(0.75 - n * 0.1, 2) if n < 3 else None
@@ -92,10 +131,7 @@ def _result(n: int, *, semantic: bool = True, audio: bool = True) -> s.TrackResu
         sources.append(RetrievalSource.METADATA)
         meta = meta if meta is not None else 0.3
     strength = _band(sem, 0.8, 0.6)  # example ranks are <= strong_max_rank
-    audio_reason = {
-        MatchStrength.STRONG: "Strong audio match",
-        MatchStrength.PARTIAL: "Partial audio match",
-    }.get(strength or MatchStrength.WEAK)
+    description, reasons = _description(n, strength, semantic=semantic, audio=audio)
     return s.TrackResult(
         track_id=f"trk_example_{n}",
         rank=n,
@@ -109,15 +145,9 @@ def _result(n: int, *, semantic: bool = True, audio: bool = True) -> s.TrackResu
         score_bands=s.ScoreBands(
             semantic=strength, metadata=_band(meta, 0.8, 0.3), relationship=None
         ),
-        description=(
-            "Its audio is a strong match for “chill music featuring flute”. Tagged Folk."
-            if strength is MatchStrength.STRONG
-            else "Its audio is a partial match for the requested sound. Tagged Folk."
-            if strength is MatchStrength.PARTIAL
-            else "Matched on metadata: Tagged Folk. Audio analysis unavailable."
-        ),
-        match_reasons=[r for r in (audio_reason, "Genre tag: Folk") if r is not None],
-        genres=["Folk"],
+        description=description,
+        match_reasons=reasons,
+        genres=[_genre(n)],
         styles=[],
         source_url=None,
         preview_url=f"/api/tracks/trk_example_{n}/audio" if audio else None,
@@ -131,8 +161,8 @@ def _result(n: int, *, semantic: bool = True, audio: bool = True) -> s.TrackResu
             ["no_audio"] if not audio else [] if semantic else ["semantic_unavailable"]
         ),
         retrieval_sources=sources,
-        spatial=s.Spatial(x=round(-0.6 + n * 0.1, 2), y=0.25, projection_version=PROJECTION)
-        if audio
+        spatial=s.Spatial(x=_xy(n)[0], y=_xy(n)[1], projection_version=PROJECTION)
+        if n in MAP_TRACKS
         else None,
     )
 
@@ -173,13 +203,14 @@ def _error(code: str, message: str, **details: Any) -> s.ErrorResponse:
 
 
 def _point(n: int) -> s.MapPoint:
+    x, y = _xy(n)
     return s.MapPoint(
         track_id=f"trk_example_{n}",
-        x=round(-1.0 + n * 0.4, 2),
-        y=round(0.6 - n * 0.3, 2),
+        x=x,
+        y=y,
         title=f"Example Track {n}",
         artist=f"Example Artist {n}",
-        genre="Folk" if n % 2 else "Electronic",
+        genre=_genre(n),
         style=None,
         source_url=None,
         has_audio=True,
@@ -305,12 +336,12 @@ def build_examples() -> dict[str, BaseModel]:
                 s.RelatedTrack(
                     track_id="trk_example_2",
                     title="Example Track 2",
-                    artists=_artist(1),
-                    relationship_type=RelationshipType.SAME_ARTIST,
+                    artists=_artist(2),
+                    relationship_type=RelationshipType.SAME_LABEL,
                 )
             ],
-            relationship_counts={"same_artist": 1},
-            spatial=s.Spatial(x=-0.5, y=0.25, projection_version=PROJECTION),
+            relationship_counts={"same_label": 1},
+            spatial=s.Spatial(x=_xy(1)[0], y=_xy(1)[1], projection_version=PROJECTION),
         ),
         "track_detail_no_audio": s.TrackDetail(
             track_id="trk_example_3",
@@ -344,9 +375,7 @@ def build_examples() -> dict[str, BaseModel]:
                     score=round(0.95 - n * 0.05, 2),
                     relationship_types=[],
                     audio_available=True,
-                    spatial=s.Spatial(
-                        x=round(-0.5 + n * 0.05, 2), y=0.3, projection_version=PROJECTION
-                    ),
+                    spatial=s.Spatial(x=_xy(n)[0], y=_xy(n)[1], projection_version=PROJECTION),
                 )
                 for n in (2, 4)
             ],
@@ -429,12 +458,14 @@ def build_examples() -> dict[str, BaseModel]:
             ],
         ),
         "map_points_page1": s.MapPointsResponse(
-            points=[_point(n) for n in (1, 2, 3)],
-            next_cursor="trk_example_3",
+            points=[_point(n) for n in MAP_TRACKS[:3]],
+            next_cursor=f"trk_example_{MAP_TRACKS[2]}",
             projection_version=PROJECTION,
         ),
         "map_points_page2": s.MapPointsResponse(
-            points=[_point(n) for n in (4, 5)], next_cursor=None, projection_version=PROJECTION
+            points=[_point(n) for n in MAP_TRACKS[3:]],
+            next_cursor=None,
+            projection_version=PROJECTION,
         ),
         "map_meta": s.MapMetaResponse(
             status=CapabilityStatus.AVAILABLE,
@@ -444,12 +475,14 @@ def build_examples() -> dict[str, BaseModel]:
             model_id="example-clap-model",
             created_at=T0,
             bounds=s.MapBounds(min_x=-1.0, max_x=1.0, min_y=-0.9, max_y=0.9),
-            n_points=5,
-            excluded_tracks=1,
+            n_points=len(MAP_TRACKS),
+            excluded_tracks=2,  # tracks 3 and 5: no audio
             coordinate_transform={"kind": "center_scale", "center": [0.0, 0.0], "scale": 1.0},
-            genres=[  # the five example points
-                s.GenreCount(genre="Folk", count=3),
-                s.GenreCount(genre="Electronic", count=2),
+            genres=[  # the five example points, count desc
+                s.GenreCount(
+                    genre="Electronic", count=sum(_genre(n) == "Electronic" for n in MAP_TRACKS)
+                ),
+                s.GenreCount(genre="Folk", count=sum(_genre(n) == "Folk" for n in MAP_TRACKS)),
             ],
         ),
         "map_unavailable": s.MapMetaResponse(
