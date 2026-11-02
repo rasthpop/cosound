@@ -4,24 +4,6 @@
     "excluded trk_example_1",
     "added electronic"
   ],
-  "changes": [
-    {
-      "attribute": null,
-      "kind": "excluded",
-      "operator": null,
-      "title": "Example Track 1",
-      "track_id": "trk_example_1",
-      "value": null
-    },
-    {
-      "attribute": "genre",
-      "kind": "preference_added",
-      "operator": null,
-      "title": null,
-      "track_id": null,
-      "value": "electronic"
-    }
-  ],
   "next_action": "REFINE_SEARCH",
   "reason": null,
   "refreshed": {
@@ -33,24 +15,6 @@
     "change_summary": [
       "excluded trk_example_1",
       "added electronic"
-    ],
-    "changes": [
-      {
-        "attribute": null,
-        "kind": "excluded",
-        "operator": null,
-        "title": "Example Track 1",
-        "track_id": "trk_example_1",
-        "value": null
-      },
-      {
-        "attribute": "genre",
-        "kind": "preference_added",
-        "operator": null,
-        "title": null,
-        "track_id": null,
-        "value": "electronic"
-      }
     ],
     "clarification_question": null,
     "interpreted_query": {

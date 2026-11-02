@@ -20,7 +20,7 @@ from music_discovery.agents.feedback_rules import RuleContext, apply_rule, next_
 from music_discovery.agents.lexicon_loader import Lexicon
 from music_discovery.descriptions.description_service import DescriptionService
 from music_discovery.descriptions.evidence_builder import EvidenceBuilder, SemanticSignal
-from music_discovery.domain.enums import ChangeKind, FeedbackType, NextAction
+from music_discovery.domain.enums import FeedbackType, NextAction
 from music_discovery.domain.errors import (
     QueryNotInSession,
     SessionNotFound,
@@ -35,7 +35,6 @@ from music_discovery.domain.schemas import (
     FeedbackEvent,
     RankedCandidate,
     SearchSpecification,
-    SpecChange,
 )
 from music_discovery.retrieval.hybrid_retriever import HybridResult
 
@@ -49,8 +48,6 @@ class FeedbackDecision:
     change_notes: list[str] = field(default_factory=list)
     reason: str | None = None
     """Why the event was not applied, when `accepted` is False."""
-    changes: list[SpecChange] = field(default_factory=list)
-    """Structured form of `change_notes`; one `rejected` entry when the event was refused."""
 
 
 @dataclass(frozen=True)
@@ -85,17 +82,13 @@ class FeedbackAgent:
         spec = spec or current
         result = apply_rule(spec, event, self._ctx)
         if result.rejected is not None:
-            return FeedbackDecision(
-                False, spec, NextAction.NONE, reason=result.rejected, changes=[rejected(event)]
-            )
+            return FeedbackDecision(False, spec, NextAction.NONE, reason=result.rejected)
         if result.note is None:
             action = next_action(event)
             if action is NextAction.REFINE_SEARCH:
                 action = NextAction.NONE  # nothing changed: no new search needed
             return FeedbackDecision(True, spec, action)
-        return FeedbackDecision(
-            True, result.spec, next_action(event), [result.note], changes=list(result.changes)
-        )
+        return FeedbackDecision(True, result.spec, next_action(event), [result.note])
 
     def _validate(self, session: SearchSession, event: FeedbackEvent) -> SearchSpecification:
         if event.search_session_id != session.session_id:
@@ -153,13 +146,3 @@ class FeedbackAgent:
                 )
             )
         return explained
-
-
-def rejected(event: FeedbackEvent | None = None) -> SpecChange:
-    """The structured entry for a refused event (or for free text that mapped to none)."""
-    if event is None:
-        return SpecChange(kind=ChangeKind.REJECTED)
-    value = event.value if isinstance(event.value, str) and event.value.strip() else None
-    return SpecChange(
-        kind=ChangeKind.REJECTED, track_id=event.track_id, attribute=event.attribute, value=value
-    )

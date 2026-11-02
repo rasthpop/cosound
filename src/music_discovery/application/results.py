@@ -15,14 +15,6 @@ from music_discovery.domain.protocols import (
     TrackAudioRepository,
     TrackRepository,
 )
-from music_discovery.domain.schemas import SpecChange
-
-
-@dataclass(frozen=True)
-class ChangeView:
-    change: SpecChange
-    title: str | None
-    """The catalog title of `change.track_id`; None without a track or when it is unknown."""
 
 
 @dataclass(frozen=True)
@@ -66,11 +58,3 @@ class TrackViewBuilder:
     def many(self, track_ids: Sequence[str]) -> dict[str, TrackView]:
         """Views for the known ids; unknown ids are absent."""
         return {t.id: self.view(t) for t in self._tracks.get_many(track_ids)}
-
-    def changes(self, changes: Sequence[SpecChange]) -> list[ChangeView]:
-        """Attach catalog titles to "what changed" entries; unknown tracks keep `None`."""
-        ids = list(dict.fromkeys(c.track_id for c in changes if c.track_id is not None))
-        titles = {t.id: t.title for t in self._tracks.get_many(ids)} if ids else {}
-        return [
-            ChangeView(c, None if c.track_id is None else titles.get(c.track_id)) for c in changes
-        ]

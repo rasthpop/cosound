@@ -6,7 +6,7 @@ from music_discovery.api import schemas as s
 from music_discovery.application.capabilities import Capabilities, SearchWarning
 from music_discovery.application.feedback_service import FeedbackResult
 from music_discovery.application.map_service import MapMeta, MapPage
-from music_discovery.application.results import ChangeView, TrackView
+from music_discovery.application.results import TrackView
 from music_discovery.application.search_service import ResultItem, SearchResult
 from music_discovery.application.track_service import NeighborsResult, TrackDetail
 from music_discovery.domain.enums import CapabilityStatus
@@ -129,22 +129,7 @@ def search_response(result: SearchResult) -> s.SearchResponse:
         capabilities=capabilities(result.capabilities),
         warnings=warnings(result.warnings),
         change_summary=list(result.change_summary),
-        changes=changes(result.changes),
     )
-
-
-def changes(views: list[ChangeView]) -> list[s.Change]:
-    return [
-        s.Change(
-            kind=v.change.kind,
-            track_id=v.change.track_id,
-            title=v.title,
-            attribute=v.change.attribute,
-            value=v.change.value,
-            operator=v.change.operator,
-        )
-        for v in views
-    ]
 
 
 def track_detail(detail: TrackDetail) -> s.TrackDetail:
@@ -214,7 +199,6 @@ def feedback_response(result: FeedbackResult) -> s.FeedbackResponse:
             interpreted_query=interpreted_query(result.spec),
         ),
         change_summary=list(result.change_summary),
-        changes=changes(result.changes),
         next_action=result.next_action,
         refreshed=None if result.refreshed is None else search_response(result.refreshed),
     )

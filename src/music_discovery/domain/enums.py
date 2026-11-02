@@ -56,23 +56,6 @@ class NextAction(StrEnum):
     NONE = "NONE"
 
 
-class ChangeKind(StrEnum):
-    """One structured "what changed" entry (see `SpecChange`)."""
-
-    REFERENCE_ADDED = "reference_added"
-    NEGATIVE_REFERENCE_ADDED = "negative_reference_added"
-    EXCLUDED = "excluded"
-    PREFERENCE_ADDED = "preference_added"
-    PREFERENCE_RAISED = "preference_raised"
-    PREFERENCE_LOWERED = "preference_lowered"
-    PREFERENCE_REMOVED = "preference_removed"
-    NEGATIVE_ADDED = "negative_added"
-    NEGATIVE_REMOVED = "negative_removed"
-    CONSTRAINT_ADDED = "constraint_added"
-    REJECTED = "rejected"
-    NEEDS_CLARIFICATION = "needs_clarification"
-
-
 class SearchOutcomeKind(StrEnum):
     OK = "ok"
     NO_CONFIDENT_MATCH = "no_confident_match"

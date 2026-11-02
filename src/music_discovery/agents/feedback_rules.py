@@ -16,9 +16,6 @@ one when nothing changes) and a short change note for "what changed". The table:
 |                     | negative), or add a soft negative preference               |        |
 | SELECT_TRACK        | none                                                       | details|
 
-Every change also comes as structured `SpecChange` entries (`RuleResult.changes`) for clients
-that render "what changed" themselves.
-
 Invariants: `original_query` never changes, hard constraints are never dropped (an attribute
 change that would contradict one is rejected, not applied), and the track-set rules are
 idempotent. An attribute is named either by a lexicon term ("electronic") or by a category
@@ -32,13 +29,12 @@ from dataclasses import dataclass
 
 from music_discovery.agents.lexicon_loader import CATEGORIES, Category, Lexicon, phrase
 from music_discovery.agents.query_parser import PREFERENCE_FIELDS
-from music_discovery.domain.enums import ChangeKind, FeedbackType, NextAction
+from music_discovery.domain.enums import FeedbackType, NextAction
 from music_discovery.domain.schemas import (
     ConstraintAttribute,
     ConstraintOperator,
     FeedbackEvent,
     SearchSpecification,
-    SpecChange,
     WeightedPreference,
 )
 from music_discovery.retrieval.prompt_builder import with_prompts
@@ -56,8 +52,6 @@ class RuleResult:
     """None when the spec did not change."""
     rejected: str | None = None
     """Why an attribute change was refused (it would contradict a hard constraint)."""
-    changes: tuple[SpecChange, ...] = ()
-    """The structured form of `note`; empty when the spec did not change."""
 
 
 @dataclass(frozen=True)
@@ -107,11 +101,7 @@ def more_like_this(spec: SearchSpecification, event: FeedbackEvent, _: RuleConte
         negative_reference_track_ids=_remove(spec.negative_reference_track_ids, track),
         excluded_track_ids=_remove(spec.excluded_track_ids, track),
     )
-    return RuleResult(
-        new,
-        f"more like {track}",
-        changes=(SpecChange(kind=ChangeKind.REFERENCE_ADDED, track_id=track),),
-    )
+    return RuleResult(new, f"more like {track}")
 
 
 def less_like_this(spec: SearchSpecification, event: FeedbackEvent, _: RuleContext) -> RuleResult:
@@ -123,8 +113,7 @@ def less_like_this(spec: SearchSpecification, event: FeedbackEvent, _: RuleConte
         negative_reference_track_ids=_add(spec.negative_reference_track_ids, track),
         reference_track_ids=_remove(spec.reference_track_ids, track),
     )
-    change = SpecChange(kind=ChangeKind.NEGATIVE_REFERENCE_ADDED, track_id=track)
-    return RuleResult(new, f"less like {track}", changes=(change,))
+    return RuleResult(new, f"less like {track}")
 
 
 def not_relevant(spec: SearchSpecification, event: FeedbackEvent, _: RuleContext) -> RuleResult:
@@ -136,9 +125,7 @@ def not_relevant(spec: SearchSpecification, event: FeedbackEvent, _: RuleContext
         excluded_track_ids=_add(spec.excluded_track_ids, track),
         reference_track_ids=_remove(spec.reference_track_ids, track),
     )
-    return RuleResult(
-        new, f"removed {track}", changes=(SpecChange(kind=ChangeKind.EXCLUDED, track_id=track),)
-    )
+    return RuleResult(new, f"removed {track}")
 
 
 def wrong_instrument(
@@ -162,10 +149,7 @@ def wrong_instrument(
     else:  # already a new version: add the note without bumping it twice
         data = excluded.spec.model_dump() | {"uncertainties": uncertainties}
         new = SearchSpecification.model_validate(data)
-    change = SpecChange(
-        kind=ChangeKind.EXCLUDED, track_id=track, attribute="instrument", value=instrument
-    )
-    return RuleResult(new, f"removed {track} (wrong {named})", changes=(change,))
+    return RuleResult(new, f"removed {track} (wrong {named})")
 
 
 # --- attribute rules --------------------------------------------------------------------
@@ -238,11 +222,7 @@ def _vocals(spec: SearchSpecification, more: bool) -> RuleResult:
     target = "preferred" if more else "avoided"
     if current == target:
         return RuleResult(spec, None)
-    kind = ChangeKind.PREFERENCE_RAISED if more else ChangeKind.PREFERENCE_LOWERED
-    change = SpecChange(kind=kind, attribute="vocals", value="vocals")
-    return RuleResult(
-        _update(spec, vocal_preferences=target), f"vocals {target}", changes=(change,)
-    )
+    return RuleResult(_update(spec, vocal_preferences=target), f"vocals {target}")
 
 
 def _more(spec: SearchSpecification, attr: _Attribute, ctx: RuleContext) -> RuleResult:
@@ -250,31 +230,18 @@ def _more(spec: SearchSpecification, attr: _Attribute, ctx: RuleContext) -> Rule
     prefs = _prefs(spec, attr.category)
     negatives = [p for p in spec.negative_preferences if p.value.casefold() != key]
     current = next((p for p in prefs if p.value.casefold() == key), None)
-    entries: list[SpecChange] = []
     if current is None:
         weight = ctx.lexicon.weights.get(attr.category, 0.7)
         prefs.append(WeightedPreference(value=attr.value, weight=weight, source_span=None))
         note = f"more {attr.value}"
-        entries.append(_pref_change(ChangeKind.PREFERENCE_ADDED, attr))
     else:
         weight = min(1.0, current.weight + ctx.delta)
         if weight == current.weight and len(negatives) == len(spec.negative_preferences):
             return RuleResult(spec, None)
         prefs = [p.model_copy(update={"weight": weight}) if p is current else p for p in prefs]
         note = f"more {attr.value} ({current.weight:.2f} -> {weight:.2f})"
-        if weight != current.weight:
-            entries.append(_pref_change(ChangeKind.PREFERENCE_RAISED, attr))
-    entries += [
-        SpecChange(kind=ChangeKind.NEGATIVE_REMOVED, value=p.value)
-        for p in spec.negative_preferences
-        if p.value.casefold() == key
-    ]
     changes = {PREFERENCE_FIELDS[attr.category]: prefs, "negative_preferences": negatives}
-    return RuleResult(_update(spec, **changes), note, changes=tuple(entries))
-
-
-def _pref_change(kind: ChangeKind, attr: _Attribute) -> SpecChange:
-    return SpecChange(kind=kind, attribute=attr.category, value=attr.value)
+    return RuleResult(_update(spec, **changes), note)
 
 
 def _less(spec: SearchSpecification, attr: _Attribute, ctx: RuleContext) -> RuleResult:
@@ -282,21 +249,16 @@ def _less(spec: SearchSpecification, attr: _Attribute, ctx: RuleContext) -> Rule
     prefs = _prefs(spec, attr.category)
     negatives = list(spec.negative_preferences)
     current = next((p for p in prefs if p.value.casefold() == key), None)
-    entries: list[SpecChange] = []
     if current is not None and current.weight - ctx.delta >= ctx.delta:
         weight = round(current.weight - ctx.delta, 6)
         prefs = [p.model_copy(update={"weight": weight}) if p is current else p for p in prefs]
         note = f"less {attr.value} ({current.weight:.2f} -> {weight:.2f})"
-        entries.append(_pref_change(ChangeKind.PREFERENCE_LOWERED, attr))
     else:
         prefs = [p for p in prefs if p is not current]
-        if current is not None:
-            entries.append(_pref_change(ChangeKind.PREFERENCE_REMOVED, attr))
         negative = next((p for p in negatives if p.value.casefold() == key), None)
         base = ctx.lexicon.cues.negative_weight
         if negative is None:
             negatives.append(WeightedPreference(value=attr.value, weight=base, source_span=None))
-            entries.append(SpecChange(kind=ChangeKind.NEGATIVE_ADDED, value=attr.value))
         else:
             raised = min(1.0, negative.weight + ctx.delta)
             if raised == negative.weight and current is None:
@@ -304,11 +266,9 @@ def _less(spec: SearchSpecification, attr: _Attribute, ctx: RuleContext) -> Rule
             negatives = [
                 p.model_copy(update={"weight": raised}) if p is negative else p for p in negatives
             ]
-            if raised != negative.weight:
-                entries.append(SpecChange(kind=ChangeKind.NEGATIVE_ADDED, value=negative.value))
         note = f"less {attr.value}"
     changes = {PREFERENCE_FIELDS[attr.category]: prefs, "negative_preferences": negatives}
-    return RuleResult(_update(spec, **changes), note, changes=tuple(entries))
+    return RuleResult(_update(spec, **changes), note)
 
 
 def select_track(spec: SearchSpecification, event: FeedbackEvent, _: RuleContext) -> RuleResult:

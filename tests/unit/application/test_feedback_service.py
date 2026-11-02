@@ -4,7 +4,7 @@ import pytest
 
 from music_discovery.application.feedback_service import FeedbackCommand
 from music_discovery.application.search_service import SearchResult
-from music_discovery.domain.enums import ChangeKind, FeedbackType, NextAction
+from music_discovery.domain.enums import FeedbackType, NextAction
 from music_discovery.domain.errors import (
     InvalidFeedbackEvent,
     InvalidRequest,
@@ -13,7 +13,6 @@ from music_discovery.domain.errors import (
     TrackNotFound,
     TrackNotInResults,
 )
-from music_discovery.domain.schemas import SpecChange
 from tests.support.world import QUERY, World
 
 
@@ -130,15 +129,3 @@ def test_track_not_in_results_is_refused() -> None:
         world.feedback.submit(
             command(first, event_type=FeedbackType.NOT_RELEVANT, track_id=outside)
         )
-
-
-def test_change_titles_come_from_the_catalog_and_unknown_stay_none() -> None:
-    world = World()
-    views = world.search.changes(
-        [
-            SpecChange(kind=ChangeKind.EXCLUDED, track_id="trk_sound"),
-            SpecChange(kind=ChangeKind.EXCLUDED, track_id="trk_not_in_catalog"),
-            SpecChange(kind=ChangeKind.NEGATIVE_ADDED, value="acoustic"),
-        ]
-    )
-    assert [v.title for v in views] == ["Morning", None, None]

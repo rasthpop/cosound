@@ -21,7 +21,6 @@ from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 from music_discovery.domain.enums import (
     CapabilityStatus,
-    ChangeKind,
     ConstraintStatus,
     EvidenceStatus,
     FeedbackType,
@@ -196,32 +195,6 @@ class TrackResult(ApiModel):
     spatial: Spatial | None
 
 
-class Change(ApiModel):
-    """One structured "what changed" entry; `change_summary` has the same as plain text."""
-
-    kind: ChangeKind
-    track_id: str | None = Field(description="Track kinds and `rejected` track events.")
-    title: str | None = Field(
-        description="Catalog title of `track_id`, resolved server-side; null when unknown."
-    )
-    attribute: str | None = Field(
-        description=(
-            "Preference category (`mood`, `instrument`, `genre`, …, `vocals`), constraint"
-            " attribute, `instrument` for a wrong-instrument exclusion, or the rejected"
-            " event's attribute. Null for negatives (they have no category)."
-        )
-    )
-    value: str | None = Field(
-        description=(
-            "The term (`flute`), the constraint value, the instrument, the rejected event's"
-            " value, or the clarification question."
-        )
-    )
-    operator: str | None = Field(
-        description="`constraint_added` only: `required`, `excluded` or `range`."
-    )
-
-
 class SearchResponse(ApiModel):
     query_id: str | None = Field(description="Null only when no search ran.")
     session_id: str
@@ -235,7 +208,6 @@ class SearchResponse(ApiModel):
     capabilities: Capabilities
     warnings: list[ApiWarning]
     change_summary: list[str] = Field(description="What changed since the previous turn.")
-    changes: list[Change] = Field(description="`change_summary` as structured entries.")
 
 
 # --- Tracks ---------------------------------------------------------------------------------
@@ -331,7 +303,6 @@ class FeedbackResponse(ApiModel):
     reason: str | None = Field(description="Why the feedback was not applied.")
     updated_search_state: SearchState
     change_summary: list[str]
-    changes: list[Change] = Field(description="`change_summary` as structured entries.")
     next_action: NextAction
     refreshed: SearchResponse | None
 

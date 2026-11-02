@@ -16,7 +16,6 @@ from dataclasses import dataclass, field
 from pydantic import ValidationError
 
 from music_discovery.agents.orchestrator import Orchestrator, SearchTurn
-from music_discovery.application.results import ChangeView
 from music_discovery.application.search_service import SearchResult, SearchService, check_limit
 from music_discovery.domain.enums import FeedbackType, NextAction
 from music_discovery.domain.errors import InvalidFeedbackEvent, QueryNotInSession
@@ -47,7 +46,6 @@ class FeedbackResult:
     session: SearchSession
     spec: SearchSpecification
     change_summary: list[str] = field(default_factory=list)
-    changes: list[ChangeView] = field(default_factory=list)
     refreshed: SearchResult | None = None
 
 
@@ -118,6 +116,5 @@ class FeedbackService:
             session=turn.session,
             spec=turn.spec,
             change_summary=list(decision.change_notes),
-            changes=self._search.changes(decision.changes),
             refreshed=refreshed,
         )

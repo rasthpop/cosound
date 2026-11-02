@@ -1,16 +1,6 @@
 {
   "accepted": false,
   "change_summary": [],
-  "changes": [
-    {
-      "attribute": null,
-      "kind": "rejected",
-      "operator": null,
-      "title": null,
-      "track_id": null,
-      "value": null
-    }
-  ],
   "next_action": "NONE",
   "reason": "nothing in the feedback text maps to a known attribute",
   "refreshed": null,

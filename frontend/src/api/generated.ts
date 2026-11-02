@@ -197,44 +197,6 @@ export interface components {
          */
         CapabilityStatus: "available" | "unavailable";
         /**
-         * Change
-         * @description One structured "what changed" entry; `change_summary` has the same as plain text.
-         */
-        Change: {
-            /**
-             * Attribute
-             * @description Preference category (`mood`, `instrument`, `genre`, …, `vocals`), constraint attribute, `instrument` for a wrong-instrument exclusion, or the rejected event's attribute. Null for negatives (they have no category).
-             */
-            attribute: string | null;
-            kind: components["schemas"]["ChangeKind"];
-            /**
-             * Operator
-             * @description `constraint_added` only: `required`, `excluded` or `range`.
-             */
-            operator: string | null;
-            /**
-             * Title
-             * @description Catalog title of `track_id`, resolved server-side; null when unknown.
-             */
-            title: string | null;
-            /**
-             * Track Id
-             * @description Track kinds and `rejected` track events.
-             */
-            track_id: string | null;
-            /**
-             * Value
-             * @description The term (`flute`), the constraint value, the instrument, the rejected event's value, or the clarification question.
-             */
-            value: string | null;
-        };
-        /**
-         * ChangeKind
-         * @description One structured "what changed" entry (see `SpecChange`).
-         * @enum {string}
-         */
-        ChangeKind: "reference_added" | "negative_reference_added" | "excluded" | "preference_added" | "preference_raised" | "preference_lowered" | "preference_removed" | "negative_added" | "negative_removed" | "constraint_added" | "rejected" | "needs_clarification";
-        /**
          * ConstraintAttribute
          * @enum {string}
          */
@@ -408,18 +370,6 @@ export interface components {
          *         "excluded trk_example_1",
          *         "added electronic"
          *       ],
-         *       "changes": [
-         *         {
-         *           "kind": "excluded",
-         *           "title": "Example Track 1",
-         *           "track_id": "trk_example_1"
-         *         },
-         *         {
-         *           "attribute": "genre",
-         *           "kind": "preference_added",
-         *           "value": "electronic"
-         *         }
-         *       ],
          *       "next_action": "REFINE_SEARCH",
          *       "refreshed": {
          *         "capabilities": {
@@ -430,18 +380,6 @@ export interface components {
          *         "change_summary": [
          *           "excluded trk_example_1",
          *           "added electronic"
-         *         ],
-         *         "changes": [
-         *           {
-         *             "kind": "excluded",
-         *             "title": "Example Track 1",
-         *             "track_id": "trk_example_1"
-         *           },
-         *           {
-         *             "attribute": "genre",
-         *             "kind": "preference_added",
-         *             "value": "electronic"
-         *           }
          *         ],
          *         "interpreted_query": {
          *           "diversity": 0.5,
@@ -633,11 +571,6 @@ export interface components {
          * @example {
          *       "accepted": false,
          *       "change_summary": [],
-         *       "changes": [
-         *         {
-         *           "kind": "rejected"
-         *         }
-         *       ],
          *       "next_action": "NONE",
          *       "reason": "nothing in the feedback text maps to a known attribute",
          *       "updated_search_state": {
@@ -686,11 +619,6 @@ export interface components {
             accepted: boolean;
             /** Change Summary */
             change_summary: string[];
-            /**
-             * Changes
-             * @description `change_summary` as structured entries.
-             */
-            changes: components["schemas"]["Change"][];
             next_action: components["schemas"]["NextAction"];
             /**
              * Reason
@@ -1202,7 +1130,6 @@ export interface components {
          *         "semantic": "available"
          *       },
          *       "change_summary": [],
-         *       "changes": [],
          *       "interpreted_query": {
          *         "diversity": 0.5,
          *         "energy_preferences": [],
@@ -1379,7 +1306,6 @@ export interface components {
          *         "semantic": "available"
          *       },
          *       "change_summary": [],
-         *       "changes": [],
          *       "interpreted_query": {
          *         "diversity": 0.5,
          *         "energy_preferences": [],
@@ -1429,7 +1355,6 @@ export interface components {
          *         "semantic": "available"
          *       },
          *       "change_summary": [],
-         *       "changes": [],
          *       "interpreted_query": {
          *         "diversity": 0.5,
          *         "energy_preferences": [],
@@ -1486,7 +1411,6 @@ export interface components {
          *         "semantic": "available"
          *       },
          *       "change_summary": [],
-         *       "changes": [],
          *       "clarification_question": "Should the music have vocals or not?",
          *       "interpreted_query": {
          *         "diversity": 0.5,
@@ -1525,7 +1449,6 @@ export interface components {
          *         "semantic": "unavailable"
          *       },
          *       "change_summary": [],
-         *       "changes": [],
          *       "interpreted_query": {
          *         "diversity": 0.5,
          *         "energy_preferences": [],
@@ -1661,7 +1584,6 @@ export interface components {
          *         "semantic": "available"
          *       },
          *       "change_summary": [],
-         *       "changes": [],
          *       "interpreted_query": {
          *         "diversity": 0.5,
          *         "energy_preferences": [],
@@ -1843,7 +1765,6 @@ export interface components {
          *         "semantic": "available"
          *       },
          *       "change_summary": [],
-         *       "changes": [],
          *       "interpreted_query": {
          *         "diversity": 0.5,
          *         "energy_preferences": [],
@@ -1948,11 +1869,6 @@ export interface components {
              * @description What changed since the previous turn.
              */
             change_summary: string[];
-            /**
-             * Changes
-             * @description `change_summary` as structured entries.
-             */
-            changes: components["schemas"]["Change"][];
             /** Clarification Question */
             clarification_question: string | null;
             interpreted_query: components["schemas"]["InterpretedQuery"];

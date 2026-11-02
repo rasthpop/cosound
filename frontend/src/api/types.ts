@@ -28,7 +28,6 @@ export type Preference = Schemas["Preference"];
 export type HardConstraint = Schemas["HardConstraint"];
 export type Capabilities = Schemas["Capabilities"];
 export type ApiWarning = Schemas["ApiWarning"];
-export type Change = Schemas["Change"];
 export type Artist = Schemas["Artist"];
 export type Spatial = Schemas["Spatial"];
 export type Release = Schemas["Release"];
@@ -46,7 +45,6 @@ export type ErrorBody = Schemas["ErrorBody"];
 // --- enums -----------------------------------------------------------------------------------
 export type FeedbackType = Schemas["FeedbackType"];
 export type NextAction = Schemas["NextAction"];
-export type ChangeKind = Schemas["ChangeKind"];
 export type SearchOutcome = Schemas["SearchOutcomeKind"];
 export type CapabilityStatus = Schemas["CapabilityStatus"];
 export type InterpreterStatus = Schemas["InterpreterStatus"];

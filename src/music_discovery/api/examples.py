@@ -17,7 +17,6 @@ from music_discovery.api import schemas as s
 from music_discovery.application.capabilities import WARNING_MESSAGES
 from music_discovery.domain.enums import (
     CapabilityStatus,
-    ChangeKind,
     ConstraintStatus,
     EvidenceStatus,
     FeedbackType,
@@ -146,23 +145,9 @@ def _search(**overrides: Any) -> s.SearchResponse:
         "capabilities": ALL_UP,
         "warnings": [],
         "change_summary": [],
-        "changes": [],
     }
     values.update(overrides)
     return s.SearchResponse(**values)
-
-
-def _change(kind: ChangeKind, **values: str | None) -> s.Change:
-    fields: dict[str, str | None] = dict.fromkeys(
-        ("track_id", "title", "attribute", "value", "operator")
-    )
-    return s.Change(kind=kind, **(fields | values))
-
-
-REFINED_CHANGES = [
-    _change(ChangeKind.EXCLUDED, track_id="trk_example_1", title="Example Track 1"),
-    _change(ChangeKind.PREFERENCE_ADDED, attribute="genre", value="electronic"),
-]
 
 
 def _error(code: str, message: str, **details: Any) -> s.ErrorResponse:
@@ -209,7 +194,6 @@ def build_examples() -> dict[str, BaseModel]:
         interpreted_query=refined_query,
         results=[_result(1), _result(2)],
         change_summary=["excluded trk_example_1", "added electronic"],
-        changes=REFINED_CHANGES,
     )
     return {
         "search_ok": _search(),
@@ -356,7 +340,6 @@ def build_examples() -> dict[str, BaseModel]:
                 session_id="ses_example_1", session_version=4, interpreted_query=refined_query
             ),
             change_summary=["excluded trk_example_1", "added electronic"],
-            changes=REFINED_CHANGES,
             next_action=NextAction.REFINE_SEARCH,
             refreshed=refined,
         ),
@@ -367,7 +350,6 @@ def build_examples() -> dict[str, BaseModel]:
                 session_id="ses_example_1", session_version=2, interpreted_query=_query()
             ),
             change_summary=[],
-            changes=[_change(ChangeKind.REJECTED)],
             next_action=NextAction.NONE,
             refreshed=None,
         ),

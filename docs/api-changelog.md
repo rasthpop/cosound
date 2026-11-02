@@ -24,16 +24,6 @@ Additive changes. Existing fields keep their meaning, so the version stays 1.
   so the legend and categorical colors stay stable. Sorted by count (desc), then name; `genre:
   null` counts points without a genre (and projected tracks missing from the catalog), so counts
   sum to `n_points`. `[]` when the map is unavailable.
-- 2026-11-02 (P08.T12): `SearchResponse.changes` and `FeedbackResponse.changes` are
-  `change_summary` as structured entries `{kind, track_id, title, attribute, value, operator}`
-  (all keys present, unknown values `null`). `kind` (`ChangeKind`): `reference_added`,
-  `negative_reference_added`, `excluded`, `preference_added`, `preference_raised`,
-  `preference_lowered`, `preference_removed`, `negative_added` (new or stronger),
-  `negative_removed` (dropped or weaker), `constraint_added`, `rejected`,
-  `needs_clarification`. `title` is the catalog title of `track_id`, resolved server-side, and
-  `null` when unknown. `operator` is set only for `constraint_added`. A vocals constraint and the
-  vocal preference it implies are a single `constraint_added` entry. `change_summary` strings
-  are unchanged. Session history (`SessionTurn`) keeps strings only.
 
 ## API_VERSION 1 — 2026-10-25
 

@@ -23,7 +23,6 @@ from music_discovery.descriptions.claim_validator import (
 from music_discovery.descriptions.description_service import DescriptionService
 from music_discovery.descriptions.evidence_builder import EvidenceBuilder
 from music_discovery.domain.enums import (
-    ChangeKind,
     ConstraintStatus,
     DataSource,
     FeedbackType,
@@ -32,7 +31,7 @@ from music_discovery.domain.enums import (
 )
 from music_discovery.domain.errors import StaleSessionVersion
 from music_discovery.domain.models import ArtistReference, Provenance, Track
-from music_discovery.domain.schemas import FeedbackEvent, SpecChange
+from music_discovery.domain.schemas import FeedbackEvent
 from music_discovery.infrastructure.lexical_index import BM25FieldIndex
 from music_discovery.infrastructure.vector_index import NumpyCosineIndex
 from music_discovery.retrieval.config import RetrievalConfig
@@ -201,7 +200,6 @@ def test_not_relevant_track_is_gone_from_the_next_plate() -> None:
     assert second.decision.next_action is NextAction.REFINE_SEARCH
     assert top not in ids(second)
     assert second.change_summary == [f"removed {top}"]
-    assert second.changes == [SpecChange(kind=ChangeKind.EXCLUDED, track_id=top)]
     stored = world.sessions.get(first.session.session_id)
     assert stored is not None
     assert len(stored.turns) == 2
@@ -259,29 +257,7 @@ def test_follow_up_query_reports_what_changed() -> None:
     assert second.spec.original_query == f"{QUERY}. but without vocals"
     assert "vocals excluded" in second.change_summary
     assert "constraint: vocals excluded" in second.change_summary
-    # the vocal preference and its constraint are one structured entry
-    vocals = [c for c in second.changes if c.attribute == "vocals"]
-    assert vocals == [
-        SpecChange(kind=ChangeKind.CONSTRAINT_ADDED, attribute="vocals", operator="excluded")
-    ]
     assert len(second.session.turns) == 2
-
-
-def test_text_feedback_reports_each_change_and_rejections() -> None:
-    world = World()
-    first = world.orchestrator.search(QUERY, None, LIMIT)
-    second = world.orchestrator.refine_text(
-        first.session, "more electronic, less acoustic", first.query_id or "", LIMIT
-    )
-    kinds = [(c.kind, c.value) for c in second.changes]
-    assert (ChangeKind.PREFERENCE_ADDED, "electronic") in kinds
-    assert (ChangeKind.NEGATIVE_ADDED, "acoustic") in kinds
-    refused = world.orchestrator.refine_text(
-        second.session, "zxqv qwop", second.query_id or "", LIMIT
-    )
-    assert refused.decision is not None
-    assert not refused.decision.accepted
-    assert refused.decision.changes == [SpecChange(kind=ChangeKind.REJECTED)]
 
 
 def test_clarification_outcome() -> None:

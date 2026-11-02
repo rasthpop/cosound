@@ -12,7 +12,6 @@ from music_discovery.descriptions.claim_validator import DescriptionConfig
 from music_discovery.descriptions.description_service import DescriptionService
 from music_discovery.descriptions.evidence_builder import EvidenceBuilder
 from music_discovery.domain.enums import (
-    ChangeKind,
     DataSource,
     FeedbackType,
     NextAction,
@@ -34,7 +33,6 @@ from music_discovery.domain.schemas import (
     ScoreBreakdown,
     SearchOutcome,
     SearchSpecification,
-    SpecChange,
 )
 from music_discovery.retrieval.hybrid_retriever import HybridResult
 from tests.fakes import InMemoryTrackRepository
@@ -195,80 +193,6 @@ def test_base_example_more_electronic_less_acoustic_keeps_flute_and_chill() -> N
     assert any("electronic" in p for p in spec.semantic_prompts)
 
 
-# --- structured changes (P08.T12) --------------------------------------------------------
-
-LESS_ELECTRONIC = QUERY.interpret("chill music, less electronic")
-
-
-def _chill_at_or_below_delta() -> SearchSpecification:
-    spec = CHILL_FLUTE
-    for _ in range(2):
-        spec = apply_rule(spec, event(FeedbackType.LESS_OF_ATTRIBUTE, attribute="chill"), CTX).spec
-    return spec  # chill at 0.30: one more "less" removes it and makes it negative
-
-
-def C(kind: ChangeKind, **kw: str) -> SpecChange:  # noqa: N802 - reads like a table row
-    return SpecChange.model_validate({"kind": kind} | kw)
-
-
-@pytest.mark.parametrize(
-    ("spec", "event_type", "kw", "expected"),
-    [
-        (CHILL_FLUTE, FeedbackType.MORE_LIKE_THIS, {"track_id": "trk_a"},
-         [C(ChangeKind.REFERENCE_ADDED, track_id="trk_a")]),
-        (CHILL_FLUTE, FeedbackType.LESS_LIKE_THIS, {"track_id": "trk_a"},
-         [C(ChangeKind.NEGATIVE_REFERENCE_ADDED, track_id="trk_a")]),
-        (CHILL_FLUTE, FeedbackType.NOT_RELEVANT, {"track_id": "trk_a"},
-         [C(ChangeKind.EXCLUDED, track_id="trk_a")]),
-        (CHILL_FLUTE, FeedbackType.WRONG_INSTRUMENT,
-         {"track_id": "trk_a", "attribute": "instrument", "value": "flutes"},
-         [C(ChangeKind.EXCLUDED, track_id="trk_a", attribute="instrument", value="flute")]),
-        (CHILL_FLUTE, FeedbackType.WRONG_INSTRUMENT,
-         {"track_id": "trk_a", "attribute": "instrument"},
-         [C(ChangeKind.EXCLUDED, track_id="trk_a", attribute="instrument")]),
-        (CHILL_FLUTE, FeedbackType.MORE_OF_ATTRIBUTE, {"attribute": "chill"},
-         [C(ChangeKind.PREFERENCE_RAISED, attribute="mood", value="chill")]),
-        (CHILL_FLUTE, FeedbackType.MORE_OF_ATTRIBUTE, {"attribute": "genre", "value": "vaporwave"},
-         [C(ChangeKind.PREFERENCE_ADDED, attribute="genre", value="vaporwave")]),
-        (LESS_ELECTRONIC, FeedbackType.MORE_OF_ATTRIBUTE, {"attribute": "electronic"},
-         [C(ChangeKind.PREFERENCE_ADDED, attribute="genre", value="electronic"),
-          C(ChangeKind.NEGATIVE_REMOVED, value="electronic")]),
-        (CHILL_FLUTE, FeedbackType.LESS_OF_ATTRIBUTE, {"attribute": "chill"},
-         [C(ChangeKind.PREFERENCE_LOWERED, attribute="mood", value="chill")]),
-        (_chill_at_or_below_delta(), FeedbackType.LESS_OF_ATTRIBUTE, {"attribute": "chill"},
-         [C(ChangeKind.PREFERENCE_REMOVED, attribute="mood", value="chill"),
-          C(ChangeKind.NEGATIVE_ADDED, value="chill")]),
-        (CHILL_FLUTE, FeedbackType.LESS_OF_ATTRIBUTE, {"attribute": "acoustic"},
-         [C(ChangeKind.NEGATIVE_ADDED, value="acoustic")]),
-        (LESS_ELECTRONIC, FeedbackType.LESS_OF_ATTRIBUTE, {"attribute": "electronic"},
-         [C(ChangeKind.NEGATIVE_ADDED, value="electronic")]),
-        (CHILL_FLUTE, FeedbackType.LESS_OF_ATTRIBUTE, {"attribute": "vocals"},
-         [C(ChangeKind.PREFERENCE_LOWERED, attribute="vocals", value="vocals")]),
-        (CHILL_FLUTE, FeedbackType.MORE_OF_ATTRIBUTE, {"attribute": "vocals"},
-         [C(ChangeKind.PREFERENCE_RAISED, attribute="vocals", value="vocals")]),
-        (CHILL_FLUTE, FeedbackType.SELECT_TRACK, {"track_id": "trk_a"}, []),
-    ],
-)  # fmt: skip
-def test_every_rule_emits_its_structured_change(
-    spec: SearchSpecification,
-    event_type: FeedbackType,
-    kw: dict[str, object],
-    expected: list[SpecChange],
-) -> None:
-    result = apply_rule(spec, event(event_type, **kw), CTX)
-    assert list(result.changes) == expected
-    assert (result.note is None) == (expected == [])
-
-
-def test_no_op_and_rejected_rules_emit_no_change() -> None:
-    once = apply_rule(CHILL_FLUTE, event(FeedbackType.NOT_RELEVANT, track_id="trk_a"), CTX)
-    twice = apply_rule(once.spec, event(FeedbackType.NOT_RELEVANT, track_id="trk_a"), CTX)
-    assert twice.changes == ()
-    refused = apply_rule(NO_VOCALS, event(FeedbackType.MORE_OF_ATTRIBUTE, attribute="vocals"), CTX)
-    assert refused.rejected is not None
-    assert refused.changes == ()
-
-
 # --- Agent C: validation and decisions --------------------------------------------------
 
 
@@ -324,7 +248,6 @@ def test_rejected_decision_keeps_spec() -> None:
     assert decision.spec == NO_VOCALS
     assert decision.next_action is NextAction.NONE
     assert decision.reason == "vocals are excluded by your request"
-    assert decision.changes == [SpecChange(kind=ChangeKind.REJECTED, attribute="vocals")]
 
 
 def test_select_track_shows_details_even_from_the_map() -> None:
