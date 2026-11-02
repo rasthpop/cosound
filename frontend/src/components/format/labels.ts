@@ -2,11 +2,13 @@
 // value it doesn't know gets `humanize(code)`, a readable form of the code itself, never an
 // invented meaning.
 import type {
+  ChangeEntry,
   ConstraintCheck,
   ConstraintStatus,
   EvidenceStatus,
   HardConstraint,
   InterpretedQuery,
+  MatchStrength,
   NeighborMetric,
   RelationshipType,
   RetrievalSource,
@@ -168,4 +170,63 @@ const ERRORS: Record<string, string> = {
 /** A human message for an `error.code`; unknown codes get a generic message, never a stack trace. */
 export function errorMessage(code: string | null | undefined): string {
   return (code && ERRORS[code]) || "Something went wrong. Retry.";
+}
+
+const BANDS: Record<MatchStrength, string> = { strong: "Strong", partial: "Partial", weak: "Weak" };
+
+/** A score band in words; `null` → "not available" (a signal that was not computed is never 0). */
+export function bandLabel(band: MatchStrength | null): string {
+  return band === null ? "not available" : label(BANDS, band);
+}
+
+/** "Strong match" / "Partial match"; `null` for weak or missing bands, which show no badge. */
+export function matchBandLabel(band: MatchStrength | null | undefined): string | null {
+  if (band === "strong") return "Strong match";
+  if (band === "partial") return "Partial match";
+  return null;
+}
+
+const quoted = (title: string | null) => (title ? `“${title}”` : "a track");
+
+/**
+ * One structured "what changed" entry in words. Tracks are named by their catalog title; with no
+ * title the entry says "a track", never the raw track id.
+ */
+export function changeLabel(change: ChangeEntry): string {
+  const term = change.value ?? (change.attribute ? attributeLabel(change.attribute).toLowerCase() : "");
+  switch (change.kind) {
+    case "reference_added":
+      return `More like ${quoted(change.title)}`;
+    case "negative_reference_added":
+      return `Less like ${quoted(change.title)}`;
+    case "excluded":
+      return change.attribute === "instrument"
+        ? `Removed ${quoted(change.title)} (wrong ${change.value ?? "instrument"})`
+        : `Removed ${quoted(change.title)}`;
+    case "preference_added":
+      return `Added ${term}`;
+    case "preference_raised":
+      return `More ${term}`;
+    case "preference_lowered":
+      return change.attribute === "vocals" ? "Fewer vocals" : `Less ${term}`;
+    case "preference_removed":
+      return `Dropped ${term}`;
+    case "negative_added":
+      return `Avoiding ${term}`;
+    case "negative_removed":
+      return `No longer avoiding ${term}`;
+    case "constraint_added":
+      return `Now required: ${hardConstraintLabel({
+        attribute: (change.attribute ?? "constraint") as HardConstraint["attribute"],
+        operator: (change.operator ?? "required") as HardConstraint["operator"],
+        value: change.value,
+        range: null,
+      })}`;
+    case "rejected":
+      return "That feedback was not applied";
+    case "needs_clarification":
+      return change.value ? `Needs clarification: ${change.value}` : "Needs clarification";
+    default:
+      return [humanize(change.kind), change.value].filter(Boolean).join(": ");
+  }
 }

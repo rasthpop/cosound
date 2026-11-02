@@ -13,6 +13,7 @@ import { formatArtists } from "../format/text";
 import { Badge } from "../ui/badge";
 import { cn } from "../ui/cn";
 import { EvidenceNote } from "./EvidenceNote";
+import { MatchBand } from "./MatchBand";
 import { NotOnMapMarker } from "./NotOnMapMarker";
 
 export type ResultRowData = Pick<
@@ -41,15 +42,13 @@ export interface ResultRowProps {
   selected?: boolean;
   /** Feedback actions (FeedbackActions), shown on hover and keyboard focus. */
   actions?: ReactNode;
-  /** Extra content after the title line, e.g. the match band (U02.T07). */
-  badge?: ReactNode;
   onTrackSelect: (trackId: string) => void;
   onTrackHover?: (trackId: string | null) => void;
   /** `trackId` to play it, `null` to pause. */
   onPlay?: (trackId: string | null) => void;
 }
 
-export function ResultRow({ result, playUrl, playing = false, selected = false, actions, badge, onTrackSelect, onTrackHover, onPlay }: ResultRowProps) {
+export function ResultRow({ result, playUrl, playing = false, selected = false, actions, onTrackSelect, onTrackHover, onPlay }: ResultRowProps) {
   const artists = formatArtists(result.artists);
   const tags = [...result.genres, ...result.styles];
   const reasons = result.match_reasons.filter((r) => r.trim());
@@ -77,7 +76,7 @@ export function ResultRow({ result, playUrl, playing = false, selected = false, 
           >
             {result.title}
           </button>
-          {badge}
+          <MatchBand band={result.match_strength} />
         </div>
         {artists && <p className="truncate text-meta text-muted">{artists}</p>}
         {tags.length > 0 && (

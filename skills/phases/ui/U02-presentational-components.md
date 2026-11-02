@@ -90,7 +90,8 @@
   - `ChangeStrip` renders structured `changes` (track titles, attributes) when present and falls back to `change_summary` strings.
 - **Done when:**
   - Stories from the regenerated fixtures; tests: no number or percentage rendered; `null` band → "not available"; `title: null` falls back to the change string, never the raw track id.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `MatchBand` is part of `ResultRow` itself (the generic `badge` slot was removed). `ScoreBands` is a native `<details>`, collapsed by default. `changeLabel` covers all 12 `ChangeKind`s; `ChangeStrip` prefers structured `changes` and falls back to `change_summary` strings. Deviation: an entry with `title: null` reads "a track" instead of falling back to its change string, because the backend change strings contain the raw track id ("removed trk_…"), which the plan says must never be shown.
 
 ## Exit criteria
-- [ ] Every non-map surface in ui.md §4 exists as a pure component with all ui.md §6 state stories; `check_boundaries.py --only ts` and the visual-literal check green.
+- [x] Every non-map surface in ui.md §4 exists as a pure component with all ui.md §6 state stories; `check_boundaries.py --only ts` and the visual-literal check green.
