@@ -58,7 +58,8 @@ Out of scope: Agent C stays code-only (P11.T03 keeps its LLM off), and descripti
   - Write the labels before any model output is seen. Never derive anything from the test split.
 - **Done when:**
   - At least 20 owner-reviewed queries exist, and the checked-in set is dated before the first P11.T04 model run.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** 24 queries (q101-q124), approved by the owner on 2026-11-04. The labels were written before any model output. Parser baseline on this set: attribute macro F1 0.769, hard-constraint accuracy 0.75, vocals accuracy 0.875, against 1.000 on the lexicon's own dev labels.
 
 ### P11.T03 — Per-task switches, search budget and caching
 - **Skills:** openrouter-llm, music-discovery-architecture
