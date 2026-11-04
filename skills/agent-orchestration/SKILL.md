@@ -1,6 +1,6 @@
 ---
 name: agent-orchestration
-description: Implementing the three logical agents and their orchestrator — Agent A (query → validated SearchSpecification, deterministic lexicon parser first, optional LLM structured output with fallback), Agent B (orchestrates hybrid retrieval, no LLM scoring), Agent C (feedback → spec update with constraint preservation, and explanations via descriptions/), plus the search session model. Load for anything in src/music_discovery/agents/, the lexicon, session state, feedback update rules, or LLM adapter wiring.
+description: Implementing the three logical agents and their orchestrator — Agent A (query → validated SearchSpecification, LLM structured output first with the deterministic lexicon parser as fallback, ADR-0007), Agent B (orchestrates hybrid retrieval, LLM selection from a bounded shortlist, no LLM similarity scoring), Agent C (feedback → spec update with constraint preservation, and explanations via descriptions/), plus the search session model. Load for anything in src/music_discovery/agents/, the lexicon, session state, feedback update rules, or LLM adapter wiring.
 ---
 
 # Agent Orchestration
@@ -29,7 +29,7 @@ Each agent receives collaborators via the constructor (retrieval services, descr
 
 ## 2. Agent A — query understanding
 
-**Deterministic parser first** (`agents/query_parser.py` + `agents/lexicon/*.yaml`). It is the fallback and the evaluation baseline for A.
+**Deterministic parser** (`agents/query_parser.py` + `agents/lexicon/*.yaml`). It is the fallback and the evaluation baseline for A. From P11.T05 the LLM reads first (ADR-0007); until then the parser runs first.
 
 Lexicon (versioned data, `lexicon_version`):
 
@@ -56,7 +56,7 @@ Rules:
 6. Clarification only when nothing actionable is extracted **and** the query is not usable as a CLAP prompt (e.g. "something", "music please" → still actionable as broad; empty or contradictory → clarify). Contradictions ("no vocals with female vocals") ⇒ `needs_clarification=True` with a question; never guess.
 7. Build `semantic_prompts` via the deterministic prompt builder (≤ 4).
 
-**Optional LLM interpreter** (`agents/llm_query_interpreter.py`):
+**LLM interpreter** (`agents/llm_query_interpreter.py`; validation rules change in P11.T05):
 - Uses `domain.protocols.StructuredLLM.generate(task="query", schema=SearchSpecificationDraft, system=…, user=…)`; the concrete adapter is `infrastructure/llm.py`, backed by **OpenRouter free models** (https://openrouter.ai/collections/free-models). Load the `openrouter-llm` skill for the adapter, model config (`LLM_MODEL`, `LLM_FALLBACK_MODELS`), structured-output strategy and free-tier limits.
 - The draft is validated → post-processed by the same lexicon normalizer (map synonyms to canonical terms, reject unknown categories) → constraint sanity check.
 - Any exception, invalid output, rate limit, unavailable model, or timeout ⇒ deterministic parser; `spec.interpreter` records which ran and `spec.interpreter_model` records the OpenRouter model that answered. Agent A must never output tracks/artists not in the query (validator: `reference_track_ids` must come from session state, not the LLM).
@@ -67,6 +67,7 @@ Rules:
 - Calls `HybridRetriever(mode="hybrid")` with the spec; returns ranked candidates + trace. If the semantic signal is unavailable, B proceeds and flags `degraded=["semantic_unavailable"]`.
 - May request semantic prompts from A/prompt builder (base §7.3); it doesn't invent them itself.
 - Does **not** generate descriptions (base §7 output) and does not use an LLM for scores.
+- From P11.T07 it passes the engine's shortlist to `agents/llm_candidate_selector.py`, which chooses and orders tracks using opaque aliases (ADR-0007). Engine scores stay unchanged, and any failure falls back to engine order, labelled.
 
 ## 4. Agent C — feedback
 

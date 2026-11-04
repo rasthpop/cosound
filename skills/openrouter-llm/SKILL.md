@@ -7,7 +7,7 @@ description: The LLM provider for the agents — OpenRouter's free models (https
 
 **Source of models:** the OpenRouter free collection — https://openrouter.ai/collections/free-models. Free variants have model IDs ending in `:free` (e.g. `nvidia/nemotron-3-super-120b-a12b:free`, `cohere/north-mini-code:free` as listed on 2026-10-20). The collection **changes over time**: models appear, get renamed, or lose their free tier. Never hard-code a model ID in code.
 
-LLMs are **optional** everywhere in this system (base §6, §8): Agent A query interpretation, Agent C free-text feedback normalization, and optional description phrasing. Every LLM path has a deterministic fallback, and the system must run end-to-end with the LLM disabled.
+**LLM-first for search (ADR-0007, shipping in P11):** Agent A query interpretation and Agent B's selection from the engine's shortlist use the LLM when it is available. Agent C free-text feedback normalization and description phrasing stay off by default. Every LLM path has a labelled deterministic fallback, and the system must run end-to-end with the LLM disabled.
 
 ## 1. Configuration
 
@@ -52,7 +52,7 @@ class StructuredLLM(Protocol):
 
 - **Rate and daily limits apply to free models.** The collection page doesn't state them, so read the current limits in the OpenRouter docs when writing the ADR (P06.T12) and record them with the date. Size the evaluation runs to fit (cache responses, see §5).
 - **Data policy:** some free providers state that they may use inputs and outputs for training (the Poolside Laguna pages say so explicitly). Therefore:
-  - send only what the task needs: the user's query text, a validated feedback string, or a claim list. Never send API keys, user identifiers, session IDs or catalog dumps;
+  - send only what the task needs: the user's query text, a validated feedback string, a claim list, or the bounded per-search shortlist of track facts listed in ADR-0007. Never send API keys, user identifiers, session IDs, track IDs or catalog dumps;
   - record each chosen model's data policy in the ADR. Prefer models whose providers don't train on inputs when quality is comparable;
   - the account-level privacy settings on OpenRouter may block providers that train on inputs. Document the setting used.
 - **Availability churn:** a configured model can disappear. The fallback chain plus the deterministic fallback keep the system working. P06.T12's model check script detects when a model has gone away.
@@ -67,7 +67,7 @@ class StructuredLLM(Protocol):
 
 - Every LLM-derived artifact records `model_id` (as answered), `prompt_version`, `temperature` and a timestamp. `SearchSpecification.interpreter_model` stores it per query.
 - Evaluation runs use a **response cache** keyed by `(model_id, prompt_version, input hash)` under `data/llm_cache/` (git-ignored, but snapshotted into the run's artifacts). That makes reruns reproducible and keeps them within free-tier limits. The report lists the exact model IDs and the date they were used, because free models can change behind the same ID.
-- Model choice is an evaluated decision (P06.T12). It is compared on the Agent A dev queries by structured-output validity rate, attribute F1, hard-constraint accuracy and p50/p95 latency, against the deterministic parser as the baseline. If no free model beats the deterministic parser, LLM paths stay disabled by default, and that is an acceptable outcome.
+- Model choice is an evaluated decision (P06.T12). It is compared on the Agent A dev queries by structured-output validity rate, attribute F1, hard-constraint accuracy and p50/p95 latency, against the deterministic parser as the baseline, on the dev queries and the paraphrase set (P11.T02). ADR-0007 makes LLM paths the default by owner decision; results that fall short go to the owner (P11.T10), and nothing changes the default automatically.
 
 ## 6. Tests
 
