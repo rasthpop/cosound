@@ -74,6 +74,17 @@ class Settings(BaseSettings):
     llm_model_query: str | None = None
     llm_model_feedback: str | None = None
     llm_model_descriptions: str | None = None
+    llm_model_selection: str | None = None
+    llm_query: bool = True
+    """LLM reading of queries (Agent A). Needs LLM_PROVIDER as well; ADR-0007."""
+    llm_selection: bool = True
+    """LLM choice of results from the shortlist (Agent B). Needs LLM_PROVIDER; ADR-0007."""
+    llm_feedback: bool = False
+    """LLM reading of free-text feedback. Agent C stays code-only by default; ADR-0007."""
+    llm_search_budget_s: float = Field(default=15.0, gt=0)
+    """Time the LLM may take for one search, across retries, models and calls."""
+    llm_cache_max_entries: int = Field(default=500, ge=1)
+    """Bound on the API's response cache; evaluation caches are separate and unbounded."""
     llm_descriptions: bool = False
     llm_data_collection: Literal["allow", "deny"] = "deny"
     """Sent as OpenRouter `provider.data_collection`; "deny" skips providers that store or
@@ -104,6 +115,7 @@ class Settings(BaseSettings):
         "llm_model_query",
         "llm_model_feedback",
         "llm_model_descriptions",
+        "llm_model_selection",
         "openrouter_http_referer",
         mode="before",
     )
@@ -153,6 +165,11 @@ class Settings(BaseSettings):
     @property
     def llm_cache_dir(self) -> Path:
         return self.data_dir / "llm_cache"
+
+    @property
+    def llm_api_cache_dir(self) -> Path:
+        """Separate from `llm_cache_dir`, so pruning never removes evaluation responses."""
+        return self.llm_cache_dir / "api"
 
     @property
     def umap_dir(self) -> Path:

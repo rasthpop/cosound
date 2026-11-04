@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -313,6 +314,28 @@ def test_build_llm_uses_settings() -> None:
     assert llm.chain("feedback") == [JSON_MODEL, TOOL_MODEL, PLAIN_MODEL]
 
 
+def test_build_llm_uses_the_search_budget_and_a_bounded_separate_cache(tmp_path: Path) -> None:
+    settings = Settings(  # type: ignore[call-arg]
+        _env_file=None,
+        llm_provider="openrouter",
+        openrouter_api_key=KEY,
+        llm_model=JSON_MODEL,
+        llm_model_selection=TOOL_MODEL,
+        llm_search_budget_s=7,
+        llm_cache_max_entries=9,
+        data_dir=tmp_path,
+    )
+    cached = build_llm(settings, cache=True)
+    assert cached is not None
+    assert cached.chain_budget_s == 7
+    assert cached.cache_max_entries == 9
+    assert cached.cache_dir == tmp_path / "llm_cache" / "api"
+    assert cached.chain("selection") == [TOOL_MODEL, JSON_MODEL]
+    plain = build_llm(settings)
+    assert plain is not None
+    assert plain.cache_dir is None
+
+
 def test_model_statuses_flag_missing_paid_and_prompt_only_models() -> None:
     from music_discovery.infrastructure.llm import Strategy, model_statuses
 
@@ -422,3 +445,147 @@ def test_data_policy_refusal_has_its_own_code() -> None:
     result = generate(adapter(rec, [JSON_MODEL]))
     assert result.error_code == "data_policy_refused"
     assert len(rec.requests) == 1
+
+
+# --- search budget ----------------------------------------------------------------------
+
+
+class SlowRecorder(Recorder):
+    """Every request takes `seconds` of the fake clock."""
+
+    def __init__(self, responses: list[httpx.Response | Exception], clock: Clock, seconds: float):
+        super().__init__(responses)
+        self.clock = clock
+        self.seconds = seconds
+        self.timeouts: list[float] = []
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        self.clock.now += self.seconds
+        self.timeouts.append(request.extensions["timeout"]["read"])
+        return super().__call__(request)
+
+
+def test_budget_stops_retries_and_the_rest_of_the_chain() -> None:
+    clock = Clock()
+    rec = SlowRecorder([httpx.ReadTimeout("slow") for _ in range(9)], clock, 6.0)
+    llm = adapter(rec, [JSON_MODEL, TOOL_MODEL], clock, max_retries=2, chain_budget_s=10.0)
+    result = generate(llm)
+    assert result.error_code == "timeout"
+    assert len(rec.requests) == 2, "the third attempt and the second model are over budget"
+    assert rec.timeouts == [10.0, 4.0], "a request only gets what is left"
+
+
+def test_callers_timeout_overrides_the_default_budget() -> None:
+    clock = Clock()
+    rec = SlowRecorder([httpx.ReadTimeout("slow") for _ in range(3)], clock, 2.0)
+    llm = adapter(rec, [JSON_MODEL], clock, max_retries=2, chain_budget_s=100.0)
+    result = llm.generate(task="query", system="s", user="u", schema=Answer, timeout_s=2.0)
+    assert result.error_code == "timeout"
+    assert len(rec.requests) == 1
+
+
+def test_no_back_off_longer_than_the_budget() -> None:
+    clock = Clock()
+    rec = Recorder([httpx.Response(429, headers={"Retry-After": "8"})])
+    llm = adapter(rec, [JSON_MODEL], clock, max_retries=2, chain_budget_s=5.0)
+    assert generate(llm).error_code == "rate_limited"
+    assert clock.slept == []
+
+
+def test_failed_capability_fetch_is_not_remembered() -> None:
+    models = {"data": [{"id": TOOL_MODEL, "supported_parameters": ["tools", "tool_choice"]}]}
+    rec = Recorder(
+        [
+            httpx.ReadTimeout("slow"),
+            content('{"mood": "calm"}', TOOL_MODEL),
+            httpx.Response(200, json=models),
+            tool_call('{"mood": "dark"}', TOOL_MODEL),
+        ]
+    )
+    llm = adapter(rec, [TOOL_MODEL], capabilities=None)
+    assert generate(llm).parsed == Answer(mood="calm")
+    assert "tools" not in rec.payload(1)
+    assert generate(llm).parsed == Answer(mood="dark")
+    assert "tools" in rec.payload(3)
+
+
+# --- daily quota ------------------------------------------------------------------------
+
+NOW = 1_800_000_000.0
+
+
+def limit_429(reset_in_s: float, *, remaining: str = "0", ms: bool = True) -> httpx.Response:
+    reset = (NOW + reset_in_s) * (1000 if ms else 1)
+    headers = {"X-RateLimit-Remaining": remaining, "X-RateLimit-Reset": str(int(reset))}
+    return httpx.Response(429, headers=headers)
+
+
+@pytest.mark.parametrize("ms", [True, False])
+def test_used_up_daily_quota_makes_no_further_calls_until_reset(ms: bool) -> None:
+    wall = {"now": NOW}
+    rec = Recorder([limit_429(3600, ms=ms), content('{"mood": "chill"}', JSON_MODEL)])
+    llm = adapter(rec, [JSON_MODEL, TOOL_MODEL], max_retries=2, wall_clock=lambda: wall["now"])
+    assert generate(llm).error_code == "quota_exhausted"
+    assert len(rec.requests) == 1, "no retry and no next model: the quota is per account"
+    assert llm.status == "fallback"
+    assert generate(llm).error_code == "quota_exhausted"
+    assert len(rec.requests) == 1
+
+    wall["now"] = NOW + 3601
+    assert llm.status == "available"
+    assert generate(llm).parsed == Answer(mood="chill")
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        limit_429(30),
+        limit_429(3600, remaining="4"),
+        httpx.Response(429, headers={"X-RateLimit-Remaining": "0"}),
+        httpx.Response(429, headers={"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "soon"}),
+        httpx.Response(429),
+    ],
+    ids=["per-minute", "requests-left", "no-reset", "bad-reset", "no-headers"],
+)
+def test_other_rate_limits_are_retried_as_before(response: httpx.Response) -> None:
+    rec = Recorder([response, content('{"mood": "chill"}', JSON_MODEL)])
+    llm = adapter(rec, [JSON_MODEL], wall_clock=lambda: NOW)
+    assert generate(llm).parsed == Answer(mood="chill")
+    assert llm.status == "available"
+
+
+def test_cached_answers_still_work_when_the_quota_is_used_up(tmp_path: Path) -> None:
+    rec = Recorder([content('{"mood": "chill"}', JSON_MODEL), limit_429(3600)])
+    llm = adapter(rec, [JSON_MODEL], cache_dir=tmp_path, wall_clock=lambda: NOW)
+    assert generate(llm).parsed == Answer(mood="chill")
+    other = llm.generate(task="query", system="s", user="other query", schema=Answer)
+    assert other.error_code == "quota_exhausted"
+    assert generate(llm).parsed == Answer(mood="chill")
+    assert len(rec.requests) == 2
+
+
+# --- bounded cache ----------------------------------------------------------------------
+
+
+def test_cache_removes_the_oldest_entries_beyond_its_bound(tmp_path: Path) -> None:
+    rec = Recorder([content('{"mood": "x"}', JSON_MODEL) for _ in range(4)])
+    llm = adapter(rec, [JSON_MODEL], cache_dir=tmp_path, cache_max_entries=2)
+    for i, user in enumerate(["a", "b", "c"]):
+        llm.generate(task="query", system="s", user=user, schema=Answer)
+        for path in tmp_path.iterdir():  # file times can tie on fast disks: order them explicitly
+            if path.stat().st_mtime_ns > 1_000:
+                os.utime(path, ns=(i, i))
+    assert len(list(tmp_path.iterdir())) == 2
+    llm.generate(task="query", system="s", user="c", schema=Answer)
+    assert len(rec.requests) == 3, "the newest entry survives and replays"
+    llm.generate(task="query", system="s", user="a", schema=Answer)
+    assert len(rec.requests) == 4, "the oldest entry was removed"
+
+
+def test_cache_entries_hold_no_identifiers(tmp_path: Path) -> None:
+    rec = Recorder([content('{"mood": "chill"}', JSON_MODEL)])
+    llm = adapter(rec, [JSON_MODEL], cache_dir=tmp_path)
+    llm.generate(task="query", system="s", user="secret user text", schema=Answer)
+    entry = json.loads(next(tmp_path.iterdir()).read_text())
+    assert set(entry) == {"model_id", "raw_text", "created_at"}
+    assert "secret user text" not in json.dumps(entry)

@@ -11,6 +11,10 @@ ENV_KEYS = (
     "OPENROUTER_API_KEY",
     "LLM_PROVIDER",
     "LLM_FALLBACK_MODELS",
+    "LLM_QUERY",
+    "LLM_SELECTION",
+    "LLM_FEEDBACK",
+    "LLM_SEARCH_BUDGET_S",
     "API_CORS_ORIGINS",
     "DATA_DIR",
     "ARTIFACTS_DIR",
@@ -90,3 +94,15 @@ def test_settings_are_immutable() -> None:
     s = make()
     with pytest.raises(ValueError, match="frozen"):
         s.umap_random_state = 1  # type: ignore[misc]
+
+
+def test_llm_task_defaults_keep_agent_c_code_only() -> None:
+    s = make()
+    assert (s.llm_query, s.llm_selection, s.llm_feedback) == (True, True, False)
+    assert s.llm_search_budget_s == 15.0
+    assert s.llm_enabled is False, "the switches alone never enable a provider"
+
+
+def test_api_cache_is_separate_from_the_evaluation_cache(tmp_path: Path) -> None:
+    s = make(data_dir=tmp_path)
+    assert s.llm_api_cache_dir.parent == s.llm_cache_dir

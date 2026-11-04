@@ -72,7 +72,8 @@ Out of scope: Agent C stays code-only (P11.T03 keeps its LLM off), and descripti
   - At 50 requests/day (ADR-0007) the daily limit is routine. When a 429 shows the daily quota is used up (`X-RateLimit-*` headers), stop retrying and go straight to the fallback until it resets.
 - **Done when:**
   - Tests cover: feedback gets no client unless enabled; the deadline stops the chain and returns an error result; a cache hit makes no HTTP call; a used-up daily quota makes no further calls. The default test suite still makes no network calls.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** `generate(timeout_s=…)` is now a deadline for the whole call, defaulting to `LLM_SEARCH_BUDGET_S`. Sharing it across both calls is done in P11.T07, since the second call doesn't exist yet. Also stopped remembering a failed `GET /models`, which permanently downgraded models to prompt-only JSON. The API cache is `data/llm_cache/api/`, so pruning never touches evaluation responses. Daily-quota detection is tested against mocked `X-RateLimit-*` headers only; check the real format in P11.T04.
 
 ### P11.T04 — Model re-check and first real measurement
 - **Skills:** openrouter-llm, retrieval-evaluation
@@ -125,6 +126,7 @@ Out of scope: Agent C stays code-only (P11.T03 keeps its LLM off), and descripti
   - Keep each `ScoreBreakdown` exactly as the engine computed it. Scores now explain evidence and need not fall in rank order, so check every consumer (match bands, descriptions, evidence) that assumes they do.
   - Add `ranking: "llm" | "engine"`, the model, the prompt version and the fallback reason to `RetrievalTrace`.
   - Clarification and `NO_CONFIDENT_MATCH` make no selection call.
+  - Share `LLM_SEARCH_BUDGET_S` across both calls: the selection call passes what is left as `timeout_s`, and skips selection with a labelled reason when nothing is left.
   - Selection receives the updated spec on refinement, so feedback still changes the next results.
 - **Done when:**
   - Property tests: a returned track is always in the shortlist, never violates a hard constraint and is never in `excluded_track_ids`. A test proves `retrieval/` has no LLM dependency. An integration test with the LLM failing still returns engine results, labelled. Boundary checks pass.

@@ -12,8 +12,15 @@ One call walks the model chain (the task's model or `LLM_MODEL`, then `LLM_FALLB
   move on; a model that is gone moves on at once; 402 (quota) stops the chain;
 - after `breaker_threshold` failed calls in a row the circuit opens for `breaker_cooldown_s`
   and calls return `circuit_open` immediately, so searches do not wait on a dead provider;
-- an optional response cache (evaluation runs) keys on model chain, task, schema and a hash
-  of the prompts, so reruns are reproducible and stay inside free-tier limits;
+- `timeout_s` (or `chain_budget_s`) is a deadline for one whole `generate` call, across retries,
+  back-off and every model in the chain. A caller sharing one budget between several calls
+  passes what is left of it;
+- a 429 whose `X-RateLimit-*` headers show a long wait is the daily quota, not a burst: calls
+  return `quota_exhausted` without a request until the reset, so searches go straight to the
+  deterministic path instead of retrying;
+- an optional response cache keys on model chain, task, schema and a hash of the prompts, so
+  reruns are reproducible and stay inside free-tier limits. `cache_max_entries` bounds it by
+  removing the oldest entries. It holds no user or session identifiers;
 - every request carries `provider.data_collection` ("deny" by default): OpenRouter then routes
   only to providers that do not store or train on inputs, whatever the account setting says.
   A model with no such provider is refused and the chain moves on (deterministic fallback last).
@@ -46,7 +53,15 @@ log = logging.getLogger(__name__)
 
 PROVIDER = "openrouter"
 MAX_RETRY_AFTER_S = 10.0
-DEFAULT_MAX_TOKENS: Mapping[str, int] = {"query": 800, "feedback": 400, "descriptions": 600}
+DEFAULT_MAX_TOKENS: Mapping[str, int] = {
+    "query": 800,
+    "feedback": 400,
+    "descriptions": 600,
+    "selection": 400,
+}
+DAILY_LIMIT_MIN_WAIT_S = 120.0
+"""A rate limit resetting further away than this is not the per-minute limit."""
+_EPOCH_MS_THRESHOLD = 1e11
 _FENCE = re.compile(r"^```(?:json)?\s*|\s*```$")
 JSON_ONLY_INSTRUCTION = (
     "Answer with one JSON object only, no prose and no code fences, matching this JSON schema:"
@@ -102,14 +117,19 @@ class OpenRouterLLM:
     """Primary first, then fallbacks; every id should be a `:free` variant."""
     base_url: str = "https://openrouter.ai/api/v1"
     task_models: Mapping[str, str] = field(default_factory=dict)
-    """Per-task primary overrides ("query", "feedback", "descriptions")."""
+    """Per-task primary overrides ("query", "feedback", "descriptions", "selection")."""
     timeout_s: float = 20.0
+    """Per-request timeout."""
+    chain_budget_s: float | None = None
+    """Deadline for one `generate` call when the caller passes no `timeout_s`; None = no limit."""
     max_retries: int = 2
     app_title: str | None = None
     http_referer: str | None = None
     breaker_threshold: int = 3
     breaker_cooldown_s: float = 60.0
     cache_dir: Path | None = None
+    cache_max_entries: int | None = None
+    """Oldest entries beyond this are removed; None = unbounded (evaluation runs)."""
     data_collection: Literal["allow", "deny"] = "deny"
     """OpenRouter provider filter; "deny" = only providers that do not collect user data."""
     capabilities: Mapping[str, frozenset[str]] | None = None
@@ -117,6 +137,7 @@ class OpenRouterLLM:
     transport: httpx.BaseTransport | None = field(default=None, repr=False)
     sleep: Callable[[float], None] = field(default=time.sleep, repr=False)
     monotonic: Callable[[], float] = field(default=time.monotonic, repr=False)
+    wall_clock: Callable[[], float] = field(default=time.time, repr=False)
 
     def __post_init__(self) -> None:
         if not self.models:
@@ -133,13 +154,16 @@ class OpenRouterLLM:
             transport=self.transport,
         )
         self._breaker = _Breaker(self.breaker_threshold, self.breaker_cooldown_s)
+        self._quota_reset_at: float | None = None
 
     # --- public -----------------------------------------------------------------------
 
     @property
     def status(self) -> str:
-        """ "available", or "fallback" while the circuit is open (for /api/health)."""
-        return "fallback" if self._breaker.is_open(self.monotonic()) else "available"
+        """ "available", or "fallback" while the circuit is open or the daily quota is used up."""
+        if self._quota_used_up() or self._breaker.is_open(self.monotonic()):
+            return "fallback"
+        return "available"
 
     def chain(self, task: str) -> list[str]:
         primary = self.task_models.get(task)
@@ -160,14 +184,20 @@ class OpenRouterLLM:
         cached = self._cache_read(cache_key, schema)
         if cached is not None:
             return cached
+        if self._quota_used_up():
+            return LLMResult[T](error_code="quota_exhausted")
         if self._breaker.is_open(self.monotonic()):
             return LLMResult[T](error_code="circuit_open")
 
         started = self.monotonic()
+        budget = timeout_s if timeout_s is not None else self.chain_budget_s
+        deadline = None if budget is None else started + budget
         result: LLMResult[T] = LLMResult[T](error_code="unavailable")
         for index, model in enumerate(chain):
-            result = self._try_model(model, chain[index:], task, system, user, schema, timeout_s)
+            result = self._try_model(model, chain[index:], task, system, user, schema, deadline)
             if result.parsed is not None or result.error_code not in _NEXT_MODEL_CODES:
+                break
+            if self._expired(deadline):
                 break
         latency = (self.monotonic() - started) * 1000.0
         result = result.model_copy(update={"latency_ms": max(latency, 0.0)})
@@ -192,11 +222,11 @@ class OpenRouterLLM:
         system: str,
         user: str,
         schema: type[T],
-        timeout_s: float | None,
+        deadline: float | None,
     ) -> LLMResult[T]:
         result: LLMResult[T] = LLMResult[T](error_code="unsupported_parameters", model_id=model)
-        for strategy in self._strategies(model):
-            result = self._attempt(model, routing, task, system, user, schema, strategy, timeout_s)
+        for strategy in self._strategies(model, deadline):
+            result = self._attempt(model, routing, task, system, user, schema, strategy, deadline)
             if result.error_code != "unsupported_parameters":
                 return result
             log.info("llm %s: %s rejected the %s strategy, trying the next", task, model, strategy)
@@ -211,7 +241,7 @@ class OpenRouterLLM:
         user: str,
         schema: type[T],
         strategy: Strategy,
-        timeout_s: float | None,
+        deadline: float | None,
     ) -> LLMResult[T]:
         payload = _payload(model, routing, task, system, user, schema, strategy)
         payload["provider"] = {
@@ -220,29 +250,38 @@ class OpenRouterLLM:
         }
         attempt = 0
         while True:
+            if self._expired(deadline):
+                return LLMResult[T](error_code="timeout", model_id=model)
             try:
-                body = self._post(payload, timeout_s)
+                body = self._post(payload, self._request_timeout(deadline))
             except _CallError as failure:
-                if failure.retryable and attempt < self.max_retries:
+                wait = min(failure.wait_s, MAX_RETRY_AFTER_S)
+                if (
+                    failure.retryable
+                    and attempt < self.max_retries
+                    and self._fits_budget(wait, deadline)
+                ):
                     attempt += 1
-                    self.sleep(min(failure.wait_s, MAX_RETRY_AFTER_S))
+                    self.sleep(wait)
                     continue
                 if failure.detail:
                     log.warning("llm %s: %s %s: %s", task, model, failure.code, failure.detail)
                 return LLMResult[T](error_code=failure.code, model_id=model)
             return _parse(body, schema, strategy, model)
 
-    def _post(self, payload: Mapping[str, Any], timeout_s: float | None) -> Mapping[str, Any]:
+    def _post(self, payload: Mapping[str, Any], timeout_s: float) -> Mapping[str, Any]:
         try:
-            response = self._client.post(
-                "/chat/completions", json=payload, timeout=timeout_s or self.timeout_s
-            )
+            response = self._client.post("/chat/completions", json=payload, timeout=timeout_s)
         except httpx.TimeoutException as error:
             raise _CallError("timeout", retryable=True) from error
         except httpx.TransportError as error:
             raise _CallError("unavailable", retryable=True) from error
         status = response.status_code
         if status == 429:
+            reset_at = _daily_limit_reset(response.headers, self.wall_clock())
+            if reset_at is not None:
+                self._quota_reset_at = reset_at
+                raise _CallError("quota_exhausted", detail="daily free-tier quota used up")
             wait = _retry_after(response.headers.get("Retry-After"))
             raise _CallError("rate_limited", retryable=True, wait_s=wait)
         if status == 402:
@@ -269,22 +308,45 @@ class OpenRouterLLM:
             raise _CallError("invalid_output")
         return body
 
-    def _strategies(self, model: str) -> list[Strategy]:
-        return strategies_for(self._capabilities().get(model, frozenset()))
+    def _quota_used_up(self) -> bool:
+        if self._quota_reset_at is None:
+            return False
+        if self.wall_clock() >= self._quota_reset_at:
+            self._quota_reset_at = None
+            return False
+        return True
 
-    def _capabilities(self) -> Mapping[str, frozenset[str]]:
-        if self.capabilities is None:
-            self.capabilities = self._fetch_capabilities()
-        return self.capabilities
+    def _expired(self, deadline: float | None) -> bool:
+        return deadline is not None and self.monotonic() >= deadline
 
-    def _fetch_capabilities(self) -> dict[str, frozenset[str]]:
+    def _request_timeout(self, deadline: float | None) -> float:
+        if deadline is None:
+            return self.timeout_s
+        return min(self.timeout_s, max(deadline - self.monotonic(), 0.0))
+
+    def _fits_budget(self, wait_s: float, deadline: float | None) -> bool:
+        return deadline is None or self.monotonic() + wait_s < deadline
+
+    def _strategies(self, model: str, deadline: float | None) -> list[Strategy]:
+        return strategies_for(self._capabilities(deadline).get(model, frozenset()))
+
+    def _capabilities(self, deadline: float | None) -> Mapping[str, frozenset[str]]:
+        if self.capabilities is not None:
+            return self.capabilities
+        fetched = self._fetch_capabilities(self._request_timeout(deadline))
+        if fetched is None:  # not remembered: one slow answer must not downgrade every later call
+            return {}
+        self.capabilities = fetched
+        return fetched
+
+    def _fetch_capabilities(self, timeout_s: float) -> dict[str, frozenset[str]] | None:
         try:
-            response = self._client.get("/models")
+            response = self._client.get("/models", timeout=timeout_s)
             response.raise_for_status()
             data = response.json().get("data", [])
         except (httpx.HTTPError, ValueError, AttributeError):
             log.warning("could not read OpenRouter model capabilities; using prompt-only JSON")
-            return {}
+            return None
         return {
             str(m["id"]): frozenset(m.get("supported_parameters") or [])
             for m in data
@@ -323,7 +385,18 @@ class OpenRouterLLM:
             "raw_text": result.parsed.model_dump_json(),
             "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
-        (self.cache_dir / f"{key}.json").write_text(json.dumps(entry))
+        path = self.cache_dir / f"{key}.json"
+        path.write_text(json.dumps(entry))
+        self._cache_prune(path)
+
+    def _cache_prune(self, newest: Path) -> None:
+        if self.cache_max_entries is None or self.cache_dir is None:
+            return
+        others = [p for p in self.cache_dir.glob("*.json") if p != newest]
+        excess = len(others) + 1 - self.cache_max_entries
+        if excess > 0:
+            for path in sorted(others, key=lambda p: (p.stat().st_mtime_ns, p.name))[:excess]:
+                path.unlink(missing_ok=True)
 
 
 _NEXT_MODEL_CODES = frozenset(
@@ -416,6 +489,18 @@ def _retry_after(value: str | None) -> float:
         return 1.0
 
 
+def _daily_limit_reset(headers: Mapping[str, str], now: float) -> float | None:
+    """Epoch seconds of the reset when the headers show a used-up long-window limit."""
+    if headers.get("X-RateLimit-Remaining") != "0":
+        return None
+    try:
+        reset = float(headers["X-RateLimit-Reset"])
+    except (KeyError, ValueError):
+        return None
+    reset_at = reset / 1000.0 if reset > _EPOCH_MS_THRESHOLD else reset
+    return reset_at if reset_at - now > DAILY_LIMIT_MIN_WAIT_S else None
+
+
 def _mentions_model(response: httpx.Response) -> bool:
     return "model" in response.text.casefold()
 
@@ -456,6 +541,7 @@ def build_llm(settings: Settings, *, cache: bool = False) -> OpenRouterLLM | Non
             ("query", settings.llm_model_query),
             ("feedback", settings.llm_model_feedback),
             ("descriptions", settings.llm_model_descriptions),
+            ("selection", settings.llm_model_selection),
         )
         if model is not None
     }
@@ -465,10 +551,12 @@ def build_llm(settings: Settings, *, cache: bool = False) -> OpenRouterLLM | Non
         base_url=settings.openrouter_base_url,
         task_models=task_models,
         timeout_s=settings.llm_timeout_s,
+        chain_budget_s=settings.llm_search_budget_s,
         max_retries=settings.llm_max_retries,
         app_title=settings.openrouter_app_title,
         http_referer=settings.openrouter_http_referer,
-        cache_dir=settings.llm_cache_dir if cache else None,
+        cache_dir=settings.llm_api_cache_dir if cache else None,
+        cache_max_entries=settings.llm_cache_max_entries if cache else None,
         data_collection=settings.llm_data_collection,
     )
 
