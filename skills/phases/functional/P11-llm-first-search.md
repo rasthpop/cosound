@@ -115,7 +115,8 @@ Out of scope: Agent C stays code-only (P11.T03 keeps its LLM off), and descripti
   - `selection.shortlist_size` (default 30) lives in config. If `limit` exceeds it, skip selection and report `limit_exceeds_shortlist`.
 - **Done when:**
   - Tests assert the exact outgoing payload has no track IDs or identifiers, and cover invented aliases, duplicates, empty and short answers, a malicious title, and each failure code falling back with a reason.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** Candidate `genres` and `tags` are from FMA, sent as data. `shortlist_size` is hard-capped at 50 in config, and a larger shortlist is refused rather than sent. The selector isn't wired in until P11.T07, so nothing calls it yet.
 
 ### P11.T07 — Wire selection into Agent B and the orchestrator
 - **Skills:** agent-orchestration, hybrid-retrieval, grounded-explanations

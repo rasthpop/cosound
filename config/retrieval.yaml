@@ -29,3 +29,8 @@ coverage_penalty_gamma: 0.0
 pool_size: 100
 semantic_top_k: 100
 metadata_top_k: 100
+
+# What Agent B may send to the LLM per search (ADR-0007). Not a relevance setting.
+selection:
+  shortlist_size: 30       # hard cap 50: anything larger is refused, never sent
+  max_tags: 8
