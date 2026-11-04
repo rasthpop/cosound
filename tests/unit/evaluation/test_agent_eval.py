@@ -96,6 +96,7 @@ def test_agent_a_disagreements_and_llm_acceptance_are_reported() -> None:
         vocals="unspecified",
         hard_constraints=[],
         reference_track_ids=[],
+        semantic_prompts=[],
         needs_clarification=False,
         clarification_question=None,
     )

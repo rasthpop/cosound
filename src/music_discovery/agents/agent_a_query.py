@@ -1,6 +1,6 @@
 """Agent A — query understanding: request text + session state -> SearchSpecification (base §6).
 
-The deterministic parser reads the request; this agent adds the session context:
+The request is read by the LLM or the deterministic parser; this agent adds the session context:
 
 - a query that opens with a follow-up cue ("more upbeat", "but without vocals"), or that
   answers a pending clarification question, refines the previous spec instead of replacing it;
@@ -11,9 +11,10 @@ The deterministic parser reads the request; this agent adds the session context:
 - a refinement that contradicts an earlier hard constraint ("no vocals", then "with vocals")
   is not resolved by guessing: the previous spec comes back with a clarification question.
 
-Any other query starts a new search. With an `LLMQueryInterpreter`, the text is read by the
-LLM first and by the deterministic parser on any failure (`spec.interpreter` records which);
-the parser's reading also decides hard constraints and clarification on both paths.
+Any other query starts a new search. With an `LLMQueryInterpreter`, the LLM reads the text and
+decides preferences, hard constraints, clarification and CLAP prompts, within the interpreter's
+validation (ADR-0007). The deterministic parser only runs when there is no LLM or its answer was
+rejected, and `spec.interpreter` records which one read the text.
 
 Track ids only ever come from the previous spec (filled in by feedback), never from the query
 text. The agent does not retrieve, embed or rank, and every spec it returns has passed
@@ -32,6 +33,7 @@ from music_discovery.agents.query_parser import QueryParser
 from music_discovery.domain.errors import ContradictoryConstraintsError
 from music_discovery.domain.models import SearchSession
 from music_discovery.domain.schemas import (
+    MAX_SEMANTIC_PROMPTS,
     ConstraintOperator,
     HardConstraint,
     SearchSpecification,
@@ -97,14 +99,15 @@ class QueryAgent:
     def _read(
         self, query: str, previous: SearchSpecification | None
     ) -> tuple[SearchSpecification, str | None]:
-        parsed = self._parser.parse(query)
-        if self._llm is None or parsed.needs_clarification:
-            return parsed, None
+        if self._llm is None:
+            return self._parser.parse(query), None
+        if not query.strip():
+            raise ValueError("empty query")
         known = previous.reference_track_ids if previous is not None else []
-        outcome = self._llm.interpret(query, parsed, known_track_ids=known)
+        outcome = self._llm.interpret(query, known_track_ids=known)
         if outcome.spec is None:
             log.info("llm query interpretation rejected: %s", outcome.fallback_reason)
-            return parsed, outcome.fallback_reason
+            return self._parser.parse(query), outcome.fallback_reason
         return outcome.spec, None
 
     def is_follow_up(self, query: str, previous: SearchSpecification) -> bool:
@@ -144,9 +147,22 @@ def _refine(previous: SearchSpecification, parsed: SearchSpecification) -> Searc
         "uncertainties": _notes(previous, parsed, nothing_new),
     }
     try:
-        return with_prompts(SearchSpecification.model_validate(data))
+        return _with_refined_prompts(SearchSpecification.model_validate(data), parsed)
     except ContradictoryConstraintsError as error:
         return _clarify(previous, parsed, version, _conflict_question(error))
+
+
+def _with_refined_prompts(
+    spec: SearchSpecification, parsed: SearchSpecification
+) -> SearchSpecification:
+    """Prompts for the merged spec, with what an LLM wrote for the follow-up coming first."""
+    rebuilt = with_prompts(spec)
+    if parsed.interpreter != "llm" or not parsed.semantic_prompts:
+        return rebuilt
+    merged = {p.casefold(): p for p in reversed(rebuilt.semantic_prompts)}
+    merged |= {p.casefold(): p for p in reversed(parsed.semantic_prompts)}
+    prompts = list(reversed(merged.values()))[:MAX_SEMANTIC_PROMPTS]
+    return SearchSpecification.model_validate(rebuilt.model_dump() | {"semantic_prompts": prompts})
 
 
 def _extend(original: str, follow_up: str) -> str:
