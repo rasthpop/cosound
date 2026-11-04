@@ -5,7 +5,7 @@ description: The deterministic relevance engine — MetadataRetriever, Relations
 
 # Hybrid Retrieval & Ranking
 
-Spec: `base.md` §7 (all), §9.4, §16. This engine must run **without any LLM and without agents** — the evaluation baselines call it directly.
+Spec: `base.md` §7 (all), §9.4, §16. This engine must run **without any LLM and without agents** — the evaluation baselines call it directly. From P11 (ADR-0007) its output is the shortlist Agent B's LLM selector chooses from; that selector lives in `agents/`, never here, so this engine stays LLM-free.
 
 ## 1. Pipeline & module map
 

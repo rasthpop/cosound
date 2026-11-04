@@ -45,7 +45,7 @@ from music_discovery.infrastructure.clock import SystemClock
 from music_discovery.infrastructure.database import Database
 from music_discovery.infrastructure.ids import RandomIdGenerator
 from music_discovery.infrastructure.lexical_index import BM25FieldIndex
-from music_discovery.infrastructure.llm import build_llm
+from music_discovery.infrastructure.llm import OpenRouterLLM, build_llm
 from music_discovery.infrastructure.repositories import (
     SqlFeedbackRepository,
     SqlRelationshipRepository,
@@ -87,6 +87,24 @@ class Services:
     capabilities: CapabilityService
 
 
+@dataclass(frozen=True)
+class LLMClients:
+    """The LLM client each task receives; None means that task runs its deterministic path."""
+
+    query: OpenRouterLLM | None
+    feedback: OpenRouterLLM | None
+    descriptions: OpenRouterLLM | None
+
+
+def llm_clients(settings: Settings, llm: OpenRouterLLM | None) -> LLMClients:
+    """Per-task switches (ADR-0007): enabling the provider alone does not enable feedback."""
+    return LLMClients(
+        query=llm if settings.llm_query else None,
+        feedback=llm if settings.llm_feedback else None,
+        descriptions=llm if settings.llm_descriptions else None,
+    )
+
+
 def build_services(settings: Settings) -> Services:
     database = Database(settings.database_url)
     database.init_schema()
@@ -120,15 +138,18 @@ def build_services(settings: Settings) -> Services:
         relationships=RelationshipRetriever(relationships),
     )
 
-    llm = build_llm(settings, cache=False)
+    clients = llm_clients(settings, build_llm(settings, cache=True))
     descriptions_config = DescriptionConfig.load()
     phrasing = (
-        LLMPhrasing(llm, descriptions_config)
-        if llm is not None and settings.llm_descriptions
+        LLMPhrasing(clients.descriptions, descriptions_config)
+        if clients.descriptions is not None
         else None
     )
     orchestrator = Orchestrator(
-        QueryAgent(lexicon, None if llm is None else LLMQueryInterpreter(llm, lexicon)),
+        QueryAgent(
+            lexicon,
+            None if clients.query is None else LLMQueryInterpreter(clients.query, lexicon),
+        ),
         DiscoveryAgent(retriever),
         FeedbackAgent(
             lexicon,
@@ -140,7 +161,7 @@ def build_services(settings: Settings) -> Services:
         SqlFeedbackRepository(database),
         clock,
         ids,
-        FeedbackTextNormalizer(lexicon, llm),
+        FeedbackTextNormalizer(lexicon, clients.feedback),
     )
 
     catalog_ids = [t.id for t in catalog]
@@ -162,7 +183,7 @@ def build_services(settings: Settings) -> Services:
     views = TrackViewBuilder(track_repo, audio, spatial)
     capabilities = CapabilityService(
         semantic_reason=semantic_reason,
-        llm=llm,
+        llm=clients.query,
         map_service=map_service,
         clock=clock,
     )

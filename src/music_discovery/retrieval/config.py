@@ -68,6 +68,13 @@ class PenaltyConfig(_Config):
     """Subtracted when a negative-preference term is in the track's metadata."""
 
 
+class SelectionConfig(_Config):
+    """Bounds on what Agent B sends to the LLM (ADR-0007). Retrieval itself never calls an LLM."""
+
+    shortlist_size: int = Field(default=30, ge=1, le=50)
+    max_tags: int = Field(default=8, ge=0)
+
+
 class RetrievalConfig(_Config):
     weights_version: str
     weights: SignalWeights = SignalWeights()
@@ -80,6 +87,7 @@ class RetrievalConfig(_Config):
     pool_size: int = Field(default=100, ge=1)
     semantic_top_k: int = Field(default=100, ge=1)
     metadata_top_k: int = Field(default=100, ge=1)
+    selection: SelectionConfig = SelectionConfig()
 
     @classmethod
     def load(cls, path: Path) -> RetrievalConfig:

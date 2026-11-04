@@ -1,6 +1,6 @@
 # ADR-0004: Free LLM models for the agents (OpenRouter)
 
-- **Status:** Accepted (project owner, 2026-10-23)
+- **Status:** Accepted (project owner, 2026-10-23); decision 1 superseded by ADR-0007 (2026-11-04)
 - **Date:** 2026-10-23
 - **Phase/Task:** P06.T12; affects P06.T03 (query), P06.T09 (feedback), P06.T06 (descriptions), P08
 
@@ -124,6 +124,7 @@ message instead of `model_unavailable`. On the same day Gemma's free endpoint al
 ## Open items
 
 - [x] Owner accepts "disabled by default" (2026-10-23).
-- [ ] Owner checks each chosen model's data policy on OpenRouter and sets the account to block
-      training providers for free models.
-- [ ] With a key: run `scripts/llm_model_check.py --evaluate`, add the table to this ADR.
+- [x] Owner checks each chosen model's data policy on OpenRouter and sets the account to block
+      training providers for free models (owner confirmed 2026-11-04, ADR-0007).
+- [ ] With a key: run `scripts/llm_model_check.py --evaluate`. Moved to P11.T04; the table goes in
+      ADR-0007.

@@ -2,11 +2,11 @@
 
 **Goal:** a frozen, reproducible evaluation of all systems and agents on the test split, an honest report with limitations, and documentation that lets a new developer reproduce everything (Milestone 7 + base §20 Definition of Done).
 **base.md:** §12, §17, §18 M7, §19, §20.
-**Depends on:** P05, P06, P07, P08, P09
+**Depends on:** P05, P06, P07, P08, P09, P11
 
 ### P10.T01 — Freeze evaluation inputs
 - **Skills:** retrieval-evaluation
-- **Depends on:** P05.T02, P06.T11, P10.T08, P10.T09, P10.T11
+- **Depends on:** P05.T02, P06.T11, P10.T08, P10.T09, P10.T11, P11.T11
 - **Files:** data/evaluation/CHECKSUMS.sha256, data/evaluation/README.md, docs/crisp-dm/business-understanding.md
 - **Do:**
   - Test judgments follow the documented minimum (`judging_minimum.json`): q02 q04 q05 judged, the other 7 left out and named in the report.

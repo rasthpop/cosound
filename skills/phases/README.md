@@ -20,6 +20,7 @@ Decomposition of `base.md` (functional plan) and `ui/ui.md` (UI/UX plan) into ex
 | [P08](functional/P08-application-and-api.md) | Application services & FastAPI | §13, §16 | M6 (backend) | functional |
 | [P09](functional/P09-frontend-integration-layer.md) | Frontend data layer: types, client, mocks, hooks | §14 | **M6** | functional ⇄ UI seam |
 | [P10](functional/P10-final-evaluation-and-docs.md) | Final evaluation, hardening, documentation | §12, §17, §20 | **M7** | functional |
+| [P11](functional/P11-llm-first-search.md) | LLM-first query parsing & retrieval selection (runs before P10) | §3, §6, §7, §19 | — | functional |
 | [U00](ui/U00-ui-plan-intake.md) | UI/UX plan intake: mapping, contract requests, stack ADR | ui.md | — | UI |
 | [U01](ui/U01-design-foundation.md) | Design foundation: tokens, Tailwind theme, shadcn, Storybook | ui.md §2, §8 | — | UI |
 | [U02](ui/U02-presentational-components.md) | Search bar, chips, results, feedback, details drawer, states | ui.md §4, §6; base §14.4 | — | UI |
@@ -51,7 +52,7 @@ P00 ─► P01 ─► P02 ─► P03 ─┬─► P04 ─► P05 ─► P06 ─�
 Parallel tracks:
 - **Spatial (P07)** only needs P03 (embeddings). It can proceed alongside P04–P06.
 - **UI (U01–U03)** needs U00 and the P09 contract fixtures (P09.T02), **not** the running backend. Only U02.T07 and U03.T04 wait for the contract additions (P09.T10); U04 also needs P09.T11/T12.
-- **P10** waits for everything functional; U05 isn't required for the functional Definition of Done.
+- **P10** waits for everything functional, including **P11** (P09 ─► P11 ─► P10); U05 isn't required for the functional Definition of Done.
 
 ## Isolation rule between tracks
 

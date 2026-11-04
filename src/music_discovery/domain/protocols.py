@@ -230,7 +230,10 @@ class AudioProbe(Protocol):
 
 @runtime_checkable
 class StructuredLLM(Protocol):
-    """Optional LLM (OpenRouter free models). Returns an error result instead of raising."""
+    """LLM (OpenRouter free models). Returns an error result instead of raising.
+
+    `timeout_s` is a deadline for the whole call, including retries and model fallbacks.
+    """
 
     def generate(
         self,

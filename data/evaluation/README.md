@@ -67,6 +67,7 @@ is audible, and a genre tag does not prove a mood. That is why listening is requ
 | File | What it is |
 |---|---|
 | `queries.jsonl` | 20 queries: q01-q10 are base.md §12.2, q11-q20 are controlled variants. Each has a `family` (a query and its rephrasings), `expected_attributes` and `expected_hard_constraints` (for Agent A, P06), and `has_relevant_in_corpus` (filled in after judging). |
+| `llm_dev_queries.jsonl` | 24 dev-only queries (q101-q124) using wording outside the lexicon, to measure generalization for Agent A (P11.T02, ADR-0007). Labels were written before any model output and don't use the test split. Reviewed and approved by the owner on 2026-11-04. Not part of `split.json`, the judgments or the retrieval metrics. |
 | `split.json` | Fixed dev/test split by family (`scripts/make_split.py`, seed 42; refuses to overwrite). Calibration uses dev only; test is evaluated once per reported configuration. |
 | `specs_manual.jsonl` | Hand-written search specifications per query, used until Agent A exists (P06.T11), so the retrieval comparison isolates retrieval from query understanding. |
 | `judgments.csv` | Listening-based relevance for every (query, track) pair, keyed by `fma_track_id`. Filled with `scripts/judge.py`; guidelines in `JUDGING.md`. |

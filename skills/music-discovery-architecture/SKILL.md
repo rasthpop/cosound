@@ -9,10 +9,10 @@ Source of truth: `base.md` §3, §4, §14. This skill turns those rules into che
 
 ## 1. The one principle
 
-> The hybrid engine decides relevance. Agents coordinate. UMAP supplies coordinates.
+> The hybrid engine finds and scores candidates; when available, the LLM chooses from the engine's shortlist (ADR-0007). Agents coordinate. UMAP supplies coordinates.
 > The interface only presents data and emits user actions.
 
-Every placement decision follows from that sentence.
+Every placement decision follows from that sentence. Until P11 ships, the LLM paths are off and the engine's order stands. `retrieval/` never calls an LLM; LLM calls live in `agents/`.
 
 ## 2. Backend layers (`src/music_discovery/`)
 
