@@ -63,16 +63,6 @@ curl http://127.0.0.1:8000/api/health
 
 `capabilities` shows the state of `semantic`, `map` and `llm_interpreter`. The app still runs when one is missing: without embeddings, search uses metadata only, and `semantic_reason` and `map_reason` say what is missing.
 
-### Optional: use an LLM
-
-Without an LLM, queries are read by the deterministic parser. To have an [OpenRouter](https://openrouter.ai/collections/free-models) free model read them too, set these in `.env` and restart the API, choosing models from [`config/llm.yaml`](config/llm.yaml):
-
-```bash
-LLM_PROVIDER=openrouter
-OPENROUTER_API_KEY=...
-LLM_MODEL=...
-LLM_FALLBACK_MODELS=...
-```
 
 This sends your query text to OpenRouter. Free models have low daily limits, so when one fails or hits a limit, search falls back to the parser and keeps working. LLM-first search is still in progress: for now the LLM doesn't choose the results. See [ADR-0007](docs/adr/0007-llm-first-search.md).
 
