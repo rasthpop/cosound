@@ -15,6 +15,7 @@ def flute_draft() -> SearchSpecificationDraft:
         negative_preferences=[],
         vocals="unspecified",
         hard_constraints=[],
+        semantic_prompts=[],
         reference_track_ids=[],
         needs_clarification=False,
         clarification_question=None,

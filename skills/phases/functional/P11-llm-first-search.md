@@ -102,7 +102,8 @@ Out of scope: Agent C stays code-only (P11.T03 keeps its LLM off), and descripti
   - Parser-built prompt expansions (cycle C5, P10.T11) stay in use on the fallback path only.
 - **Done when:**
   - Table tests with `FakeStructuredLLM` cover: paraphrase accepted; out-of-lexicon value kept; invented cue rejected; invented track ID rejected; invalid output, timeout and rate limit each fall back to the parser with the reason recorded. Multi-turn hard-constraint preservation still passes.
-- **Status:** [ ]
+- **Status:** [x]
+- **Notes:** Started before P11.T04 finished, at the owner's request; T04 still chooses the models. Tightened the plan's hard-constraint rule: a verbatim cue must also state an exclusion, requirement or number, because "with a flute" appears verbatim too. Prompts naming a ruled-out value are dropped: a live model wrote "music that avoids metal genre entirely", and audio search can't read negation. Two live answers (`dots-3-note-preview`, 2026-11-04) passed validation. One added moods to "rainy night drive" that the request only implies, and P11.T10 measures that against the labels.
 
 ### P11.T06 — LLM candidate selector
 - **Skills:** agent-orchestration, openrouter-llm, grounded-explanations

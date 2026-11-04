@@ -167,7 +167,7 @@ def evaluate(settings: Settings, config: dict[str, Any], *, pause: float, only: 
     stamp = datetime.now(UTC).strftime("%Y-%m-%d")
     payload = {
         "date": stamp,
-        "prompt_version": "query-v1",
+        "prompt_version": "query-v2",
         "split": "dev",
         "complete": not incomplete,
         "results": results,

@@ -29,7 +29,7 @@ Each agent receives collaborators via the constructor (retrieval services, descr
 
 ## 2. Agent A — query understanding
 
-**Deterministic parser** (`agents/query_parser.py` + `agents/lexicon/*.yaml`). It is the fallback and the evaluation baseline for A. From P11.T05 the LLM reads first (ADR-0007); until then the parser runs first.
+**Deterministic parser** (`agents/query_parser.py` + `agents/lexicon/*.yaml`). It is the fallback and the evaluation baseline for A. With an LLM configured, the LLM reads first (ADR-0007) and the parser runs only when its answer is rejected.
 
 Lexicon (versioned data, `lexicon_version`):
 
@@ -56,7 +56,7 @@ Rules:
 6. Clarification only when nothing actionable is extracted **and** the query is not usable as a CLAP prompt (e.g. "something", "music please" → still actionable as broad; empty or contradictory → clarify). Contradictions ("no vocals with female vocals") ⇒ `needs_clarification=True` with a question; never guess.
 7. Build `semantic_prompts` via the deterministic prompt builder (≤ 4).
 
-**LLM interpreter** (`agents/llm_query_interpreter.py`; validation rules change in P11.T05):
+**LLM interpreter** (`agents/llm_query_interpreter.py`; its module docstring lists the validation steps, which take precedence over the older notes below):
 - Uses `domain.protocols.StructuredLLM.generate(task="query", schema=SearchSpecificationDraft, system=…, user=…)`; the concrete adapter is `infrastructure/llm.py`, backed by **OpenRouter free models** (https://openrouter.ai/collections/free-models). Load the `openrouter-llm` skill for the adapter, model config (`LLM_MODEL`, `LLM_FALLBACK_MODELS`), structured-output strategy and free-tier limits.
 - The draft is validated → post-processed by the same lexicon normalizer (map synonyms to canonical terms, reject unknown categories) → constraint sanity check.
 - Any exception, invalid output, rate limit, unavailable model, or timeout ⇒ deterministic parser; `spec.interpreter` records which ran and `spec.interpreter_model` records the OpenRouter model that answered. Agent A must never output tracks/artists not in the query (validator: `reference_track_ids` must come from session state, not the LLM).

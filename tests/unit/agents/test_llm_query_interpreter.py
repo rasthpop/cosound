@@ -35,6 +35,7 @@ def draft(**overrides: object) -> SearchSpecificationDraft:
         "vocals": "unspecified",
         "hard_constraints": [],
         "reference_track_ids": [],
+        "semantic_prompts": [],
         "needs_clarification": False,
         "clarification_question": None,
     }
@@ -45,9 +46,7 @@ def interpret(
     response: SearchSpecificationDraft | str, query: str = CHILL_FLUTE, known: tuple[str, ...] = ()
 ) -> tuple[SearchSpecification | None, str | None, FakeStructuredLLM]:
     llm = FakeStructuredLLM([response], model_id=MODEL)
-    outcome = LLMQueryInterpreter(llm, LEXICON).interpret(
-        query, PARSER.parse(query), known_track_ids=known
-    )
+    outcome = LLMQueryInterpreter(llm, LEXICON).interpret(query, known_track_ids=known)
     return outcome.spec, outcome.fallback_reason, llm
 
 
@@ -127,7 +126,7 @@ def test_only_the_query_text_is_sent() -> None:
 
 
 def test_prompt_is_versioned() -> None:
-    assert load_prompt().version == "query-v1"
+    assert load_prompt().version == "query-v2"
 
 
 # --- rejected ---------------------------------------------------------------------------
@@ -207,12 +206,43 @@ def test_agent_falls_back_to_parser_with_reason() -> None:
     assert result.spec.interpreter == "deterministic"
 
 
-def test_agent_skips_llm_when_parser_needs_clarification() -> None:
-    llm = FakeStructuredLLM([draft()], model_id=MODEL)
-    query_agent = QueryAgent(LEXICON, LLMQueryInterpreter(llm, LEXICON))
-    spec = query_agent.interpret("no vocals with female vocals")
+def test_llm_reads_first_even_when_the_parser_would_ask_to_clarify() -> None:
+    query = "no vocals with female vocals"
+    llm = FakeStructuredLLM(
+        [draft(needs_clarification=True, clarification_question="With or without vocals?")],
+        model_id=MODEL,
+    )
+    spec = QueryAgent(LEXICON, LLMQueryInterpreter(llm, LEXICON)).interpret(query)
+    assert len(llm.calls) == 1
     assert spec.needs_clarification
+    assert spec.clarification_question == "With or without vocals?"
+    assert spec.interpreter == "llm"
+
+
+def test_parser_does_not_run_when_the_llm_answer_is_accepted(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail(*_: object) -> None:
+        raise AssertionError("the parser is the fallback only")
+
+    monkeypatch.setattr(QueryParser, "parse", fail)
+    assert agent(draft()).interpret(CHILL_FLUTE).interpreter == "llm"
+
+
+def test_empty_query_raises_without_a_call() -> None:
+    llm = FakeStructuredLLM([draft()], model_id=MODEL)
+    with pytest.raises(ValueError, match="empty"):
+        QueryAgent(LEXICON, LLMQueryInterpreter(llm, LEXICON)).interpret("   ")
     assert llm.calls == []
+
+
+@pytest.mark.parametrize(
+    "code", ["invalid_output", "truncated_output", "timeout", "rate_limited", "quota_exhausted"]
+)
+def test_each_failure_falls_back_to_the_parser_with_the_reason(code: str) -> None:
+    result = agent(code).interpret_traced(CHILL_FLUTE)
+    assert result.llm_fallback_reason == f"llm_{code}"
+    assert result.spec == PARSER.parse(CHILL_FLUTE)
 
 
 def test_agent_follow_up_keeps_llm_provenance() -> None:
@@ -237,3 +267,272 @@ def test_agent_without_llm_is_deterministic() -> None:
     spec = QueryAgent(LEXICON).interpret(CHILL_FLUTE)
     assert spec.interpreter == "deterministic"
     assert spec.interpreter_model is None
+
+
+# --- the LLM reads wording the parser cannot (ADR-0007) -----------------------------------
+
+
+def hard(attribute: str, operator: str, cue: str, **extra: object) -> DraftConstraint:
+    fields: dict[str, object] = {"value": None, "low": None, "high": None} | extra
+    return DraftConstraint.model_validate(
+        {"attribute": attribute, "operator": operator, "cue": cue} | fields
+    )
+
+
+def no_prefs(**overrides: object) -> SearchSpecificationDraft:
+    return draft(preferences=[], **overrides)
+
+
+@pytest.mark.parametrize(
+    ("query", "constraint"),
+    [
+        ("Anything but metal.", hard("genre", "excluded", "Anything but", value="metal")),
+        ("No rock please.", hard("genre", "excluded", "No", value="rock")),
+        (
+            "Moody sax, nothing with drums.",
+            hard("instrument", "excluded", "nothing", value="drums"),
+        ),
+        ("Please skip the banjo.", hard("instrument", "excluded", "skip", value="banjo")),
+        ("Only jazz, please.", hard("genre", "required", "only", value="jazz")),
+        ("It needs a cello.", hard("instrument", "required", "needs", value="cello")),
+    ],
+)
+def test_explicit_constraints_outside_the_parsers_cues_are_accepted(
+    query: str, constraint: DraftConstraint
+) -> None:
+    spec, reason, _ = interpret(no_prefs(hard_constraints=[constraint]), query)
+    assert reason is None
+    assert spec is not None
+    [got] = spec.hard_constraints
+    assert (got.attribute, got.operator, got.value) == (
+        constraint.attribute,
+        constraint.operator,
+        constraint.value,
+    )
+    assert spec.interpreter == "llm"
+
+
+@pytest.mark.parametrize(
+    ("query", "cue"),
+    [
+        ("Get rid of the vocals, just something mellow.", "Get rid of"),
+        ("I don't want any singing, only soft guitar.", "don't want"),
+        ("It must have no singing.", "no"),
+    ],
+)
+def test_vocals_wording_the_parser_misreads_becomes_a_hard_exclusion(query: str, cue: str) -> None:
+    response = no_prefs(vocals="excluded", hard_constraints=[hard("vocals", "excluded", cue)])
+    spec, reason, _ = interpret(response, query)
+    assert reason is None
+    assert spec is not None
+    assert spec.vocal_preferences == "excluded"
+    assert [c.attribute for c in spec.hard_constraints] == ["vocals"]
+
+
+def test_a_vocals_constraint_with_a_value_or_unspecified_choice_is_normalized() -> None:
+    constraint = hard("vocals", "excluded", "without", value="vocals")
+    spec, reason, _ = interpret(no_prefs(hard_constraints=[constraint]), "Piano without vocals")
+    assert reason is None
+    assert spec is not None
+    assert spec.vocal_preferences == "excluded"
+    assert spec.hard_constraints[0].value is None
+
+
+@pytest.mark.parametrize(
+    ("query", "constraint", "expected"),
+    [
+        (
+            "Short punk, two minutes tops.",
+            hard("duration", "range", "two minutes tops", high=120),
+            (None, 120.0),
+        ),
+        (
+            "A long piece, at least 600 seconds.",
+            hard("duration", "range", "600", low=600),
+            (600.0, None),
+        ),
+        (
+            "Must be from the 70s.",
+            hard("era", "range", "70s", low=1970, high=1979),
+            (1970.0, 1979.0),
+        ),
+    ],
+)
+def test_ranges_need_a_number_in_their_cue(
+    query: str, constraint: DraftConstraint, expected: tuple[float | None, float | None]
+) -> None:
+    spec, reason, _ = interpret(no_prefs(hard_constraints=[constraint]), query)
+    assert reason is None
+    assert spec is not None
+    assert spec.hard_constraints[0].range == expected
+
+
+@pytest.mark.parametrize(
+    ("query", "constraint"),
+    [
+        # the cue is invented
+        ("Ambient music", hard("genre", "excluded", "without", value="metal")),
+        ("Ambient without drums", hard("instrument", "excluded", "strictly no", value="drums")),
+        # the cue is real but soft
+        (CHILL_FLUTE, hard("instrument", "required", "with", value="flute")),
+        ("Less rock please", hard("genre", "excluded", "Less", value="rock")),
+        ("Maybe some harp", hard("instrument", "required", "Maybe", value="harp")),
+        # the value is invented
+        ("No rock please", hard("genre", "excluded", "No", value="metal")),
+        ("No rock please", hard("instrument", "excluded", "No", value="Aphex Twin")),
+        ("No rock please", hard("genre", "excluded", "No")),
+        # negation about something else is not about vocals
+        ("No rock please", hard("vocals", "excluded", "No")),
+        # a long, unnumbered "range"
+        ("A long ambient piece", hard("duration", "range", "long", low=600)),
+    ],
+)
+def test_unbacked_constraints_are_rejected(query: str, constraint: DraftConstraint) -> None:
+    spec, reason, _ = interpret(no_prefs(hard_constraints=[constraint]), query)
+    assert spec is None
+    assert reason == "soft_to_hard_escalation"
+
+
+def test_a_hard_exclusion_also_gets_a_negative_preference() -> None:
+    constraint = hard("genre", "excluded", "Anything but", value="metal")
+    spec, _, _ = interpret(no_prefs(hard_constraints=[constraint]), "Anything but metal.")
+    assert spec is not None
+    assert [p.value for p in spec.negative_preferences] == ["metal"]
+
+
+def test_a_range_with_impossible_bounds_is_inconsistent() -> None:
+    constraint = hard("duration", "range", "2 minutes", low=300, high=100)
+    spec, reason, _ = interpret(no_prefs(hard_constraints=[constraint]), "About 2 minutes")
+    assert spec is None
+    assert reason == "inconsistent_output"
+
+
+def test_values_outside_the_lexicon_are_kept_when_the_request_says_them() -> None:
+    query = "A gauzy harmonium drone"
+    prefs = [DraftPreference(category="mood", value="Gauzy", weight=0.7, source_span="gauzy")]
+    spec, reason, _ = interpret(draft(preferences=prefs), query)
+    assert reason is None
+    assert spec is not None
+    assert [p.value for p in spec.mood_preferences] == ["gauzy"]
+    assert any("gauzy" in note and "own words" in note for note in spec.uncertainties)
+
+
+@pytest.mark.parametrize(("value", "span"), [("Aphex Twin", "gauzy"), ("gauzy", "made up span")])
+def test_outside_values_need_both_value_and_span_in_the_request(value: str, span: str) -> None:
+    prefs = [DraftPreference(category="mood", value=value, weight=0.7, source_span=span)]
+    spec, reason, _ = interpret(draft(preferences=prefs), "A gauzy harmonium drone")
+    assert reason is None
+    assert spec is not None
+    assert spec.mood_preferences == []
+    assert any(value in note for note in spec.uncertainties)
+
+
+# --- clarification ------------------------------------------------------------------------
+
+
+def test_a_contradiction_in_the_validated_spec_becomes_a_clarification() -> None:
+    query = "must have no vocals, must have vocals"
+    both = [hard("vocals", "excluded", "must have no"), hard("vocals", "required", "must have")]
+    spec, reason, _ = interpret(no_prefs(hard_constraints=both), query)
+    assert reason is None
+    assert spec is not None
+    assert spec.needs_clarification
+    assert "vocals" in (spec.clarification_question or "")
+    assert spec.interpreter == "llm"
+
+
+@pytest.mark.parametrize("question", [None, "   ", "x" * 201])
+def test_a_clarification_needs_a_short_question(question: str | None) -> None:
+    response = draft(needs_clarification=True, clarification_question=question)
+    spec, reason, _ = interpret(response)
+    assert spec is None
+    assert reason == "inconsistent_output"
+
+
+# --- CLAP prompts -------------------------------------------------------------------------
+
+
+def test_the_llms_prompts_reach_the_spec_unchanged() -> None:
+    prompts = ["slow rainy synth pads", "soft nocturnal ambient textures"]
+    spec, _, _ = interpret(no_prefs(semantic_prompts=prompts), "Music for a rainy night drive")
+    assert spec is not None
+    assert spec.semantic_prompts == prompts
+
+
+def test_without_llm_prompts_the_deterministic_ones_are_used() -> None:
+    spec, _, _ = interpret(draft())
+    assert spec is not None
+    assert spec.semantic_prompts, "built from the accepted preferences"
+
+
+def test_prompts_are_capped_deduplicated_and_tidied() -> None:
+    many = ["one  sound", "ONE sound", "two", "three", "four", "five"]
+    spec, _, _ = interpret(no_prefs(semantic_prompts=many))
+    assert spec is not None
+    assert spec.semantic_prompts == ["one sound", "two", "three", "four"]
+
+
+def test_a_prompt_naming_someone_absent_from_the_request_is_left_out() -> None:
+    prompts = ["Warm tape hiss", "music like Aphex Twin", "x " * 16, "warm tape music"]
+    spec, _, _ = interpret(no_prefs(semantic_prompts=prompts))
+    assert spec is not None
+    assert spec.semantic_prompts == ["Warm tape hiss", "warm tape music"]
+    assert any("Aphex Twin" in note for note in spec.uncertainties)
+
+
+def test_a_prompt_mentioning_a_ruled_out_value_is_left_out() -> None:
+    """Live answer, 2026-11-04: audio search reads "avoids metal" as closer to metal."""
+    constraint = hard("genre", "excluded", "Anything but", value="metal")
+    response = no_prefs(
+        hard_constraints=[constraint],
+        semantic_prompts=["music that avoids metal genre entirely", "gentle acoustic guitar"],
+    )
+    spec, reason, _ = interpret(response, "Anything but metal.")
+    assert reason is None
+    assert spec is not None
+    assert spec.semantic_prompts == ["gentle acoustic guitar"]
+    assert any("avoids metal" in note for note in spec.uncertainties)
+
+
+def test_a_prompt_may_use_a_name_the_request_gave() -> None:
+    spec, _, _ = interpret(no_prefs(semantic_prompts=["sounds like Bo Diddley"]), "Like Bo Diddley")
+    assert spec is not None
+    assert spec.semantic_prompts == ["sounds like Bo Diddley"]
+
+
+# --- multi-turn --------------------------------------------------------------------------
+
+
+def _session_with(spec: SearchSpecification) -> SearchSession:
+    now = datetime(2026, 10, 23, tzinfo=UTC)
+    turn = SearchTurnRecord(
+        query_id="q1", query_text=spec.original_query, spec=spec, created_at=now
+    )
+    return SearchSession(session_id="s", created_at=now).with_turn(turn)
+
+
+def test_hard_constraints_survive_an_llm_follow_up() -> None:
+    first = PARSER.parse("Calm piano without vocals")
+    upbeat = no_prefs(semantic_prompts=["bright upbeat piano"])
+    spec = agent(upbeat).interpret("more upbeat", _session_with(first))
+    assert spec.hard_constraints == first.hard_constraints
+    assert spec.vocal_preferences == "excluded"
+    assert spec.interpreter == "llm"
+
+
+def test_a_follow_up_uses_the_llms_new_prompts_first() -> None:
+    first = PARSER.parse("Calm piano music")
+    follow_up = no_prefs(semantic_prompts=["bright upbeat piano"])
+    spec = agent(follow_up).interpret("more upbeat", _session_with(first))
+    assert spec.semantic_prompts[0] == "bright upbeat piano"
+    assert len(spec.semantic_prompts) >= 1
+
+
+def test_a_follow_up_contradicting_a_hard_constraint_still_asks() -> None:
+    first = PARSER.parse("Calm piano without vocals")
+    conflict = no_prefs(
+        vocals="required", hard_constraints=[hard("vocals", "required", "must have")]
+    )
+    spec = agent(conflict).interpret("but it must have vocals", _session_with(first))
+    assert spec.needs_clarification
+    assert spec.hard_constraints == first.hard_constraints
