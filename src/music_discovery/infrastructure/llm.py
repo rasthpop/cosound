@@ -59,6 +59,8 @@ DEFAULT_MAX_TOKENS: Mapping[str, int] = {
     "descriptions": 600,
     "selection": 400,
 }
+REQUEST_SHAPE = "reasoning-off"
+"""Part of the cache key: answers from a differently shaped request are not comparable."""
 DAILY_LIMIT_MIN_WAIT_S = 120.0
 """A rate limit resetting further away than this is not the per-minute limit."""
 _EPOCH_MS_THRESHOLD = 1e11
@@ -201,8 +203,10 @@ class OpenRouterLLM:
                 break
         latency = (self.monotonic() - started) * 1000.0
         result = result.model_copy(update={"latency_ms": max(latency, 0.0)})
-        # invalid output is the model's answer, not an outage: it does not trip the breaker
-        self._breaker.record(result.error_code in (None, "invalid_output"), self.monotonic())
+        # bad output is the model's answer, not an outage: it does not trip the breaker
+        self._breaker.record(
+            result.error_code in (None, "invalid_output", "truncated_output"), self.monotonic()
+        )
         if result.parsed is not None:
             self._cache_write(cache_key, result)
         else:
@@ -360,7 +364,7 @@ class OpenRouterLLM:
     ) -> str | None:
         if self.cache_dir is None:
             return None
-        material = json.dumps([list(chain), task, schema.__name__, system, user])
+        material = json.dumps([REQUEST_SHAPE, list(chain), task, schema.__name__, system, user])
         return hashlib.sha256(material.encode()).hexdigest()
 
     def _cache_read(self, key: str | None, schema: type[T]) -> LLMResult[T] | None:
@@ -428,7 +432,8 @@ def _payload(
         "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
         "temperature": 0,
         "max_tokens": DEFAULT_MAX_TOKENS.get(task, 600),
-        "reasoning": {"exclude": True},
+        # `exclude` only hides reasoning: left on, it used up `max_tokens` before any answer
+        "reasoning": {"enabled": False, "exclude": True},
     }
     if len(routing) > 1:
         payload["models"] = list(routing)
@@ -455,7 +460,8 @@ def _parse(
 ) -> LLMResult[T]:
     model_id = str(body.get("model") or requested)
     try:
-        message = body["choices"][0]["message"]
+        choice = body["choices"][0]
+        message = choice["message"]
         if strategy is Strategy.TOOL and message.get("tool_calls"):
             raw = str(message["tool_calls"][0]["function"]["arguments"])
         else:
@@ -467,7 +473,8 @@ def _parse(
     try:
         parsed = schema.model_validate_json(raw)
     except ValidationError:
-        return LLMResult[T](error_code="invalid_output", raw_text=raw, model_id=model_id)
+        code = "truncated_output" if choice.get("finish_reason") == "length" else "invalid_output"
+        return LLMResult[T](error_code=code, raw_text=raw, model_id=model_id)
     return LLMResult[T](parsed=parsed, raw_text=raw, model_id=model_id)
 
 

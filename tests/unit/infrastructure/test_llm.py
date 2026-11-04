@@ -589,3 +589,37 @@ def test_cache_entries_hold_no_identifiers(tmp_path: Path) -> None:
     entry = json.loads(next(tmp_path.iterdir()).read_text())
     assert set(entry) == {"model_id", "raw_text", "created_at"}
     assert "secret user text" not in json.dumps(entry)
+
+
+# --- reasoning --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("model", [JSON_MODEL, TOOL_MODEL, PLAIN_MODEL])
+def test_every_strategy_turns_reasoning_off(model: str) -> None:
+    answer = '{"mood": "x"}'
+    response = tool_call(answer, model) if model == TOOL_MODEL else content(answer, model)
+    rec = Recorder([response])
+    generate(adapter(rec, [model]))
+    assert rec.payload(0)["reasoning"] == {"enabled": False, "exclude": True}
+
+
+def test_output_cut_off_by_the_token_limit_has_its_own_code() -> None:
+    body = {
+        "model": JSON_MODEL,
+        "choices": [{"finish_reason": "length", "message": {"content": ""}}],
+    }
+    rec = Recorder([httpx.Response(200, json=body)])
+    llm = adapter(rec, [JSON_MODEL, TOOL_MODEL], breaker_threshold=1)
+    result = generate(llm)
+    assert result.error_code == "truncated_output"
+    assert len(rec.requests) == 1, "the model answered: no retry and no next model"
+    assert llm.status == "available", "not an outage"
+
+
+def test_a_finished_answer_that_fails_validation_stays_invalid_output() -> None:
+    body = {
+        "model": JSON_MODEL,
+        "choices": [{"finish_reason": "stop", "message": {"content": "nope"}}],
+    }
+    rec = Recorder([httpx.Response(200, json=body)])
+    assert generate(adapter(rec, [JSON_MODEL])).error_code == "invalid_output"
